@@ -10,7 +10,6 @@ ATileManager::ATileManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	RootMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Root Component"));
-
 }
 
 void ATileManager::BeginPlay()
@@ -18,13 +17,13 @@ void ATileManager::BeginPlay()
 	Super::BeginPlay();
 
 	//Path arr √ ±‚»≠
-	for (int i = 0; i < (x*y); i++) {
+	/*for (int i = 0; i < (x*y); i++) {
 		Path DefaultPathValue;
 		DefaultPathValue.bWall = false;
 		DefaultPathValue.Cost = 0;
 		
 		PathArr.Add(DefaultPathValue);
-	}
+	}*/
 
 	RootMesh->SetWorldScale3D(FVector(x*TileSize, y*TileSize, 1));
 
@@ -32,7 +31,6 @@ void ATileManager::BeginPlay()
 	RootMesh->GetOverlappingActors(OverlappedActors);
 	for (int i = 0; i < OverlappedActors.Num(); i++) {
 		OverlappedActors[i]->GetActorLocation();
-
 	}
 
 }

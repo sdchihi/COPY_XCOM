@@ -6,10 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "TileManager.generated.h"
 
-struct Path {
-	bool bWall;
-	int32 Cost;
-};
+//struct Path {
+//	bool bWall;
+//	int32 Cost;
+//};
 
 UCLASS()
 class XCOM_API ATileManager : public AActor
@@ -47,7 +47,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 y = 10;
-	TArray<Path> PathArr;
+	
+	//TArray<Path> PathArr;
 
 	TArray<AActor*> OverlappedActors;
 };
