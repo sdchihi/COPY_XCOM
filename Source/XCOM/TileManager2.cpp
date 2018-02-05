@@ -4,28 +4,14 @@
 #include "Classes/Components/InstancedStaticMeshComponent.h"
 #include "Classes/Components/ChildActorComponent.h"
 #include "Classes/GameFramework/Actor.h"
-#include "iostream"
-// Sets default values
+
 ATileManager2::ATileManager2()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 	SetRootComponent(Root);
-	
-/*
-	Tiles = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("Tile Instanced Mesh"));
-	Tiles->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
-*/
-	//UChildActorComponent* ChildActor = CreateDefaultSubobject<UChildActorComponent>(FName("Child"));
-
-
-
-	//UChildActorComponent child;
-	//child.SetChildActorClass()
 }
 
-// Called when the game starts or when spawned
 void ATileManager2::BeginPlay()
 {
 	Super::BeginPlay();
@@ -34,39 +20,37 @@ void ATileManager2::BeginPlay()
 		int collum = i % x;
 		int row = i / x;
 		
-		FTransform instanceTransform = FTransform(FVector(collum*TileSize*110, row*TileSize*110, Root->GetComponentLocation().Z));
+		FTransform instanceTransform = FTransform(FVector(collum*TileSize*110+ 0.1, row*TileSize*110 + 0.1, Root->GetComponentLocation().Z));
 		instanceTransform.SetScale3D(FVector(TileSize, TileSize, 1));
 
-		AActor* actor = GetWorld()->SpawnActor<AActor>(
+		// Tile 생성
+		AActor* TileActor = GetWorld()->SpawnActor<AActor>(
 			WallBlueprint,
-			FVector(collum*TileSize * 110, row*TileSize * 110, Root->GetComponentLocation().Z),
+			FVector(collum*TileSize + collum*0.001, row*TileSize + row*0.001, Root->GetComponentLocation().Z),
 			FRotator(0,0,0)
 			);
 
-		if (!actor) {
+		if (!TileActor) {
 			UE_LOG(LogTemp, Warning, L"Wall BP 지정 필요");
 			return;
 		}
-		actor->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
-		
-		UStaticMeshComponent* ActorMeshComponent = actor->FindComponentByClass<UStaticMeshComponent>();
+		TileActor->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
+		UStaticMeshComponent* ActorMeshComponent = TileActor->FindComponentByClass<UStaticMeshComponent>();
 
+		// Delegate 지정
 		ActorMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ATileManager2::OnOverlapBegin);
 		
-		
-		//actor->OnActorHit.AddDynamic(this, &ATileManager2::OnOverlapBegin);
-
-		
-
-		//Path 초기화
+		//Path 정보를 담는 Array 초기화
 		Path DefaultPathValue;
 		DefaultPathValue.bWall = false;
 		DefaultPathValue.Cost = 0;
 		PathArr.Add(DefaultPathValue);
+
+		//Path 갱신
+		FindingWallOnTile(TileActor);
 	}
 }
 
-// Called every frame
 void ATileManager2::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -74,7 +58,47 @@ void ATileManager2::Tick(float DeltaTime)
 
 
 
-void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
-	UE_LOG(LogTemp, Warning, L"ABCCEE!");
-	UE_LOG(LogTemp, Warning, L"ABCCEE!");
+void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
+	PathArr[OverlappedTileIndex].bWall = true;
+
+	//UE_LOG(LogTemp, Warning, L"Vector : %s  , Index : %d", *RelativeLocation.ToString(), OverlappedTileIndex);
 }
+
+
+void ATileManager2::FindingWallOnTile(AActor* TileActor) 
+{
+	TArray<AActor*> OverlappedActor;
+	TileActor->GetOverlappingActors(OverlappedActor);
+
+	if (OverlappedActor.Num() != 0) {
+		int32 OverlappedTileIndex = ConvertVectorToIndex(TileActor->GetActorLocation());
+		PathArr[OverlappedTileIndex].bWall = true;
+
+		UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
+	}
+}
+
+
+
+// @Param Vector : Tile's World Location;
+int32 ATileManager2::ConvertVectorToIndex(FVector WorldLocation) 
+{
+	FVector RelativeLocation = GetActorLocation() - WorldLocation;
+
+	int collum =FMath::Abs(RelativeLocation.X / TileSize);
+	int row = FMath::Abs(RelativeLocation.Y / TileSize);
+	
+	return (row * x) + collum;
+}
+
+
+FVector ATileManager2::ConvertIndexToVector(int32 Index)
+{
+	int collum = Index % x;
+	int row = Index / x;
+
+	return FVector(collum*TileSize * 110, row*TileSize * 110, Root->GetComponentLocation().Z);
+}
+
