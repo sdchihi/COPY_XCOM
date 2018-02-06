@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "CustomThirdPerson.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS()
 class XCOM_API ACustomThirdPerson : public ACharacter
 {
@@ -26,6 +29,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
+private:
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	USpringArmComponent* SpringArm= nullptr;
+
+	/** Follow camera */
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UCameraComponent* FollowCamera = nullptr;
+
 	
 };

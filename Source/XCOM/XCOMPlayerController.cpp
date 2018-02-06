@@ -5,9 +5,17 @@
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
-	bShowMouseCursor = true;
-	ShouldShowMouseCursor();
 }
+
+void AXCOMPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	bShowMouseCursor = true;
+	bEnableClickEvents = true;
+	bEnableMouseOverEvents = true;
+};
+
+
 
 void AXCOMPlayerController::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
@@ -27,16 +35,16 @@ void AXCOMPlayerController::OnClick() {
 	FHitResult TraceResult;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, TraceResult);
 	AActor* actor= TraceResult.GetActor();
+
 	if (!ensure(TraceResult.GetActor())) {
 		return;
 	}
 	else {
 		ACustomThirdPerson* character = Cast<ACustomThirdPerson>(actor);
-		if (!ensure(character)) { return; }
-		else {
-			//Possess(character);
+		if (IsValid(character)) {
+			Possess(character);
+			UE_LOG(LogTemp, Warning, L"Actor Clicked!!");
 		}
 
-		UE_LOG(LogTemp, Warning, L"Actor Clicked!!");
 	}
 }

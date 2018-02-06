@@ -21,6 +21,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void BeginPlay() override;
+
+
 protected:
 	virtual void SetupInputComponent() override;
 

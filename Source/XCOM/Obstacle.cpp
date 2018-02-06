@@ -14,7 +14,7 @@ void  AObstacle::BeginPlay() {
 		UE_LOG(LogTemp, Warning, L"!!!");
 		return;
 	}
-	//RootMeshComponent->OnComponentHit.AddDynamic(this, &AObstacle::OnHit);
+	//RootMeshComponent->OnComponentHit.AddDynamic(this, &AObstacle::OnHit); 
 
 
 	UE_LOG(LogTemp, Warning, L"!!!2");
@@ -24,7 +24,6 @@ void  AObstacle::BeginPlay() {
 void  AObstacle::Tick(float DeltaTime) {
 
 	Super::Tick(DeltaTime);
-
 	//UStaticMeshComponent* RootMeshComponent = Cast<UStaticMeshComponent>(GetRootComponent());
 	//TArray<AActor*> temp;
 
