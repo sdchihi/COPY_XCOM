@@ -32,7 +32,7 @@ void ACustomThirdPerson::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
+	
 // Called to bind functionality to input
 void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

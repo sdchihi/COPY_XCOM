@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "XCOMPlayerController.generated.h"
 
+class ACustomThirdPerson;
 /**
  * 
  */
@@ -29,8 +30,8 @@ protected:
 
 
 private:
-
 	void OnClick();
 
+	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 
 };

@@ -2,6 +2,7 @@
 
 #include "XCOMPlayerController.h"
 #include "CustomThirdPerson.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -40,11 +41,21 @@ void AXCOMPlayerController::OnClick() {
 		return;
 	}
 	else {
-		ACustomThirdPerson* character = Cast<ACustomThirdPerson>(actor);
-		if (IsValid(character)) {
-			Possess(character);
-			UE_LOG(LogTemp, Warning, L"Actor Clicked!!");
+		ACustomThirdPerson* TargetCharacter = Cast<ACustomThirdPerson>(actor);
+		if (IsValid(TargetCharacter)) {
+			DisableInput(this);
+			SetViewTargetWithBlend(TargetCharacter, 0.5);
+
+			FTimerHandle UnUsedHandle;
+			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
+
+			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
 		}
 
 	}
+}
+
+void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter) {
+	Possess(TargetCharacter);
+	EnableInput(this);
 }
