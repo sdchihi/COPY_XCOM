@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "XCOMPlayerController.generated.h"
 
+class ATileManager2;
 class ACustomThirdPerson;
 /**
  * 
@@ -33,5 +34,9 @@ private:
 	void OnClick();
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
+	
+	void GetNearbyTiles(TArray<AActor*> Tiles, int32 MovingAbility);
 
+	UPROPERTY(VisibleAnywhere)
+	ATileManager2* TileManager = nullptr;
 };

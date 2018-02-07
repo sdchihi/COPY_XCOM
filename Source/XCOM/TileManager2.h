@@ -28,6 +28,19 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	void GetNearbyTiles(AActor* StartingTile, int32 MovingAbility, TArray<AActor*>& AvailableTiles);
+
+	int32 ConvertVectorToIndex(FVector WorldLocation);
+
+	FVector ConvertIndexToVector(int32 Index);
+
+	void ConvertVectorToCoord(FVector WorldLocation,OUT int& x,OUT int& y);
+
+	int32 GetNumOfRightSideExtraTile(int32 TileIndex);
+
+	bool IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex);
+
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 TileSize = 100;
@@ -49,9 +62,7 @@ private:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	int32 ConvertVectorToIndex(FVector WorldLocation);
-
-	FVector ConvertIndexToVector(int32 Index);
+	
 
 	void FindingWallOnTile(AActor* TileActor);
 

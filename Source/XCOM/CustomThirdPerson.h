@@ -29,6 +29,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	bool GetIsSameTeam() { return bIsSameTeam; };
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm= nullptr;
@@ -36,6 +38,11 @@ private:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* FollowCamera = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
+	bool bIsSameTeam = true;
+
+	int step = 0;
 
 	
 };

@@ -102,3 +102,77 @@ FVector ATileManager2::ConvertIndexToVector(int32 Index)
 	return FVector(collum*TileSize * 110, row*TileSize * 110, Root->GetComponentLocation().Z);
 }
 
+void ATileManager2::ConvertVectorToCoord(FVector WorldLocation, OUT int& CoordX, OUT int& CoordY) {
+	int32 TileIndex =  ConvertVectorToIndex(WorldLocation);
+	CoordX = TileIndex % x;
+	CoordY = TileIndex / y;
+}
+
+
+
+void ATileManager2::GetNearbyTiles(AActor* StartingTile, int32 MovingAbility, TArray<AActor*>& AvailableTiles) {
+
+	int OverlappedTileIndex = ConvertVectorToIndex(StartingTile->GetActorLocation());
+	//여기까진 잘됨
+	
+	TArray<AActor*> ChildActors;
+	GetAttachedActors(ChildActors);
+	ChildActors[OverlappedTileIndex];
+	
+	UE_LOG(LogTemp, Warning, L"%d", OverlappedTileIndex);
+
+
+	// start-  0 ,  moving abil = 2
+
+
+	int CurrentStep = MovingAbility;
+	for (int32 i = MovingAbility; i >= -MovingAbility; i--) 
+	{
+		int32 CurrentStep = MovingAbility - FMath::Abs(i);
+
+		int32 TargetIndex;
+		//currentstep ==0 일때만 예외처리해주고 나머지는 밑에 반복문으로 제어
+
+		// Left To Right - > 
+		for (int32 j = CurrentStep; j >= -CurrentStep; j--) 
+		{
+			TargetIndex = OverlappedTileIndex + (i * x) + j;
+
+			
+			if (TargetIndex > (x*y - 1))  //타일 크기를 벗어날때 제외
+			{
+				continue;
+			}
+			else if (TargetIndex < 0) {   //타일 크기를 벗어날때 제외
+				continue;
+			}
+			else if(!IsSameLine(OverlappedTileIndex, i , TargetIndex))   //오른쪽으로 더이상 타일의 진행이 필요없을때
+			{	
+				continue;
+			}
+			AvailableTiles.Add(ChildActors[ChildActors.Num()-TargetIndex-1]);
+			
+
+			UE_LOG(LogTemp, Warning, L"Input : %s", *ChildActors[TargetIndex]->GetName());
+			
+		}	
+	}
+
+}
+
+
+
+int32 ATileManager2::GetNumOfRightSideExtraTile(int32 TileIndex) 
+{
+	int32 row = TileIndex / x;  // i 하고 다르면 제외 시키고..
+
+
+
+	return  (TileIndex) % x;
+}
+
+
+bool ATileManager2::IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex) 
+{
+	return ((OverlappedTileIndex / x) + RowNumber) == (TargetIndex / x);
+}

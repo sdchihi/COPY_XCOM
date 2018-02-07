@@ -23,7 +23,6 @@ ACustomThirdPerson::ACustomThirdPerson()
 void ACustomThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -39,4 +38,6 @@ void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
+
 
