@@ -35,7 +35,6 @@ private:
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 	
-	void GetNearbyTiles(TArray<AActor*> Tiles, int32 MovingAbility);
 
 	UPROPERTY(VisibleAnywhere)
 	ATileManager2* TileManager = nullptr;

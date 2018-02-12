@@ -3,17 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
 #include "Tile.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class XCOM_API UTile : public UInstancedStaticMeshComponent
+class XCOM_API ATile : public AStaticMeshActor
 {
 	GENERATED_BODY()
-	
 	
 	
 	

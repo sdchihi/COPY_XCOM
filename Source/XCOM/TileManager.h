@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "TileManager.generated.h"
 
+
 //struct Path {
 //	bool bWall;
 //	int32 Cost;

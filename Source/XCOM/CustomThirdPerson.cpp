@@ -24,7 +24,7 @@ void ACustomThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
+ 
 // Called every frame
 void ACustomThirdPerson::Tick(float DeltaTime)
 {

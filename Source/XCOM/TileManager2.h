@@ -4,15 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Path.h"
 #include "TileManager2.generated.h"
 
-class UTile;
+class ATile;
 class UInstancedStaticMeshComponent;
 
-struct Path {
-	bool bWall;
-	int32 Cost;
-};
+
 
 UCLASS()
 class XCOM_API ATileManager2 : public AActor
@@ -28,7 +26,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void GetNearbyTiles(AActor* StartingTile, int32 MovingAbility, TArray<AActor*>& AvailableTiles);
+	void GetNearbyTiles(ATile* StartingTile, int32 MovingAbility, TArray<ATile*>& AvailableTiles);
 
 	int32 ConvertVectorToIndex(FVector WorldLocation);
 
@@ -36,12 +34,13 @@ public:
 
 	void ConvertVectorToCoord(FVector WorldLocation,OUT int& x,OUT int& y);
 
-	int32 GetNumOfRightSideExtraTile(int32 TileIndex);
-
 	bool IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex);
-
+	
+	void ClearAllTiles();
 
 private:
+	// 변수
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 TileSize = 100;
 
@@ -53,17 +52,38 @@ private:
 	
 	TArray<Path> PathArr;
 
+	TArray<int32> OpenList;
+
+	TArray<int32> ClosedList;
+
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root = nullptr;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> WallBlueprint;
+	TSubclassOf<ATile> TileBlueprint;
+
+	TArray<int32> TileIndexInRange;
+	//메소드
+
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	
+	int32 ComputeManhattanDistance(int32 StartIndex, int32 TargetIndex);
 
-	void FindingWallOnTile(AActor* TileActor);
+	void FindingWallOnTile(ATile* TileActor);
+
+
+	void FindPath(int32 StartingIndex, TArray<int32> TileIndexInRange);
+
+	void UpdatePathInfo(int32 CurrentIndex, int32 StartIndex, int32 TargetIndex);
+
+	void UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex);
+
+	void UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex);
+
+	bool CheckWithinBounds(int32 TileIndex);
+
+	int32 FindMinCostFIndex();
 
 };
