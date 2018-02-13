@@ -14,3 +14,13 @@ Path::~Path()
 {
 }
 
+
+void Path::Clear() {
+	ParentIndex = 0;
+
+	CostF = 0;
+
+	CostG = 0;
+
+	CostH = 0;
+}

@@ -74,9 +74,9 @@ private:
 	void FindingWallOnTile(ATile* TileActor);
 
 
-	void FindPath(int32 StartingIndex, TArray<int32> TileIndexInRange);
+	TArray<ATile*> FindPath(int32 StartingIndex,int32 MovingAbility, TArray<int32> TileIndexInRange);
 
-	void UpdatePathInfo(int32 CurrentIndex, int32 StartIndex, int32 TargetIndex);
+	bool UpdatePathInfo(int32 CurrentIndex, int32 StartIndex, int32 TargetIndex);
 
 	void UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex);
 

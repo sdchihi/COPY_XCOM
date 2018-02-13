@@ -35,4 +35,7 @@ public:
 	int32 CostH;
 
 	TArray<int32> OnTheWay;
+
+
+	void Clear();
 };

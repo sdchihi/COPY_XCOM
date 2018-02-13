@@ -63,6 +63,7 @@ void AXCOMPlayerController::OnClick()
 
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter) 
 {
+
 	Possess(TargetCharacter);
 	EnableInput(this);
 
@@ -74,8 +75,9 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 	if (OverlappedTile.Num() == 0) { return; }
 
 	TArray<ATile*> TilesInRange;
-	TileManager->GetNearbyTiles(Cast<ATile>(OverlappedTile[0]), 2, TilesInRange);
-	
+	TileManager->GetNearbyTiles(Cast<ATile>(OverlappedTile[0]), 4, TilesInRange);
+
+
 	for (ATile* Tile : TilesInRange) {
 		UStaticMeshComponent* TileMesh =Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		TileMesh->SetVisibility(true);

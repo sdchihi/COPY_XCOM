@@ -12,6 +12,8 @@ ATileManager2::ATileManager2()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
+
+	Root->SetMobility(EComponentMobility::Static);
 	SetRootComponent(Root);
 }
 
@@ -58,7 +60,6 @@ void ATileManager2::Tick(float DeltaTime)
 }
 
 
-
 void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
@@ -80,8 +81,6 @@ void ATileManager2::FindingWallOnTile(ATile* TileActor)
 		UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
 	}
 }
-
-
 
 // @Param Vector : Tile's World Location;
 int32 ATileManager2::ConvertVectorToIndex(FVector WorldLocation) 
@@ -113,12 +112,12 @@ void ATileManager2::ConvertVectorToCoord(FVector WorldLocation, OUT int& CoordX,
 
 void ATileManager2::GetNearbyTiles(ATile* StartingTile, int32 MovingAbility, TArray<ATile*>& AvailableTiles)
 {
+	TileIndexInRange.Empty();
 	int OverlappedTileIndex = ConvertVectorToIndex(StartingTile->GetActorLocation());
 	
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
 	ChildActors[OverlappedTileIndex];
-
 
 	int CurrentStep = MovingAbility;
 	for (int32 i = MovingAbility; i >= -MovingAbility; i--) 
@@ -137,7 +136,7 @@ void ATileManager2::GetNearbyTiles(ATile* StartingTile, int32 MovingAbility, TAr
 			else if (TargetIndex < 0) {   //타일 크기를 벗어날때 제외
 				continue;
 			}
-			else if(!IsSameLine(OverlappedTileIndex, i , TargetIndex))   //오른쪽으로 더이상 타일의 진행이 필요없을때
+			else if(!IsSameLine(OverlappedTileIndex, i , TargetIndex)) 
 			{	
 				continue;
 			}
@@ -147,14 +146,18 @@ void ATileManager2::GetNearbyTiles(ATile* StartingTile, int32 MovingAbility, TAr
 			}
 
 			ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]);
-			//PathArr[]ComputeManhattanDistance(OverlappedTileIndex, TargetIndex);
 			TileIndexInRange.Add(TargetIndex);
-			AvailableTiles.Add(TargetTile);
+			
 		}	
-	}
 
-	//TileIndexInRange
-	FindPath(OverlappedTileIndex, TileIndexInRange);
+		//여기 TileIndexInRange 크기 출력
+	}
+	UE_LOG(LogTemp, Warning, L"%d 개의 Wall!", TileIndexInRange.Num());
+
+	//UE_LOG(LogTemp, Warning, L"%d", TileIndexInRange.Num());
+	//FindPath(OverlappedTileIndex, TileIndexInRange);
+	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, TileIndexInRange);
+
 }
 
 
@@ -171,6 +174,14 @@ void ATileManager2::ClearAllTiles() {
 		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		TileMesh->SetVisibility(false);
 	}
+
+	for (Path path : PathArr) {
+		path.Clear();
+	}
+	OpenList.Empty();
+	ClosedList.Empty();
+	//TileIndexInRange.Empty();
+
 }
 
 
@@ -179,15 +190,36 @@ int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetInde
 	return ((FMath::Abs((StartIndex - TargetIndex)) / x) + (FMath::Abs((StartIndex - TargetIndex)) % x)) * TileSize;
 }
 
-void ATileManager2::FindPath(int32 StartingIndex, TArray<int32> TileIndexInRange)
+TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,TArray<int32> TileIndexInRange)
 {
+	TArray<ATile*> AvailableTiles;
+	TArray<AActor*> ChildActors;
+	GetAttachedActors(ChildActors);
+
+	ClosedList.Add(StartingIndex);
 	for (int32 TargetIndex : TileIndexInRange) {
-		int32 CurrentTileIndex = StartingIndex;
 		
+		bool bFindPath = UpdatePathInfo(StartingIndex,StartingIndex,TargetIndex);
+
+		if (bFindPath) 
+		{
+			UE_LOG(LogTemp, Warning, L"%d is Available", TargetIndex);
+			int32 PathLenght = PathArr[TargetIndex].OnTheWay.Num();
+			for (int i = 0; i < PathLenght; i++) {
+				UE_LOG(LogTemp, Warning, L"%d", PathArr[TargetIndex].OnTheWay[i]);
+			}
+			if (PathLenght <= MovingAbility) {
+				AvailableTiles.Add(Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]));
+			}
+
+		}
+		ClearAllTiles();
+
 	}
+	return AvailableTiles;
 }
 
-void ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 TargetIndex)
+bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 TargetIndex)
 {
 	UpdateCardinalPath(CurrentIndex, TargetIndex);
 
@@ -195,30 +227,37 @@ void ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 
 
 	//종료조건
-	if (OpenList.Find(TargetIndex)) 
+	if (OpenList.Contains(TargetIndex)) 
 	{
 		int32 PathGuide= TargetIndex;
+		PathGuide = PathArr[PathGuide].ParentIndex;
+
+		//UE_LOG(LogTemp, Warning, L"%d", PathArr[PathGuide].ParentIndex)
+
+
 		while(PathGuide != StartIndex)
 		{
 			PathGuide = PathArr[PathGuide].ParentIndex;
 			PathArr[TargetIndex].OnTheWay.Add(PathGuide);
 		}
 		//성공
-		return;
+		return true;
 	}
 	else if (OpenList.Num() == 0) 
 	{
 		//실패
-		return;
+		return false;
 	}
+	else 
+	{
+		//F비용 가장 낮은걸로 진행
 
-	//F비용 가장 낮은걸로 진행
-	int NextPathIndex = FindMinCostFIndex();
-	OpenList.Remove(NextPathIndex);
-	ClosedList.Add(NextPathIndex);
+		int NextPathIndex = FindMinCostFIndex();
+		OpenList.Remove(NextPathIndex);
+		ClosedList.Add(NextPathIndex);
 
-	UpdatePathInfo(NextPathIndex, TargetIndex);
-	//CurrentNode 이동..
+		return UpdatePathInfo(NextPathIndex, StartIndex, TargetIndex);
+	}
 }
 
 void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
@@ -231,9 +270,9 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 	int32 NewCostG = PathArr[CurrentIndex].CostG + TileSize;
 
 	//동
-	if (CheckWithinBounds(EastIndex) && IsSameLine(CurrentIndex, 0, EastIndex) && ! ClosedList.Find(EastIndex)) {
+	if (CheckWithinBounds(EastIndex) && IsSameLine(CurrentIndex, 0, EastIndex) && !ClosedList.Contains(EastIndex) && TileIndexInRange.Contains(EastIndex)) {
 		//Open List 안에 존재할때
-		if (OpenList.Find(EastIndex)) {
+		if (OpenList.Contains(EastIndex)) {
 			//갱신 필요할때
 			if (PathArr[EastIndex].CostG > NewCostG) {
 				PathArr[EastIndex].CostG = NewCostG;
@@ -253,8 +292,8 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 	}
 	
 	//서
-	if (CheckWithinBounds(WestIndex) && IsSameLine(CurrentIndex, 0, WestIndex) && !ClosedList.Find(WestIndex)) {
-		if (OpenList.Find(WestIndex)) {
+	if (CheckWithinBounds(WestIndex) && IsSameLine(CurrentIndex, 0, WestIndex) && !ClosedList.Contains(WestIndex)&& TileIndexInRange.Contains(WestIndex)) {
+		if (OpenList.Contains(WestIndex)) {
 			//갱신 필요할때
 			if (PathArr[WestIndex].CostG > NewCostG) {
 				PathArr[WestIndex].CostG = NewCostG;
@@ -270,12 +309,14 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 			PathArr[WestIndex].ParentIndex = CurrentIndex;
 
 			OpenList.Add(WestIndex);
+
 		}
 	}
 
 	//남
-	if (CheckWithinBounds(SouthIndex) && IsSameLine(CurrentIndex, -1, SouthIndex) && !ClosedList.Find(SouthIndex)) {
-		if (OpenList.Find(SouthIndex)) {
+	if (CheckWithinBounds(SouthIndex) && IsSameLine(CurrentIndex, -1, SouthIndex) && !ClosedList.Contains(SouthIndex) && TileIndexInRange.Contains(SouthIndex)) {
+
+		if (OpenList.Contains(SouthIndex)) {
 			//갱신 필요할때
 			if (PathArr[SouthIndex].CostG > NewCostG) {
 				PathArr[SouthIndex].CostG = NewCostG;
@@ -295,14 +336,18 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 	}
 
 	//북
-	if (CheckWithinBounds(NorthIndex) && IsSameLine(CurrentIndex, 1, NorthIndex) && !ClosedList.Find(NorthIndex)) {
-		if (OpenList.Find(NorthIndex)) {
+	if (CheckWithinBounds(NorthIndex) && IsSameLine(CurrentIndex, 1, NorthIndex) && !ClosedList.Contains(NorthIndex) && TileIndexInRange.Contains(NorthIndex)) {
+		
+
+		if (OpenList.Contains(NorthIndex)) {
 			//갱신 필요할때
 			if (PathArr[NorthIndex].CostG > NewCostG) {
 				PathArr[NorthIndex].CostG = NewCostG;
 				PathArr[NorthIndex].CostF = PathArr[NorthIndex].CostG + PathArr[NorthIndex].CostH;
 				PathArr[NorthIndex].ParentIndex = CurrentIndex;
+
 			}
+
 		}
 		else // OpenList 에 존재하지 않아서 새로 추가해야 하는 경우
 		{
@@ -312,8 +357,14 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 			PathArr[NorthIndex].ParentIndex = CurrentIndex;
 
 			OpenList.Add(NorthIndex);
+
+
 		}
 	}
+	else {
+	}
+
+
 }
 
 void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
@@ -332,12 +383,12 @@ void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
 	// 5번 조건 : 타일이 ClosedList 에 있지 않은지 확인
 
 	//북동  
-	if (CheckWithinBounds(NorthEastIndex) && IsSameLine(CurrentIndex, 1, NorthEastIndex) && TileIndexInRange.Find(NorthEastIndex - 1) &&
-		TileIndexInRange.Find(NorthEastIndex - x) && !ClosedList.Find(NorthEastIndex))
+	if (CheckWithinBounds(NorthEastIndex) && IsSameLine(CurrentIndex, 1, NorthEastIndex) && TileIndexInRange.Contains(NorthEastIndex - 1) &&
+		TileIndexInRange.Contains(NorthEastIndex - x) && !ClosedList.Contains(NorthEastIndex) && !PathArr[NorthEastIndex].bWall)
 	{
 
 		//이미 OpenList 에 존재하는 Tile일경우 갱신 여부
-		if (OpenList.Find(NorthEastIndex))
+		if (OpenList.Contains(NorthEastIndex))
 		{
 			// CostG의 비교 결과  갱신이 필요한 경우
 			if (PathArr[NorthEastIndex].CostG > NewCostG) {
@@ -358,12 +409,12 @@ void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
 	}
 
 	//북서
-	if (CheckWithinBounds(NorthWestIndex) && IsSameLine(CurrentIndex, 1, NorthEastIndex) && TileIndexInRange.Find(NorthWestIndex + 1) &&
-		TileIndexInRange.Find(NorthWestIndex - x) && !ClosedList.Find(NorthWestIndex))
+	if (CheckWithinBounds(NorthWestIndex) && IsSameLine(CurrentIndex, 1, NorthEastIndex) && TileIndexInRange.Contains(NorthWestIndex + 1) &&
+		TileIndexInRange.Contains(NorthWestIndex - x) && !ClosedList.Contains(NorthWestIndex) && !PathArr[NorthWestIndex].bWall)
 	{
 
 		//이미 OpenList 에 존재하는 Tile일경우 갱신 여부
-		if (OpenList.Find(NorthWestIndex))
+		if (OpenList.Contains(NorthWestIndex))
 		{
 			// CostG의 비교 결과  갱신이 필요한 경우
 			if (PathArr[NorthWestIndex].CostG > NewCostG) {
@@ -385,11 +436,11 @@ void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
 
 	
 	//남동
-	if (CheckWithinBounds(SouthEastIndex) && IsSameLine(CurrentIndex, -1, SouthEastIndex) && TileIndexInRange.Find(SouthEastIndex - 1) &&
-		TileIndexInRange.Find(NorthEastIndex + x) && !ClosedList.Find(SouthEastIndex))
+	if (CheckWithinBounds(SouthEastIndex) && IsSameLine(CurrentIndex, -1, SouthEastIndex) && TileIndexInRange.Contains(SouthEastIndex - 1) &&
+		TileIndexInRange.Contains(NorthEastIndex + x) && !ClosedList.Contains(SouthEastIndex) && !PathArr[SouthEastIndex].bWall)
 	{
 
-		if (OpenList.Find(SouthEastIndex))
+		if (OpenList.Contains(SouthEastIndex))
 		{
 			if (PathArr[SouthEastIndex].CostG > NewCostG) {
 				PathArr[SouthEastIndex].CostG = PathArr[CurrentIndex].CostG + (int)(TileSize*1.5);
@@ -409,12 +460,12 @@ void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
 	}
 
 	//남서
-	if (CheckWithinBounds(SouthWestIndex) && IsSameLine(CurrentIndex, -1, SouthWestIndex) && TileIndexInRange.Find(SouthWestIndex + 1) &&
-		TileIndexInRange.Find(SouthWestIndex + x) && !ClosedList.Find(SouthWestIndex))
+	if (CheckWithinBounds(SouthWestIndex) && IsSameLine(CurrentIndex, -1, SouthWestIndex) && TileIndexInRange.Contains(SouthWestIndex + 1) &&
+		TileIndexInRange.Contains(SouthWestIndex + x) && !ClosedList.Contains(SouthWestIndex) && !PathArr[SouthWestIndex].bWall)
 	{
 
 		//이미 OpenList 에 존재하는 Tile일경우 갱신 여부
-		if (OpenList.Find(SouthWestIndex))
+		if (OpenList.Contains(SouthWestIndex))
 		{
 			// CostG의 비교 결과  갱신이 필요한 경우
 			if (PathArr[SouthWestIndex].CostG > NewCostG) {
