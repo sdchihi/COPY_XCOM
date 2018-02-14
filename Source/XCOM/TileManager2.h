@@ -26,7 +26,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void GetNearbyTiles(ATile* StartingTile, int32 MovingAbility, TArray<ATile*>& AvailableTiles);
+	void GetAvailableTiles(ATile* StartingTile, int32 MovingAbility, TArray<ATile*>& AvailableTiles);
 
 	int32 ConvertVectorToIndex(FVector WorldLocation);
 
@@ -80,7 +80,12 @@ private:
 
 	void UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex);
 
+	void UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPathIndex, int32 TargetIndex);
+
 	void UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex);
+
+	void UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPathIndex, int32 TargetIndex);
+
 
 	bool CheckWithinBounds(int32 TileIndex);
 

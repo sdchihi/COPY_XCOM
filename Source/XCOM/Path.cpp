@@ -23,4 +23,6 @@ void Path::Clear() {
 	CostG = 0;
 
 	CostH = 0;
+
+	OnTheWay.Empty();
 }

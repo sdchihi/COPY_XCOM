@@ -14,6 +14,8 @@ class XCOM_API ATile : public AStaticMeshActor
 {
 	GENERATED_BODY()
 	
-	
+public:
+	ATile();
+
 	
 };

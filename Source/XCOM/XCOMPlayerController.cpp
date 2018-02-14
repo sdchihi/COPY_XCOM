@@ -41,15 +41,17 @@ void AXCOMPlayerController::SetupInputComponent() {
 void AXCOMPlayerController::OnClick()
 {
 	FHitResult TraceResult;
-	GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, TraceResult);
+	GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, true, TraceResult);
 	AActor* actor= TraceResult.GetActor();
+	//FHitResult::
 
 	if (!ensure(TraceResult.GetActor())) {
 		return;
 	}
 	else {
 		ACustomThirdPerson* TargetCharacter = Cast<ACustomThirdPerson>(actor);
-		if (IsValid(TargetCharacter)) {
+		ATile* TargetTile = Cast<ATile>(actor);
+		if (TargetCharacter) {
 			DisableInput(this);
 			SetViewTargetWithBlend(TargetCharacter, 0.5);
 
@@ -57,6 +59,13 @@ void AXCOMPlayerController::OnClick()
 			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
 
 			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
+			UE_LOG(LogTemp, Warning, L"Pawn Clicked!");
+		}
+		else if (TargetTile) {
+			UE_LOG(LogTemp, Warning, L"Tile Clicked!");
+		}
+		else {
+			UE_LOG(LogTemp, Warning, L"%s", *actor->GetName());
 		}
 	}
 }
@@ -75,7 +84,7 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 	if (OverlappedTile.Num() == 0) { return; }
 
 	TArray<ATile*> TilesInRange;
-	TileManager->GetNearbyTiles(Cast<ATile>(OverlappedTile[0]), 4, TilesInRange);
+	TileManager->GetAvailableTiles(Cast<ATile>(OverlappedTile[0]), 4, TilesInRange);
 
 
 	for (ATile* Tile : TilesInRange) {
