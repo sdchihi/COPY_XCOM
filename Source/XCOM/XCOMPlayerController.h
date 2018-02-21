@@ -38,4 +38,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	ATileManager2* TileManager = nullptr;
+
+	ACustomThirdPerson* SelectedCharacter= nullptr;
+
 };

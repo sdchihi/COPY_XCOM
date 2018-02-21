@@ -7,6 +7,7 @@
 #include "Classes/Kismet/GameplayStatics.h"
 #include "TileManager2.h"
 #include "Tile.h"
+#include "PawnController.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -43,7 +44,6 @@ void AXCOMPlayerController::OnClick()
 	FHitResult TraceResult;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, true, TraceResult);
 	AActor* actor= TraceResult.GetActor();
-	//FHitResult::
 
 	if (!ensure(TraceResult.GetActor())) {
 		return;
@@ -59,12 +59,60 @@ void AXCOMPlayerController::OnClick()
 			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
 
 			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
+			SelectedCharacter = TargetCharacter;
+
+
 			UE_LOG(LogTemp, Warning, L"Pawn Clicked!");
+
+			UE_LOG(LogTemp, Warning, L"Controller Name  : %s", *SelectedCharacter->GetController()->GetName());
+
 		}
 		else if (TargetTile) {
-			UE_LOG(LogTemp, Warning, L"Tile Clicked!");
-			ACustomThirdPerson* Player = Cast<ACustomThirdPerson>(GetPawn());
-			Player->MoveToLocation(TargetTile->GetActorLocation());
+			if (!SelectedCharacter) { 
+				UE_LOG(LogTemp, Warning, L"SelectedCharacter invalid!");
+				return; 
+			}
+			//오류 검출
+
+			UE_LOG(LogTemp, Warning, L"%d Tile Clicked!", TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation()));
+
+
+			APawnController* PawnController = Cast<APawnController>(SelectedCharacter->GetController());
+			
+			
+			int32 TileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
+			UE_LOG(LogTemp, Warning, L"Path Length : %d", TileManager->PathArr[TileIndex].OnTheWay.Num());
+			for (int i = TileManager->PathArr[TileIndex].OnTheWay.Num() - 1; i >= 0; i--) {
+				
+				FVector TargetLocation = TileManager->ConvertIndexToVector(TileManager->PathArr[TileIndex].OnTheWay[i]);
+				//UE_LOG(LogTemp, Warning, L"이 타일로 움직입니다 : %d", PathIndex);
+
+				PawnController->MoveToTargetLocation(TargetLocation);
+				FTimerHandle UnusedHandle;
+				GetWorldTimerManager().SetTimer(UnusedHandle, 2.5, false);
+
+				UE_LOG(LogTemp, Warning, L"한번");
+
+				//여기
+			}
+
+			//if (PawnController) {
+			//	int32 PathIndex = TileManager->PathArr[TileIndex].OnTheWay[0];
+			//	FVector TargetLocation = TileManager->ConvertIndexToVector(PathIndex);
+			//	PawnController->MoveToTargetLocation(TargetLocation);
+			//	
+			//	UE_LOG(LogTemp, Warning, L"TargetIndex : %d     Target Location : %s    ", PathIndex, *TargetLocation.ToString());
+			//}
+			//else {
+			//	UE_LOG(LogTemp, Warning, L"Fxxxx");
+			//}
+
+			
+			for (int i = 0; i < TileManager->PathArr[TileIndex].OnTheWay.Num(); i++) {
+				UE_LOG(LogTemp, Warning, L"%d", TileManager->PathArr[TileIndex].OnTheWay[i]);
+
+			}
+
 		}
 		else {
 			UE_LOG(LogTemp, Warning, L"%s", *actor->GetName());
@@ -75,10 +123,10 @@ void AXCOMPlayerController::OnClick()
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter) 
 {
 
-	Possess(TargetCharacter);
+	//Possess(TargetCharacter);
 	EnableInput(this);
 
-	TileManager->ClearAllTiles();
+	TileManager->ClearAllTiles(true);
 
 	TArray<AActor*> OverlappedTile;
 	TargetCharacter->GetOverlappingActors(OverlappedTile);

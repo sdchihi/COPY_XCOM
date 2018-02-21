@@ -97,7 +97,7 @@ FVector ATileManager2::ConvertIndexToVector(int32 Index)
 	int collum = Index % x;
 	int row = Index / x;
 
-	return FVector(collum*TileSize * 110, row*TileSize * 110, Root->GetComponentLocation().Z);
+	return FVector(collum*TileSize, row*TileSize, Root->GetComponentLocation().Z);
 }
 
 void ATileManager2::ConvertVectorToCoord(FVector WorldLocation, OUT int& CoordX, OUT int& CoordY) {
@@ -159,7 +159,7 @@ bool ATileManager2::IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 T
 	return ((OverlappedTileIndex / x) + RowNumber) == (TargetIndex / x);
 }
 
-void ATileManager2::ClearAllTiles() {
+void ATileManager2::ClearAllTiles(bool bClearAll) {
 	TArray<AActor*> ChildTiles;
 	GetAttachedActors(ChildTiles);
 
@@ -168,13 +168,22 @@ void ATileManager2::ClearAllTiles() {
 		TileMesh->SetVisibility(false);
 	}
 
-	for (Path& path : PathArr) {
-		path.Clear();
+	if (bClearAll) {
+		for (Path& path : PathArr) {
+			path.Clear(true);
+		}
 	}
+	else {
+		for (Path& path : PathArr) {
+			path.Clear();
+		}
+	}
+
 
 	OpenList.Empty();
 	ClosedList.Empty();
 }
+
 
 
 int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetIndex) 
@@ -184,6 +193,7 @@ int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetInde
 
 TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,TArray<int32> TileIndexInRange)
 {
+
 	TArray<ATile*> AvailableTiles;
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
@@ -222,8 +232,8 @@ bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 
 		while(PathGuide != StartIndex)
 		{
-			PathGuide = PathArr[PathGuide].ParentIndex;
 			PathArr[TargetIndex].OnTheWay.Add(PathGuide);
+			PathGuide = PathArr[PathGuide].ParentIndex;
 		}
 		return true;
 	}

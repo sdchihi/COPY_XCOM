@@ -36,7 +36,10 @@ public:
 
 	bool IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex);
 	
-	void ClearAllTiles();
+	void ClearAllTiles(bool bClearAll = false);
+
+	TArray<Path> PathArr;
+
 
 private:
 	// º¯¼ö
@@ -50,7 +53,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 y = 10;
 	
-	TArray<Path> PathArr;
 
 	TArray<int32> OpenList;
 

@@ -15,7 +15,7 @@ Path::~Path()
 }
 
 
-void Path::Clear() {
+void Path::Clear(bool bClearAll) {
 	ParentIndex = 0;
 
 	CostF = 0;
@@ -24,5 +24,8 @@ void Path::Clear() {
 
 	CostH = 0;
 
-	OnTheWay.Empty();
+	if (bClearAll) 
+	{
+		OnTheWay.Empty();
+	}
 }
