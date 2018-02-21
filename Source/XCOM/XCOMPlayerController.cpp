@@ -63,6 +63,8 @@ void AXCOMPlayerController::OnClick()
 		}
 		else if (TargetTile) {
 			UE_LOG(LogTemp, Warning, L"Tile Clicked!");
+			ACustomThirdPerson* Player = Cast<ACustomThirdPerson>(GetPawn());
+			Player->MoveToLocation(TargetTile->GetActorLocation());
 		}
 		else {
 			UE_LOG(LogTemp, Warning, L"%s", *actor->GetName());
@@ -91,5 +93,8 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 		UStaticMeshComponent* TileMesh =Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		TileMesh->SetVisibility(true);
 	}
+
+	//ACharacter::MoveT
+
 }
 

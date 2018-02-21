@@ -3,20 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "CustomThirdPerson.generated.h"
+#include "GameFramework/Pawn.h"
+#include "PlayerPawn.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
+class USceneComponent;
 
 UCLASS()
-class XCOM_API ACustomThirdPerson : public ACharacter
+class XCOM_API APlayerPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	ACustomThirdPerson();
+	// Sets default values for this pawn's properties
+	APlayerPawn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,24 +29,19 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	bool GetIsSameTeam() { return bIsSameTeam; };
-
-	void MoveToLocation(FVector Location);
-
-
+	
 private:
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* RootSceneComponent = nullptr;
+
+
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-	USpringArmComponent* SpringArm= nullptr;
+	USpringArmComponent* SpringArm = nullptr;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* FollowCamera = nullptr;
 	
-	UPROPERTY(EditDefaultsOnly)
-	bool bIsSameTeam = true;
-
-	int step = 0;
-
 	
 };
