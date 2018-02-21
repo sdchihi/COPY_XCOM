@@ -18,9 +18,6 @@ ACustomThirdPerson::ACustomThirdPerson()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	
-	
-	//GetMovementComponent()->MoveTo
-	//GetCharacterMovement()->
 }
 
 // Called when the game starts or when spawned
@@ -40,7 +37,6 @@ void ACustomThirdPerson::Tick(float DeltaTime)
 void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 void ACustomThirdPerson::MoveToLocation(FVector Location) {

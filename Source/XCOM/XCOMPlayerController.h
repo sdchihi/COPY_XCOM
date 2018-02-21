@@ -8,6 +8,7 @@
 
 class ATileManager2;
 class ACustomThirdPerson;
+class Path;
 /**
  * 
  */
@@ -40,5 +41,8 @@ private:
 	ATileManager2* TileManager = nullptr;
 
 	ACustomThirdPerson* SelectedCharacter= nullptr;
+
+
+	void MovingStepByStep(Path Target, int32 CurrentIndex);
 
 };

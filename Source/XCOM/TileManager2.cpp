@@ -10,7 +10,7 @@
 
 ATileManager2::ATileManager2()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 
 	Root->SetMobility(EComponentMobility::Static);
@@ -179,7 +179,6 @@ void ATileManager2::ClearAllTiles(bool bClearAll) {
 		}
 	}
 
-
 	OpenList.Empty();
 	ClosedList.Empty();
 }
@@ -228,8 +227,8 @@ bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 	if (OpenList.Contains(TargetIndex)) 
 	{
 		int32 PathGuide= TargetIndex;
+		PathArr[TargetIndex].OnTheWay.Add(TargetIndex);
 		PathGuide = PathArr[PathGuide].ParentIndex;
-
 		while(PathGuide != StartIndex)
 		{
 			PathArr[TargetIndex].OnTheWay.Add(PathGuide);
