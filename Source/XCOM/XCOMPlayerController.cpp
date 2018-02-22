@@ -22,6 +22,10 @@ void AXCOMPlayerController::BeginPlay()
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
+	
+
+	FInputModeGameAndUI inputMode;
+	inputMode.SetLockMouseToViewport(true);
 
 
 
@@ -39,7 +43,10 @@ void AXCOMPlayerController::Tick(float DeltaTime)
 
 void AXCOMPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
+
 	this->InputComponent->BindAction("Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
+
+
 }
 
 

@@ -27,15 +27,14 @@ public:
 	virtual void BeginPlay() override;
 
 
+
 protected:
 	virtual void SetupInputComponent() override;
 
 
 private:
-	void OnClick();
+	//변수
 
-	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
-	
 
 	UPROPERTY(VisibleAnywhere)
 	ATileManager2* TileManager = nullptr;
@@ -43,6 +42,15 @@ private:
 	ACustomThirdPerson* SelectedCharacter= nullptr;
 
 
+	//메소드
+
+	void OnClick();
+
+	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
+
 	void MovingStepByStep(Path Target, int32 CurrentIndex);
+
+	
+
 
 };

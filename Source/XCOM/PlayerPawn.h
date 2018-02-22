@@ -30,7 +30,21 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float CameraMovementSpeed = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float CameraZoomSpeed = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float CameraScrollBoundary =25;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float CameraHoverSpeed = 5;
+
 private:
+
+	//변수
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* RootSceneComponent = nullptr;
@@ -42,6 +56,33 @@ private:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* FollowCamera = nullptr;
+
+	bool bCanScroll = false;
+
+	bool bCanHover = false;
 	
+
+
+	// 메소드
+
+	UFUNCTION()
+	void CameraZoomIn();
+
+	UFUNCTION()
+	void CameraZoomOut();
+
+	UFUNCTION()
+	void MoveCameraForward(float Direction);
+
+	UFUNCTION()
+	void MoveCameraRight(float Direction);
+
+	UFUNCTION()
+	void HoverCamera(float AxisValue);
+
+	UFUNCTION()
+	void EnableHover();
 	
+	UFUNCTION()
+	void DisableHover();
 };
