@@ -62,8 +62,8 @@ void ATileManager2::Tick(float DeltaTime)
 
 void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
-	PathArr[OverlappedTileIndex].bWall = true;
+	//int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
+	//PathArr[OverlappedTileIndex].bWall = true;
 }
 
 
