@@ -37,5 +37,8 @@ public:
 	TArray<int32> OnTheWay;
 
 
+
+	TArray<int32, int32> OnTheeeWay;
+
 	void Clear(bool bClearAll = false);
 };

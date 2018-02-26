@@ -19,15 +19,10 @@ void AXCOMPlayerController::BeginPlay()
 	Super::BeginPlay();
 	PrimaryActorTick.bCanEverTick = false;
 
+
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
-	
-
-	FInputModeGameAndUI inputMode;
-	inputMode.SetLockMouseToViewport(true);
-
-
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
@@ -45,8 +40,6 @@ void AXCOMPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
 
 	this->InputComponent->BindAction("Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
-
-
 }
 
 
@@ -137,5 +130,52 @@ void AXCOMPlayerController::MovingStepByStep(Path Target, int32 CurrentIndex)
 	{
 		EnableInput(this);
 		TileManager->ClearAllTiles(true);
+		CheckWallAround();
+	}
+}
+
+void AXCOMPlayerController::CheckWallAround() 
+{
+	if (!SelectedCharacter) { return; }
+
+	FVector CharacterPos = SelectedCharacter->GetActorLocation();
+	int32 CharacterTileIndex = TileManager->ConvertVectorToIndex(CharacterPos);
+	
+	int32 EastIndex = CharacterTileIndex + 1;
+	int32 WestIndex = CharacterTileIndex - 1;
+	int32 SouthIndex = CharacterTileIndex - TileManager->GetGridXLength();
+	int32 NorthIndex = CharacterTileIndex + TileManager->GetGridXLength();
+
+	CheckWallAroundOneDirection(CharacterTileIndex, EastIndex);
+	CheckWallAroundOneDirection(CharacterTileIndex, SouthIndex);
+	CheckWallAroundOneDirection(CharacterTileIndex, NorthIndex);
+	CheckWallAroundOneDirection(CharacterTileIndex, WestIndex);
+}
+
+void AXCOMPlayerController::CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex)
+{
+	int32 RowNumber = 0;
+	ECoverDirection CoverDirection = ECoverDirection::None;
+	if (CardinalIndex == (CharacterIndex + TileManager->GetGridXLength())) {
+		CoverDirection = ECoverDirection::North; // ºÏ
+		RowNumber = 1;
+	}
+	else if (CardinalIndex == (CharacterIndex - TileManager->GetGridXLength())) {
+		CoverDirection = ECoverDirection::South; // ³²
+		RowNumber = -1;
+	}
+	else {
+		if (CardinalIndex == CharacterIndex + 1) {
+			CoverDirection = ECoverDirection::East; // µ¿
+		}
+		else {
+			CoverDirection = ECoverDirection::West;	// ¼­
+		}
+		RowNumber = 0;
+	}
+
+	if (TileManager->CheckWithinBounds(CardinalIndex) && TileManager->IsSameLine(CharacterIndex, RowNumber, CardinalIndex) &&
+		TileManager->PathArr[CardinalIndex].bWall) {
+		SelectedCharacter->CoverDirection = CoverDirection;
 	}
 }

@@ -10,6 +10,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
 
+
 UCLASS()
 class XCOM_API APlayerPawn : public APawn
 {
@@ -41,6 +42,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraHoverSpeed = 5;
+
 
 private:
 

@@ -13,6 +13,7 @@ ATileManager2::ATileManager2()
 	PrimaryActorTick.bCanEverTick = false;
 	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 
+
 	Root->SetMobility(EComponentMobility::Static);
 	SetRootComponent(Root);
 }
@@ -44,7 +45,10 @@ void ATileManager2::BeginPlay()
 
 		// Delegate 지정
 		ActorMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ATileManager2::OnOverlapBegin);
-		
+		ActorMeshComponent->OnBeginCursorOver.AddDynamic(this, &ATileManager2::MouseOnTile);
+		ActorMeshComponent->OnEndCursorOver.AddDynamic(this,& ATileManager2::EndMouseOnTile);
+
+
 		//Path 정보를 담는 Array 초기화
 		
 		PathArr.Add(Path());
@@ -62,8 +66,8 @@ void ATileManager2::Tick(float DeltaTime)
 
 void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
-	//PathArr[OverlappedTileIndex].bWall = true;
+	int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
+	PathArr[OverlappedTileIndex].bWall = true;
 }
 
 
@@ -406,3 +410,31 @@ int32 ATileManager2::FindMinCostFIndex() {
 
 	return MinCostPathIndex;
 }
+
+
+void ATileManager2::SetDecalVisibilityOnTile(TArray<int32> PathIndices,int32 NumberOfTimes, bool bVisibility) {
+	if (NumberOfTimes == 0) { return; }
+
+	TArray<AActor*> ChildActors;
+	GetAttachedActors(ChildActors);
+
+	int32 TargetTileIndex = PathIndices[NumberOfTimes-1];
+
+	ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
+	Tile->SetDecalVisibility(bVisibility);
+	SetDecalVisibilityOnTile(PathIndices, NumberOfTimes-1 , bVisibility);
+}
+
+void ATileManager2::MouseOnTile(UPrimitiveComponent* OverlappedComponent) {
+	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();
+	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
+
+	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWay, PathArr[TileIndex].OnTheWay.Num(), true);
+};
+
+void ATileManager2::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
+	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();
+	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
+
+	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWay, PathArr[TileIndex].OnTheWay.Num(), false);
+};

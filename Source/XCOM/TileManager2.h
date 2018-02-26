@@ -8,6 +8,7 @@
 #include "TileManager2.generated.h"
 
 class ATile;
+class UPrimitiveComponent;
 class UInstancedStaticMeshComponent;
 
 
@@ -36,10 +37,22 @@ public:
 
 	bool IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex);
 	
+	bool CheckWithinBounds(int32 TileIndex);
+
 	void ClearAllTiles(bool bClearAll = false);
 
 	TArray<Path> PathArr;
 
+	int32 GetGridXLength() { return x; }
+
+	void SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility);
+
+
+	UFUNCTION()
+	void MouseOnTile(UPrimitiveComponent* OverlappedComponent);
+
+	UFUNCTION()
+	void EndMouseOnTile(UPrimitiveComponent* OverlappedComponent);
 
 private:
 	// º¯¼ö
@@ -71,6 +84,7 @@ private:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+
 	int32 ComputeManhattanDistance(int32 StartIndex, int32 TargetIndex);
 
 	void FindingWallOnTile(ATile* TileActor);
@@ -88,9 +102,7 @@ private:
 
 	void UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPathIndex, int32 TargetIndex);
 
-
-	bool CheckWithinBounds(int32 TileIndex);
-
 	int32 FindMinCostFIndex();
 
+	
 };

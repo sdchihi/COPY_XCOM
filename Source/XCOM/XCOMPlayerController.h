@@ -50,7 +50,7 @@ private:
 
 	void MovingStepByStep(Path Target, int32 CurrentIndex);
 
-	
+	void CheckWallAround();
 
-
+	void CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex);
 };

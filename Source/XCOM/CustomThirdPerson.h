@@ -9,6 +9,17 @@
 class USpringArmComponent;
 class UCameraComponent;
 
+UENUM(BlueprintType)
+enum class ECoverDirection : uint8
+{
+	South,
+	North,
+	East,
+	West,
+	None
+};
+
+
 UCLASS()
 class XCOM_API ACustomThirdPerson : public ACharacter
 {
@@ -29,9 +40,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	bool GetIsSameTeam() { return bIsSameTeam; };
+	bool GetIsPlayerTeam() { return bIsPlayerTeam; };
 
 	void MoveToLocation(FVector Location);
+
+	ECoverDirection CoverDirection = ECoverDirection::None;
 
 
 private:
@@ -42,10 +55,19 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* FollowCamera = nullptr;
 	
-	UPROPERTY(EditDefaultsOnly)
-	bool bIsSameTeam = true;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bIsPlayerTeam = true;
+
+	UPROPERTY(EditDefaultsOnly)
 	int step = 0;
 
-	
+	UPROPERTY(EditDefaultsOnly)
+	int MaxHP = 100;
+
+	UPROPERTY(EditDefaultsOnly)
+	int CurrentHP;
+
+	bool bCanAction = true;
+
 };

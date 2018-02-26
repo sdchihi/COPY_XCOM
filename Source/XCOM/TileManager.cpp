@@ -38,7 +38,6 @@ void ATileManager::BeginPlay()
 void ATileManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 //TODO 배열에 담긴 액터들 위치 Array

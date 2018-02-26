@@ -20,18 +20,23 @@ ACustomThirdPerson::ACustomThirdPerson()
 	
 }
 
-// Called when the game starts or when spawned
 void ACustomThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
 }
  
-// Called every frame
 void ACustomThirdPerson::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//if (CoverDirection != ECoverDirection::None) {
+	//	UE_LOG(LogTemp, Warning, L"###");
+	//}
+
 }
+
 	
 // Called to bind functionality to input
 void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
