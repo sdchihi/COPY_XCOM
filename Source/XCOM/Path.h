@@ -4,6 +4,18 @@
 
 #include "CoreMinimal.h"
 
+
+enum class EPathDirection : uint8 {
+	West,
+	East,
+	North,
+	South,
+	NorthWest,
+	NorthEast,
+	SouthWest,
+	SouthEast,
+	None
+};
 /**
  * 
  */
@@ -36,9 +48,10 @@ public:
 
 	TArray<int32> OnTheWay;
 
+	TMap<int32, EPathDirection> OnTheWayMap;
 
+	EPathDirection PathDirection; 
 
-	TArray<int32, int32> OnTheeeWay;
 
 	void Clear(bool bClearAll = false);
 };

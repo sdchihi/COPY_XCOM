@@ -45,7 +45,18 @@ public:
 
 	int32 GetGridXLength() { return x; }
 
-	void SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility);
+	//void SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility);
+
+
+	//UFUNCTION()
+	//void MouseOnTile(UPrimitiveComponent* OverlappedComponent);
+
+	//UFUNCTION()
+	//void EndMouseOnTile(UPrimitiveComponent* OverlappedComponent);
+
+
+
+	void SetDecalVisibilityOnTile(TMap<int32, EPathDirection> PathInfo, int32 NumberOfTimes, bool bVisibility);
 
 
 	UFUNCTION()
@@ -53,6 +64,8 @@ public:
 
 	UFUNCTION()
 	void EndMouseOnTile(UPrimitiveComponent* OverlappedComponent);
+
+
 
 private:
 	// º¯¼ö

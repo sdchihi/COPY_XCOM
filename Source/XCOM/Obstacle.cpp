@@ -11,13 +11,11 @@ void  AObstacle::BeginPlay() {
 
 	UStaticMeshComponent* RootMeshComponent = Cast<UStaticMeshComponent>(GetRootComponent());
 	if (!ensure(RootMeshComponent)) {
-		UE_LOG(LogTemp, Warning, L"!!!");
 		return;
 	}
 	//RootMeshComponent->OnComponentHit.AddDynamic(this, &AObstacle::OnHit); 
 
 
-	UE_LOG(LogTemp, Warning, L"!!!2");
 
 };
 

@@ -27,6 +27,7 @@ void Path::Clear(bool bClearAll) {
 	if (bClearAll) 
 	{
 		OnTheWay.Empty();
+		OnTheWayMap.Empty();
 	}
-
+	
 }

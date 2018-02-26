@@ -23,3 +23,10 @@ void ATile::SetDecalVisibility(bool Visibility) {
 	DecalComponent->SetVisibility(Visibility);
 }
 
+
+
+void ATile::SetDecalDirection(float NewZAngle) {
+	FRotator NewRotation = DecalComponent->GetComponentRotation();
+	NewRotation.Yaw = NewZAngle;
+	DecalComponent->SetRelativeRotation(NewRotation);
+}
