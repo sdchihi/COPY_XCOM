@@ -296,11 +296,11 @@ void ATileManager2::UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPath
 	else {
 		RowNumber = 0;
 
-		if (TargetIndex == CurrentIndex + 1) {
-			PathDecalDirection = 0;
-		}
-		else {
+		if (CardinalPathIndex == (CurrentIndex + 1)) {
 			PathDecalDirection = 180;
+		}
+		else if(CardinalPathIndex == (CurrentIndex -1)) {
+			PathDecalDirection = 0;
 		}
 	}
 	
@@ -470,7 +470,9 @@ void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 
 
 		ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
 		Tile->SetDecalVisibility(bVisibility);
-		Tile->SetDecalRotationYaw(OnePathInfo.Value);
+		if (bVisibility) {
+			Tile->SetDecalRotationYaw(OnePathInfo.Value);
+		}
 	}
 }
 
