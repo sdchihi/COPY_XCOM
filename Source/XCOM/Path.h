@@ -36,9 +36,9 @@ public:
 
 	TArray<int32> OnTheWay;
 
+	TMap<int32, float> OnTheWayMap;
 
-
-	TArray<int32, int32> OnTheeeWay;
+	float PathDirection;
 
 	void Clear(bool bClearAll = false);
 };

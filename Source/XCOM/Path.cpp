@@ -24,9 +24,12 @@ void Path::Clear(bool bClearAll) {
 
 	CostH = 0;
 
+	PathDirection = 0;
+
 	if (bClearAll) 
 	{
 		OnTheWay.Empty();
+		OnTheWayMap.Empty();
 	}
 
 }

@@ -187,11 +187,12 @@ void ATileManager2::ClearAllTiles(bool bClearAll) {
 	ClosedList.Empty();
 }
 
-
-
 int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetIndex) 
 {
-	return ((FMath::Abs((StartIndex - TargetIndex)) / x) + (FMath::Abs((StartIndex - TargetIndex)) % x)) * TileSize;
+	int32 CollumDifference = FMath::Abs((StartIndex / x) - (TargetIndex / x));
+	int32 RowDifference = FMath::Abs((StartIndex % x) - (TargetIndex % x));
+
+	return (CollumDifference + RowDifference) * TileSize;
 }
 
 TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,TArray<int32> TileIndexInRange)
@@ -232,10 +233,17 @@ bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 	{
 		int32 PathGuide= TargetIndex;
 		PathArr[TargetIndex].OnTheWay.Add(TargetIndex);
+
+		PathArr[TargetIndex].OnTheWayMap.Add(TargetIndex, PathArr[TargetIndex].PathDirection);
+
+
+
 		PathGuide = PathArr[PathGuide].ParentIndex;
 		while(PathGuide != StartIndex)
 		{
 			PathArr[TargetIndex].OnTheWay.Add(PathGuide);
+			PathArr[TargetIndex].OnTheWayMap.Add(PathGuide, PathArr[PathGuide].PathDirection);
+
 			PathGuide = PathArr[PathGuide].ParentIndex;
 		}
 		return true;
@@ -247,7 +255,6 @@ bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 	else 
 	{
 		//F비용 가장 낮은걸로 진행
-
 		int NextPathIndex = FindMinCostFIndex();
 		OpenList.Remove(NextPathIndex);
 		ClosedList.Add(NextPathIndex);
@@ -263,7 +270,6 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 	int32 SouthIndex = CurrentIndex - x;
 	int32 NorthIndex = CurrentIndex + x;
 
-	int32 NewCostG = PathArr[CurrentIndex].CostG + TileSize;
 
 	UpdateOneCardinalPath(CurrentIndex, EastIndex, TargetIndex);
 	UpdateOneCardinalPath(CurrentIndex, WestIndex, TargetIndex);
@@ -275,14 +281,27 @@ void ATileManager2::UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPath
 	int32 RowNumber = 0;
 	int32 NewCostG = PathArr[CurrentIndex].CostG + TileSize;
 
+	float PathDecalDirection = 0;
+
 	if (CardinalPathIndex == (CurrentIndex + x)) {
 		RowNumber = 1;
+
+		PathDecalDirection = 270;
 	}
 	else if (CardinalPathIndex == (CurrentIndex - x)) {
 		RowNumber = -1;
+
+		PathDecalDirection = 90;
 	}
 	else {
 		RowNumber = 0;
+
+		if (TargetIndex == CurrentIndex + 1) {
+			PathDecalDirection = 0;
+		}
+		else {
+			PathDecalDirection = 180;
+		}
 	}
 	
 	if (CheckWithinBounds(CardinalPathIndex) && IsSameLine(CurrentIndex, RowNumber, CardinalPathIndex) && !ClosedList.Contains(CardinalPathIndex) && TileIndexInRange.Contains(CardinalPathIndex)) {
@@ -293,6 +312,7 @@ void ATileManager2::UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPath
 				PathArr[CardinalPathIndex].CostG = NewCostG;
 				PathArr[CardinalPathIndex].CostF = PathArr[CardinalPathIndex].CostG + PathArr[CardinalPathIndex].CostH;
 				PathArr[CardinalPathIndex].ParentIndex = CurrentIndex;
+				PathArr[CardinalPathIndex].PathDirection = PathDecalDirection;
 			}
 		}
 		else // OpenList 에 존재하지 않아서 새로 추가해야 하는 경우
@@ -301,6 +321,7 @@ void ATileManager2::UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPath
 			PathArr[CardinalPathIndex].CostG = NewCostG;
 			PathArr[CardinalPathIndex].CostF = PathArr[CardinalPathIndex].CostG + PathArr[CardinalPathIndex].CostH;
 			PathArr[CardinalPathIndex].ParentIndex = CurrentIndex;
+			PathArr[CardinalPathIndex].PathDirection = PathDecalDirection;
 
 			OpenList.Add(CardinalPathIndex);
 		}
@@ -327,6 +348,8 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 	int32 SouthEastIndex = CurrentIndex - x + 1;
 	int32 SouthWestIndex = CurrentIndex - x - 1;
 
+	float PathDecalDirection = 0;
+
 	int32 FromCurrentToDiagonal = 0;
 	int32 RowDifference = 0;
 	int32 CollumDifference = 0;
@@ -337,21 +360,25 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 		FromCurrentToDiagonal = 1;
 		RowDifference = -x;
 		CollumDifference = -1;
+		PathDecalDirection = 225;
 	}
 	else if (DiagonalPathIndex == NorthWestIndex) {
 		FromCurrentToDiagonal = 1;
 		RowDifference = -x;
 		CollumDifference = 1;
+		PathDecalDirection = 315;
 	}
 	else if (DiagonalPathIndex == SouthEastIndex) {
 		FromCurrentToDiagonal = -1;
 		RowDifference = x;
 		CollumDifference = -1;
+		PathDecalDirection = 135;
 	}
 	else if (DiagonalPathIndex == SouthWestIndex) {
 		FromCurrentToDiagonal = -1;
 		RowDifference = x;
 		CollumDifference = 1;
+		PathDecalDirection = 45;
 	}
 	else {
 		UE_LOG(LogTemp, Warning, L"잘못된 Diagonal Index");
@@ -377,6 +404,7 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 				PathArr[DiagonalPathIndex].CostG = PathArr[CurrentIndex].CostG + (int)(TileSize*1.5);
 				PathArr[DiagonalPathIndex].CostF = PathArr[DiagonalPathIndex].CostG + PathArr[DiagonalPathIndex].CostH;
 				PathArr[DiagonalPathIndex].ParentIndex = CurrentIndex;
+				PathArr[DiagonalPathIndex].PathDirection = PathDecalDirection;
 			}
 		}
 		else // OpenList 에 존재하지 않아서 새로 추가해야 하는 경우
@@ -385,6 +413,7 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 			PathArr[DiagonalPathIndex].CostG = NewCostG;
 			PathArr[DiagonalPathIndex].CostF = PathArr[DiagonalPathIndex].CostG + PathArr[DiagonalPathIndex].CostH;
 			PathArr[DiagonalPathIndex].ParentIndex = CurrentIndex;
+			PathArr[DiagonalPathIndex].PathDirection = PathDecalDirection;
 
 			OpenList.Add(DiagonalPathIndex);
 		}
@@ -412,29 +441,49 @@ int32 ATileManager2::FindMinCostFIndex() {
 }
 
 
-void ATileManager2::SetDecalVisibilityOnTile(TArray<int32> PathIndices,int32 NumberOfTimes, bool bVisibility) {
-	if (NumberOfTimes == 0) { return; }
+
+//void ATileManager2::SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility) {
+//	if (NumberOfTimes == 0) { return; }
+//
+//	TArray<AActor*> ChildActors;
+//	GetAttachedActors(ChildActors);
+//
+//	int32 TargetTileIndex = PathIndices[NumberOfTimes - 1];
+//
+//	ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
+//	Tile->SetDecalVisibility(bVisibility);
+//
+//	//Tile->SetDecalRotationYaw();
+//	SetDecalVisibilityOnTile(PathIndices, NumberOfTimes - 1, bVisibility);
+//}
+
+
+void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 NumberOfTimes, bool bVisibility) {
 
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
 
-	int32 TargetTileIndex = PathIndices[NumberOfTimes-1];
+	for (auto OnePathInfo : PathInfo) {
+		int32 TargetTileIndex = OnePathInfo.Key;
+		UE_LOG(LogTemp, Warning, L"Decal Tile Index : %d , Yaw : %f", TargetTileIndex, OnePathInfo.Value);
 
-	ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
-	Tile->SetDecalVisibility(bVisibility);
-	SetDecalVisibilityOnTile(PathIndices, NumberOfTimes-1 , bVisibility);
+
+		ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
+		Tile->SetDecalVisibility(bVisibility);
+		Tile->SetDecalRotationYaw(OnePathInfo.Value);
+	}
 }
 
 void ATileManager2::MouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
-	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWay, PathArr[TileIndex].OnTheWay.Num(), true);
+	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), true);
 };
 
 void ATileManager2::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
-	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWay, PathArr[TileIndex].OnTheWay.Num(), false);
+	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), false);
 };

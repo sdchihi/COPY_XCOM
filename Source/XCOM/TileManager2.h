@@ -45,7 +45,9 @@ public:
 
 	int32 GetGridXLength() { return x; }
 
-	void SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility);
+	//void SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility);
+	void SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 NumberOfTimes, bool bVisibility);
+
 
 
 	UFUNCTION()
