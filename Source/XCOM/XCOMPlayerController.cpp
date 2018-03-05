@@ -9,6 +9,7 @@
 #include "Tile.h"
 #include "PawnController.h"
 #include "Path.h"
+#include "Gun.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -58,16 +59,24 @@ void AXCOMPlayerController::OnClick()
 		if (TargetCharacter) {
 			DisableInput(this);
 
-			//클릭시 카메라 위치 변경 효과 차후 수정 필요
-			//SetViewTargetWithBlend(TargetCharacter, 0.5);
+			if (CheckClickedCharacterTeam(TargetCharacter)) {
+				FTimerHandle UnUsedHandle;
+				FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
 
-			FTimerHandle UnUsedHandle;
-			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
 
-			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
-			SelectedCharacter = TargetCharacter;
+				//클릭시 카메라 위치 변경 효과 차후 수정 필요
+				//SetViewTargetWithBlend(TargetCharacter, 0.5);
 
-			UE_LOG(LogTemp, Warning, L"Pawn Clicked!");
+				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
+				SelectedCharacter = TargetCharacter;
+
+				UE_LOG(LogTemp, Warning, L"Pawn Clicked!");
+			}
+			else {//적 클릭시
+				SelectedCharacter->CheckAttackPotential(TargetCharacter);
+			}
+
+			
 		}
 		else if (TargetTile) {
 			if (!SelectedCharacter) { 
@@ -178,4 +187,21 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(int32 CharacterIndex, in
 		TileManager->PathArr[CardinalIndex].bWall) {
 		SelectedCharacter->CoverDirection = CoverDirection;
 	}
+}
+
+
+// 테스트를 위한 메소드
+// 이후에 삭제 또는 수정 필요
+bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter) 
+{
+	if (!SelectedCharacter) { 
+		SelectedCharacter = ClickedCharacter;
+		return true; 
+	}
+
+	if (SelectedCharacter->GetTeamFlag()  == ClickedCharacter->GetTeamFlag()) {
+		return true;
+	}
+
+	return false;
 }

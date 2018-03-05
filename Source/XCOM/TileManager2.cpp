@@ -48,7 +48,6 @@ void ATileManager2::BeginPlay()
 		ActorMeshComponent->OnBeginCursorOver.AddDynamic(this, &ATileManager2::MouseOnTile);
 		ActorMeshComponent->OnEndCursorOver.AddDynamic(this,& ATileManager2::EndMouseOnTile);
 
-
 		//Path 정보를 담는 Array 초기화
 		
 		PathArr.Add(Path());
@@ -197,7 +196,6 @@ int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetInde
 
 TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,TArray<int32> TileIndexInRange)
 {
-
 	TArray<ATile*> AvailableTiles;
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
@@ -233,10 +231,7 @@ bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 	{
 		int32 PathGuide= TargetIndex;
 		PathArr[TargetIndex].OnTheWay.Add(TargetIndex);
-
 		PathArr[TargetIndex].OnTheWayMap.Add(TargetIndex, PathArr[TargetIndex].PathDirection);
-
-
 
 		PathGuide = PathArr[PathGuide].ParentIndex;
 		while(PathGuide != StartIndex)
@@ -439,24 +434,6 @@ int32 ATileManager2::FindMinCostFIndex() {
 
 	return MinCostPathIndex;
 }
-
-
-
-//void ATileManager2::SetDecalVisibilityOnTile(TArray<int32> PathIndices, int32 NumberOfTimes, bool bVisibility) {
-//	if (NumberOfTimes == 0) { return; }
-//
-//	TArray<AActor*> ChildActors;
-//	GetAttachedActors(ChildActors);
-//
-//	int32 TargetTileIndex = PathIndices[NumberOfTimes - 1];
-//
-//	ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
-//	Tile->SetDecalVisibility(bVisibility);
-//
-//	//Tile->SetDecalRotationYaw();
-//	SetDecalVisibilityOnTile(PathIndices, NumberOfTimes - 1, bVisibility);
-//}
-
 
 void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 NumberOfTimes, bool bVisibility) {
 

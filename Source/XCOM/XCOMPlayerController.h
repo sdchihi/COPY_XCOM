@@ -53,4 +53,7 @@ private:
 	void CheckWallAround();
 
 	void CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex);
+
+	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
+
 };

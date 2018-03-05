@@ -53,21 +53,21 @@ void APlayerPawn::Tick(float DeltaTime)
 		//Check if the mouse is at the left or right edge of the screen and move accordingly
 		if (mousePosition.X < CameraScrollBoundary)
 		{
-			MoveCameraRight(-1.0f * DeltaTime);
+			MoveCameraRight(-1.0f );
 		}
 		else if (viewportSize.X - mousePosition.X < CameraScrollBoundary)
 		{
-			MoveCameraRight(1.0f * DeltaTime);
+			MoveCameraRight(1.0f );
 		}
 
 		//Check if the mouse is at the top or bottom edge of the screen and move accordingly
 		if (mousePosition.Y < CameraScrollBoundary)
 		{
-			MoveCameraForward(1.0f * DeltaTime);
+			MoveCameraForward(1.0f );
 		}
 		else if (viewportSize.Y - mousePosition.Y < CameraScrollBoundary)
 		{
-			MoveCameraForward(-1.0f * DeltaTime);
+			MoveCameraForward(-1.0f);
 		}
 	}
 
@@ -85,6 +85,8 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("HoverCharacter", IE_Released, this, &APlayerPawn::DisableHover);
 
 	PlayerInputComponent->BindAxis("Hover", this, &APlayerPawn::HoverCamera);
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerPawn::MoveCameraForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerPawn::MoveCameraRight);
 }
 
 
@@ -101,10 +103,8 @@ void APlayerPawn::CameraZoomOut()
 
 void APlayerPawn::MoveCameraForward(float Direction) 
 {
-	if (!bCanScroll) { return; }
-
-	float movementValue = Direction * CameraMovementSpeed;
-
+	float movementValue= Direction* FApp::GetDeltaTime() * CameraMovementSpeed;;
+	
 	//Create a delta vector that moves by the movementValue in the direction of the camera's yaw
 	FVector DeltaMovement = movementValue * FRotator(0.0f, FollowCamera->ComponentToWorld.Rotator().Yaw, 0.0f).Vector();
 
@@ -117,10 +117,7 @@ void APlayerPawn::MoveCameraForward(float Direction)
 
 void APlayerPawn::MoveCameraRight(float Direction) 
 {
-	if (!bCanScroll) { return; }
-
-
-	float movementValue = Direction * CameraMovementSpeed;
+	float movementValue = Direction* FApp::GetDeltaTime() * CameraMovementSpeed;;
 
 	//Create a delta vector that moves by the movementValue in the direction of the right of the camera's yaw
 	FVector DeltaMovement = movementValue * (FRotator(0.0f, 90.0f, 0.0f) + FRotator(0.0f, FollowCamera->ComponentToWorld.Rotator().Yaw, 0.0f) ).Vector();

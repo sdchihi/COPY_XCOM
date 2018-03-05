@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "CustomThirdPerson.generated.h"
 
+class AGun;
 class USpringArmComponent;
 class UCameraComponent;
 
@@ -40,13 +41,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	bool GetIsPlayerTeam() { return bIsPlayerTeam; };
 
 	void MoveToLocation(FVector Location);
 
 	ECoverDirection CoverDirection = ECoverDirection::None;
 
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	AGun* GunReference;
+
+	void CheckAttackPotential(APawn* TargetPawn);
+
+	bool GetTeamFlag() { return bTeam; };
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm= nullptr;
@@ -57,7 +64,7 @@ private:
 	
 
 	UPROPERTY(EditDefaultsOnly)
-	bool bIsPlayerTeam = true;
+	bool bTeam = true;
 
 	UPROPERTY(EditDefaultsOnly)
 	int step = 0;
@@ -69,5 +76,10 @@ private:
 	int CurrentHP;
 
 	bool bCanAction = true;
+
+	UPROPERTY(EditDefaultsOnly)
+	float AttackRange = 500;
+
+	float CalculateAttackSuccessRatio(FHitResult HitResult, APawn* TargetPawn);
 
 };
