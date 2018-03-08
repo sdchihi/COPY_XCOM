@@ -5,6 +5,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Tile.generated.h"
 
+//class UStaticMeshComponent;
 class UDecalComponent;
 
 UENUM(BlueprintType)
@@ -56,6 +57,7 @@ public:
 
 	void SetDecalVisibility(bool Visibility);
 	void SetDecalRotationYaw(float Yaw);
+	bool GetTileVisibility();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -68,4 +70,5 @@ private:
 
 	UDecalComponent* DecalComponent = nullptr;
 
+	UStaticMeshComponent* TileMesh = nullptr;
 };

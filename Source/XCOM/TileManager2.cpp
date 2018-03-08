@@ -2,11 +2,11 @@
 
 #include "TileManager2.h"
 #include "Classes/Components/InstancedStaticMeshComponent.h"
+#include "Classes/Components/DecalComponent.h"
 #include "Classes/Components/ChildActorComponent.h"
 #include "Classes/GameFramework/Actor.h"
 #include "Path.h"
 #include "Tile.h"
-
 
 ATileManager2::ATileManager2()
 {
@@ -66,7 +66,8 @@ void ATileManager2::Tick(float DeltaTime)
 void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
-	PathArr[OverlappedTileIndex].bWall = true;
+	//Todo 
+	//PathArr[OverlappedTileIndex].bWall = false;
 }
 
 
@@ -79,7 +80,7 @@ void ATileManager2::FindingWallOnTile(ATile* TileActor)
 		int32 OverlappedTileIndex = ConvertVectorToIndex(TileActor->GetActorLocation());
 		PathArr[OverlappedTileIndex].bWall = true;
 
-		UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
+		//UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
 	}
 }
 
@@ -151,7 +152,7 @@ void ATileManager2::GetAvailableTiles(ATile* StartingTile, int32 MovingAbility, 
 		}	
 	}
 
-	UE_LOG(LogTemp, Warning, L"%d 개의 Wall!", TileIndexInRange.Num());
+	//UE_LOG(LogTemp, Warning, L"%d 개의 Wall!", TileIndexInRange.Num());
 
 	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, TileIndexInRange);
 }
@@ -168,7 +169,9 @@ void ATileManager2::ClearAllTiles(bool bClearAll) {
 
 	for (AActor* Tile : ChildTiles) {
 		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
+		UDecalComponent* Decal = Tile->FindComponentByClass<UDecalComponent>();
 		TileMesh->SetVisibility(false);
+		Decal->SetVisibility(false);
 	}
 
 	if (bClearAll) {
@@ -207,11 +210,11 @@ TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,T
 
 		if (bFindPath) 
 		{
-			UE_LOG(LogTemp, Warning, L"%d is Available", TargetIndex);
+			//UE_LOG(LogTemp, Warning, L"%d is Available", TargetIndex);
 			int32 PathLenght = PathArr[TargetIndex].OnTheWay.Num();
-			for (int i = 0; i < PathLenght; i++) {
+			/*for (int i = 0; i < PathLenght; i++) {
 				UE_LOG(LogTemp, Warning, L"%d", PathArr[TargetIndex].OnTheWay[i]);
-			}
+			}*/
 			if (PathLenght <= MovingAbility) {
 				AvailableTiles.Add(Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]));
 			}
@@ -442,7 +445,7 @@ void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 
 
 	for (auto OnePathInfo : PathInfo) {
 		int32 TargetTileIndex = OnePathInfo.Key;
-		UE_LOG(LogTemp, Warning, L"Decal Tile Index : %d , Yaw : %f", TargetTileIndex, OnePathInfo.Value);
+		//UE_LOG(LogTemp, Warning, L"Decal Tile Index : %d , Yaw : %f", TargetTileIndex, OnePathInfo.Value);
 
 
 		ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);

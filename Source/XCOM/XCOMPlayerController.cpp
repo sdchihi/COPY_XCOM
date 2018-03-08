@@ -46,20 +46,25 @@ void AXCOMPlayerController::SetupInputComponent() {
 
 void AXCOMPlayerController::OnClick()
 {
+	UE_LOG(LogTemp, Warning, L"진입123");
+
 	FHitResult TraceResult;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, true, TraceResult);
 	AActor* actor= TraceResult.GetActor();
 
 	if (!ensure(TraceResult.GetActor())) {
+
 		return;
 	}
 	else {
 		ACustomThirdPerson* TargetCharacter = Cast<ACustomThirdPerson>(actor);
 		ATile* TargetTile = Cast<ATile>(actor);
 		if (TargetCharacter) {
-			DisableInput(this);
+
 
 			if (CheckClickedCharacterTeam(TargetCharacter)) {
+				DisableInput(this);
+
 				FTimerHandle UnUsedHandle;
 				FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
 
@@ -70,31 +75,46 @@ void AXCOMPlayerController::OnClick()
 				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
 				SelectedCharacter = TargetCharacter;
 
-				UE_LOG(LogTemp, Warning, L"Pawn Clicked!");
 			}
 			else {//적 클릭시
+
 				SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
 
 			
 		}
 		else if (TargetTile) {
-			if (!SelectedCharacter) { 
+			if (!IsValid(SelectedCharacter)) { 
 				UE_LOG(LogTemp, Warning, L"SelectedCharacter invalid!");
 				return; 
 			}
-			UE_LOG(LogTemp, Warning, L"%d Tile Clicked!", TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation()));
+			//UE_LOG(LogTemp, Warning, L"%d Tile Clicked!", TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation()));
+
+			if (TargetTile->GetTileVisibility() == false) {
+				UE_LOG(LogTemp, Warning, L"Can not be moved there");
+				return;
+			}
 
 			int32 TileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
 
 			DisableInput(this);
-			MovingStepByStep(TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
-			for (int i = 0; i < TileManager->PathArr[TileIndex].OnTheWay.Num(); i++) {
-				UE_LOG(LogTemp, Warning, L"%d", TileManager->PathArr[TileIndex].OnTheWay[i]);
+
+			if (SelectedCharacter->bIsCovering) {
+				SelectedCharacter->ClearCoverDirectionInfo();
+				FTimerHandle UnUsedHandle;
+				FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::MovingStepByStep, TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
+				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.2, false);	// 0.5 Delay 고정
 			}
+			else {
+				MovingStepByStep(TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
+			}
+			
+			
+	
+
 		}
 		else {
-			UE_LOG(LogTemp, Warning, L"%s", *actor->GetName());
+
 		}
 	}
 }
@@ -139,7 +159,9 @@ void AXCOMPlayerController::MovingStepByStep(Path Target, int32 CurrentIndex)
 	{
 		EnableInput(this);
 		TileManager->ClearAllTiles(true);
-		CheckWallAround();
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay 고정
 	}
 }
 
@@ -149,7 +171,8 @@ void AXCOMPlayerController::CheckWallAround()
 
 	FVector CharacterPos = SelectedCharacter->GetActorLocation();
 	int32 CharacterTileIndex = TileManager->ConvertVectorToIndex(CharacterPos);
-	
+	UE_LOG(LogTemp, Warning, L"Move To : %d", CharacterTileIndex)
+
 	int32 EastIndex = CharacterTileIndex + 1;
 	int32 WestIndex = CharacterTileIndex - 1;
 	int32 SouthIndex = CharacterTileIndex - TileManager->GetGridXLength();
@@ -159,6 +182,10 @@ void AXCOMPlayerController::CheckWallAround()
 	CheckWallAroundOneDirection(CharacterTileIndex, SouthIndex);
 	CheckWallAroundOneDirection(CharacterTileIndex, NorthIndex);
 	CheckWallAroundOneDirection(CharacterTileIndex, WestIndex);
+
+	if (SelectedCharacter->bIsCovering) {
+		SelectedCharacter->RotateTowardWall();
+	}
 }
 
 void AXCOMPlayerController::CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex)
@@ -182,10 +209,16 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(int32 CharacterIndex, in
 		}
 		RowNumber = 0;
 	}
+	UE_LOG(LogTemp, Warning, L"^^2 char:  %d,  cardinal:  %d    row n : %d", CharacterIndex, CardinalIndex, RowNumber)
+
+	UE_LOG(LogTemp, Warning, L"^^2 wall : %d  same line : %d", TileManager->PathArr[CardinalIndex].bWall, TileManager->IsSameLine(CharacterIndex, RowNumber, CardinalIndex))
 
 	if (TileManager->CheckWithinBounds(CardinalIndex) && TileManager->IsSameLine(CharacterIndex, RowNumber, CardinalIndex) &&
 		TileManager->PathArr[CardinalIndex].bWall) {
 		SelectedCharacter->CoverDirection = CoverDirection;
+		SelectedCharacter->CoverDirectionMap.Add(CoverDirection, true);
+		SelectedCharacter->bIsCovering = true;
+		UE_LOG(LogTemp,Warning, L"^^@@@@@")
 	}
 }
 
@@ -200,6 +233,9 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 	}
 
 	if (SelectedCharacter->GetTeamFlag()  == ClickedCharacter->GetTeamFlag()) {
+		return true;
+	}
+	else if(!(SelectedCharacter->bCanAction)){
 		return true;
 	}
 
