@@ -10,6 +10,7 @@ class ATileManager2;
 class ACustomThirdPerson;
 class APlayerPawnInAiming;
 class Path;
+class APlayerPawn;
 /**
  * 
  */
@@ -44,6 +45,8 @@ private:
 
 	APlayerPawnInAiming* PawnInAimingSituation= nullptr;
 
+	APlayerPawn* DefaultPlayerPawn = nullptr;
+
 	//¸Þ¼Òµå
 
 	void OnClick();
@@ -57,5 +60,8 @@ private:
 	void CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex);
 
 	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
+
+	UFUNCTION()
+	void ChangeToDefaultPawn();
 
 };

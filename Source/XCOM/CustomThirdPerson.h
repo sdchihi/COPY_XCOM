@@ -10,6 +10,8 @@ class AGun;
 class USpringArmComponent;
 class UCameraComponent;
 
+DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
+
 UENUM(BlueprintType)
 enum class ECoverDirection : uint8
 {
@@ -75,6 +77,8 @@ public:
 
 
 	void RotateTowardWall();
+
+	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)

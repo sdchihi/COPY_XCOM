@@ -100,13 +100,17 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, TargetPawn);
 		//GunReference->Fire();
 		bIsAttack = true;
+		//ChangePlayerPawnDelegate.Excute();
 
 		bCanAction = false;
 		UE_LOG(LogTemp, Warning, L"Hit Result Actor : %s  , TargetActor : %s  Success  Percentage : %f", *DetectedPawn->GetName(), *TargetPawn->GetName(), AttackSuccessRatio);
 
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
-		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4, false);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
+
+
+		//TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::NotifyShootingOver);
 	}
 }
 
@@ -223,4 +227,10 @@ void ACustomThirdPerson::RotateTowardWall() {
 
 void ACustomThirdPerson::SetOffAttackState() {
 	bIsAttack = false;
+	if (ChangePlayerPawnDelegate.IsBound()) {
+		ChangePlayerPawnDelegate.Execute();
+	}
+	else {
+		UE_LOG(LogTemp, Warning, L"Un bound");
+	}
 }

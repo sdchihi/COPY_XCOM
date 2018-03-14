@@ -34,6 +34,18 @@ void AXCOMPlayerController::BeginPlay()
 	FoundActors.Empty();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawnInAiming::StaticClass(), FoundActors);
 	PawnInAimingSituation = Cast<APlayerPawnInAiming>(FoundActors[0]);
+
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawn::StaticClass(), FoundActors);
+	DefaultPlayerPawn = Cast<APlayerPawn>(FoundActors[0]);
+
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
+	for (auto ThirdPersonAsActor : FoundActors) {
+		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
+		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+		UE_LOG(LogTemp, Warning, L"바운드 성공");
+	}
 };
 
 
@@ -83,7 +95,6 @@ void AXCOMPlayerController::OnClick()
 
 			}
 			else {//적 클릭시
-				//Cast<APlayerPawn>(GetControlledPawn())->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				//Possess(PawnInAimingSituation);
 				SetViewTargetWithBlend(PawnInAimingSituation,0.5);
@@ -117,13 +128,9 @@ void AXCOMPlayerController::OnClick()
 			else {
 				MovingStepByStep(TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
 			}
-			
-			
-	
-
 		}
 		else {
-
+			//TODO
 		}
 	}
 }
@@ -250,3 +257,9 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 
 	return false;
 }
+
+
+
+void AXCOMPlayerController::ChangeToDefaultPawn() {
+	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
+};
