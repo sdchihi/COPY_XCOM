@@ -10,6 +10,8 @@
 #include "PawnController.h"
 #include "Path.h"
 #include "Gun.h"
+#include "PlayerPawn.h"
+#include "PlayerPawnInAiming.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -28,6 +30,10 @@ void AXCOMPlayerController::BeginPlay()
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager2>(FoundActors[0]);
+
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawnInAiming::StaticClass(), FoundActors);
+	PawnInAimingSituation = Cast<APlayerPawnInAiming>(FoundActors[0]);
 };
 
 
@@ -77,7 +83,10 @@ void AXCOMPlayerController::OnClick()
 
 			}
 			else {//적 클릭시
-
+				//Cast<APlayerPawn>(GetControlledPawn())->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
+				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
+				//Possess(PawnInAimingSituation);
+				SetViewTargetWithBlend(PawnInAimingSituation,0.5);
 				SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
 

@@ -7,6 +7,7 @@
 #include "Classes/Components/SceneComponent.h"
 #include "Classes/Components/InputComponent.h"
 #include "Classes/Engine/GameViewportClient.h"
+#include "Classes/Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -113,11 +114,7 @@ void APlayerPawn::CameraZoomOut()
 void APlayerPawn::MoveCameraForward(float Direction) 
 {
 	float movementValue= Direction* FApp::GetDeltaTime() * CameraMovementSpeed;;
-	
-	//Create a delta vector that moves by the movementValue in the direction of the camera's yaw
 	FVector DeltaMovement = movementValue * FRotator(0.0f, FollowCamera->ComponentToWorld.Rotator().Yaw, 0.0f).Vector();
-
-	//Add the delta to a new vector   카메라의 Up Vector 의 Unit Vector
 	FVector newLocation = this->GetActorLocation() + DeltaMovement;
 
 	//Set the new location of the pawn
@@ -127,11 +124,7 @@ void APlayerPawn::MoveCameraForward(float Direction)
 void APlayerPawn::MoveCameraRight(float Direction) 
 {
 	float movementValue = Direction* FApp::GetDeltaTime() * CameraMovementSpeed;;
-
-	//Create a delta vector that moves by the movementValue in the direction of the right of the camera's yaw
 	FVector DeltaMovement = movementValue * (FRotator(0.0f, 90.0f, 0.0f) + FRotator(0.0f, FollowCamera->ComponentToWorld.Rotator().Yaw, 0.0f) ).Vector();
-
-	//Add the delta to a new vector
 	FVector newLocation = this->GetActorLocation() + DeltaMovement;
 
 	//Set the new location of the pawn
@@ -161,3 +154,19 @@ void APlayerPawn::HoverCamera(float AxisValue)
 		RotateUIDelegate.Broadcast(AxisValue);
 	}
 }
+
+
+void APlayerPawn::SetCameraPositionInAimingSituation(FVector AimingCharLoc, FVector AimedCharLoc) 
+{
+	PrevPlayerPawnTransform = GetActorTransform();
+	FVector StraightLineDirection = (AimedCharLoc - AimingCharLoc).GetSafeNormal();
+	FVector NewPawnPosition = AimingCharLoc + (StraightLineDirection * 100) + StraightLineDirection.RightVector * 100;
+	float DistanceBtwChar = FVector::Distance(AimingCharLoc, AimedCharLoc);
+
+	FVector TargetLocation = AimedCharLoc + StraightLineDirection * (DistanceBtwChar / 2);
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetLocation);
+
+	// Lerp 시킬건데 일단 테스트용으로 위치 변경으로
+	SetActorLocation(NewPawnPosition);
+	SetActorRotation(NewPawnRotation);
+};

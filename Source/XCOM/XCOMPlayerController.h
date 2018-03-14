@@ -8,6 +8,7 @@
 
 class ATileManager2;
 class ACustomThirdPerson;
+class APlayerPawnInAiming;
 class Path;
 /**
  * 
@@ -41,6 +42,7 @@ private:
 
 	ACustomThirdPerson* SelectedCharacter= nullptr;
 
+	APlayerPawnInAiming* PawnInAimingSituation= nullptr;
 
 	//¸Þ¼Òµå
 

@@ -49,6 +49,7 @@ public:
 	FRotateUIDelegate RotateUIDelegate;
 	FControlDistanceToUIDelegate ControlDistanceToUIDelegate;
 
+	void SetCameraPositionInAimingSituation(FVector AimingCharLoc, FVector AimedCharLoc);
 private:
 
 	//변수
@@ -67,8 +68,10 @@ private:
 	bool bCanScroll = false;
 
 	bool bCanHover = false;
-	
 
+	FTransform PrevPlayerPawnTransform;
+
+	
 
 	// 메소드
 
