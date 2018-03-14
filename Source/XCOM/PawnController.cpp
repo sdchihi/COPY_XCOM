@@ -13,6 +13,5 @@ void APawnController::BeginPlay() {
 
 
 void APawnController::MoveToTargetLocation(FVector TargetLocation) {
-	//MoveTo(FAIMoveRequest(TargetLocation));
 	MoveToLocation(TargetLocation,0,false, false, false);
 }

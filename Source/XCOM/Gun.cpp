@@ -5,7 +5,8 @@
 #include "Classes/Components/ArrowComponent.h"
 
 AGun::AGun() {
-	//StaticMeshComponentRef = Cast<UStaticMeshComponent>(RootComponent);
+	FirePos = CreateDefaultSubobject<UArrowComponent>(FName("FirePos"));
+	FirePos->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 }
 
@@ -13,12 +14,25 @@ AGun::AGun() {
 void AGun::BeginPlay() {
 	Super::BeginPlay();
 
-
-	
-
 }
 
 void AGun::Fire() 
 {
-	UE_LOG(LogTemp, Warning, L"Fire!!!");
+	FRotator FireRotation[6] = { FRotator(0, 0, 0), FRotator(2, 0, 0),FRotator(0.5, 1.5, 0) ,FRotator(-1, 1, 0), FRotator(-1, -1, 0), FRotator(0.5, -1.5, 0) };
+
+
+	if (ProejctileBlueprint) {
+		GetWorld()->SpawnActor<AProjectile>(
+			ProejctileBlueprint,
+			FirePos->GetComponentLocation(),
+			FirePos->GetForwardVector().ToOrientationRotator() + FireRotation[FiringRotOrder]
+			);
+	}
+
+	if (FiringRotOrder == 5) {
+		FiringRotOrder = 0;
+	}
+	else {
+		FiringRotOrder++;
+	}
 }

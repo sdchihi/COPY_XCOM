@@ -3,6 +3,7 @@
 #include "CustomThirdPerson.h"
 #include "Gun.h"
 #include "Classes/Camera/CameraComponent.h"
+#include "Classes/Components/SkeletalMeshComponent.h"
 #include "Classes/GameFramework/SpringArmComponent.h"
 #include "Classes/GameFramework/CharacterMovementComponent.h"
 #include "Runtime/Engine/Public/TimerManager.h"
@@ -34,13 +35,17 @@ void ACustomThirdPerson::BeginPlay()
 		GunBlueprint,
 		FVector(0,0,0),
 		FRotator(0, 0, 0)
-		);;
+		);
+
+	USkeletalMeshComponent* Mesh = FindComponentByClass<USkeletalMeshComponent>();
+	if (Mesh) {
+		GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform,  FName(L"Gun"));
+	}
 }
  
 void ACustomThirdPerson::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 	
@@ -92,9 +97,8 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 
 	ACustomThirdPerson* DetectedPawn = Cast<ACustomThirdPerson>(HitResult.GetActor());
 	if (DetectedPawn) {
-		//DetectedPawn->GunReference->Fire();
 		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, TargetPawn);
-		GunReference->Fire();
+		//GunReference->Fire();
 		bIsAttack = true;
 
 		bCanAction = false;
@@ -114,8 +118,6 @@ float ACustomThirdPerson::CalculateAttackSuccessRatio(FHitResult HitResult, APaw
 	
 	// 클래스가 유연하지 않으므로 이후 수정
 	if (!TargetThirdPerson) {
-		UE_LOG(LogTemp, Warning, L"Fucked");
-
 		return 0; 
 	}
 
@@ -132,8 +134,6 @@ float ACustomThirdPerson::CalculateAttackSuccessRatio(FHitResult HitResult, APaw
 			FailureRatio += FMath::Cos(FMath::DegreesToRadians(AngleBetweenAimAndWall)) * 0.4;
 		}
 	}
-
-	
 	// 적과의 거리에 따른 실패 확률 상승
 	FailureRatio += (HitResult.Distance * (15 / AttackRange)) / 100;
 
@@ -188,7 +188,6 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 				resultString = DirectionString;
 			}
 		}
-
 	}
 
 	UE_LOG(LogTemp, Warning, L"Minimum Angle : %f , %s", MinAngleBetweenAimAndWall, *resultString);

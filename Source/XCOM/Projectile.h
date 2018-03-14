@@ -21,8 +21,19 @@ public:
 
 	virtual void BeginPlay() override;
 
-	
+	UPROPERTY(EditDefaultsOnly)
+	UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	float Damage = 10;
+
+	float GetDamage() { return Damage; }
 
 private: 
-	UProjectileMovementComponent* ProjectileMovementComponent;
+	//UProjectileMovementComponent* ProjectileMovementComponent;
+	UStaticMeshComponent* Mesh = nullptr;
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
 };

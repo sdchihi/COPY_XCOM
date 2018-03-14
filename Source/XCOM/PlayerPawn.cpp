@@ -93,12 +93,21 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerPawn::CameraZoomIn() 
 {
-	SpringArm->TargetArmLength = FMath::Clamp(SpringArm->TargetArmLength - CameraZoomSpeed, 100.f, 700.f);
+	
+	float PlayerPawnSpringArmLength= FMath::Clamp(SpringArm->TargetArmLength - CameraZoomSpeed, 100.f, 700.f);
+	//100 ~ 700
+	SpringArm->TargetArmLength = PlayerPawnSpringArmLength;
+	//150 ~ 200
+	ControlDistanceToUIDelegate.Broadcast((PlayerPawnSpringArmLength - 100) / 4 + 150);
 }
 
 void APlayerPawn::CameraZoomOut() 
 {
-	SpringArm->TargetArmLength = FMath::Clamp(SpringArm->TargetArmLength + CameraZoomSpeed, 100.f, 700.f);
+	float PlayerPawnSpringArmLength = FMath::Clamp(SpringArm->TargetArmLength + CameraZoomSpeed, 100.f, 700.f);
+	//100 ~ 700
+	SpringArm->TargetArmLength = PlayerPawnSpringArmLength;
+	//150 ~ 200
+	ControlDistanceToUIDelegate.Broadcast((PlayerPawnSpringArmLength - 100) / 4 + 150);
 }
 
 void APlayerPawn::MoveCameraForward(float Direction) 
@@ -149,5 +158,6 @@ void APlayerPawn::HoverCamera(float AxisValue)
 	{
 		FRotator newRotator = SpringArm->GetComponentRotation() + FRotator(0, AxisValue * CameraHoverSpeed, 0);
 		SpringArm->SetWorldRotation(newRotator);
+		RotateUIDelegate.Broadcast(AxisValue);
 	}
 }

@@ -67,6 +67,12 @@ public:
 	bool bCanAction = true;
 
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int MaxHP = 5;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int CurrentHP;
+
 
 	void RotateTowardWall();
 
@@ -84,12 +90,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	int step = 0;
-
-	UPROPERTY(EditDefaultsOnly)
-	int MaxHP = 100;
-
-	UPROPERTY(EditDefaultsOnly)
-	int CurrentHP;
 
 
 	UPROPERTY(EditDefaultsOnly)

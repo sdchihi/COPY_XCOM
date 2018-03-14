@@ -31,11 +31,16 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AProjectile> ProejctileBlueprint;
 
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 
 
 private:
 
-	UStaticMeshComponent* StaticMeshComponentRef;
+	UStaticMeshComponent* StaticMeshComponentRef = nullptr;
 	
+	//0 ~ 5
+	int32 FiringRotOrder = 0;
+	
+
 };
