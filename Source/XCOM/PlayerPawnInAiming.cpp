@@ -32,9 +32,13 @@ void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 }
 
-void APlayerPawnInAiming::SetCameraPositionInAimingSituation(FVector AimingCharLoc, FVector AimedCharLoc)
+/**
+* 조준하는 상황에서 사용될 Pawn의 카메라의 위치, 방향을 결정합니다.
+* @param AimingCharLoc - 조준하는 캐릭터의 위치
+* @param AimedCharLoc - 조준 대상이되는 캐릭터의 위치
+*/
+void APlayerPawnInAiming::SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc)
 {
-//	PrevPlayerPawnTransform = GetActorTransform();
 	FVector StraightLineDirection = (AimedCharLoc - AimingCharLoc).GetSafeNormal();
 	// Z축과 StraightLineDirection의 외적
 	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));

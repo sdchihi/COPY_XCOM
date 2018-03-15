@@ -44,7 +44,6 @@ void AXCOMPlayerController::BeginPlay()
 	for (auto ThirdPersonAsActor : FoundActors) {
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
-		UE_LOG(LogTemp, Warning, L"바운드 성공");
 	}
 };
 
@@ -64,23 +63,19 @@ void AXCOMPlayerController::SetupInputComponent() {
 
 void AXCOMPlayerController::OnClick()
 {
-	UE_LOG(LogTemp, Warning, L"진입123");
-
 	FHitResult TraceResult;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, true, TraceResult);
 	AActor* actor= TraceResult.GetActor();
 
-	if (!ensure(TraceResult.GetActor())) {
-
-		return;
-	}
-	else {
+	if (!ensure(TraceResult.GetActor())) 	{ return; }
+	else
+	{
 		ACustomThirdPerson* TargetCharacter = Cast<ACustomThirdPerson>(actor);
 		ATile* TargetTile = Cast<ATile>(actor);
-		if (TargetCharacter) {
-
-
-			if (CheckClickedCharacterTeam(TargetCharacter)) {
+		if (TargetCharacter) 
+		{
+			if (CheckClickedCharacterTeam(TargetCharacter)) 
+			{
 				DisableInput(this);
 
 				FTimerHandle UnUsedHandle;
@@ -92,25 +87,26 @@ void AXCOMPlayerController::OnClick()
 
 				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
 				SelectedCharacter = TargetCharacter;
-
 			}
-			else {//적 클릭시
+			else
+			{	//적 클릭시
 				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				//Possess(PawnInAimingSituation);
 				SetViewTargetWithBlend(PawnInAimingSituation,0.5);
 				SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
-
-			
 		}
-		else if (TargetTile) {
-			if (!IsValid(SelectedCharacter)) { 
+		else if (TargetTile) 
+		{
+			if (!IsValid(SelectedCharacter))
+			{ 
 				UE_LOG(LogTemp, Warning, L"SelectedCharacter invalid!");
 				return; 
 			}
 			//UE_LOG(LogTemp, Warning, L"%d Tile Clicked!", TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation()));
 
-			if (TargetTile->GetTileVisibility() == false) {
+			if (TargetTile->GetTileVisibility() == false)
+			{
 				UE_LOG(LogTemp, Warning, L"Can not be moved there");
 				return;
 			}
@@ -119,26 +115,32 @@ void AXCOMPlayerController::OnClick()
 
 			DisableInput(this);
 
-			if (SelectedCharacter->bIsCovering) {
+			if (SelectedCharacter->bIsCovering)
+			{
 				SelectedCharacter->ClearCoverDirectionInfo();
 				FTimerHandle UnUsedHandle;
 				FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::MovingStepByStep, TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
 				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.2, false);	// 0.5 Delay 고정
 			}
-			else {
+			else 
+			{
 				MovingStepByStep(TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
 			}
 		}
-		else {
+		else 
+		{
 			//TODO
 		}
 	}
 }
 
+/**
+* 다른 캐릭터를 클릭해 전환됬을때 호출됩니다.
+* @param TargetCharacter - 전환할 캐릭터
+*/
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter) 
 {
 	EnableInput(this);
-
 	TileManager->ClearAllTiles(true);
 
 	TArray<AActor*> OverlappedTile;
@@ -149,20 +151,23 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 	TArray<ATile*> TilesInRange;
 	TileManager->GetAvailableTiles(Cast<ATile>(OverlappedTile[0]), 4, TilesInRange);
 
-
-	for (ATile* Tile : TilesInRange) {
+	for (ATile* Tile : TilesInRange) 
+	{
 		UStaticMeshComponent* TileMesh =Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		TileMesh->SetVisibility(true);
 	}
 }
 
-void AXCOMPlayerController::MovingStepByStep(Path Target, int32 CurrentIndex) 
+/**
+* 목표 타일로 이동할때 단계별로 이동하게 합니다
+* @param Target - 목표 이동 지점
+* @param CurrentIndex - 현재 위치한 타일의 인덱스
+*/
+void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 CurrentIndex)
 {
 	FVector TargetLocation = TileManager->ConvertIndexToVector(Target.OnTheWay[CurrentIndex]);
 	APawnController* PawnController = Cast<APawnController>(SelectedCharacter->GetController());
-	PawnController->MoveToLocation(TargetLocation + FVector(-50,-50,0), 0, false, false, false);
-
-	UE_LOG(LogTemp, Warning, L"보정 전 좌표: %s , 보정 후 좌표 : %s", *TargetLocation.ToString(), *(TargetLocation + FVector(50, -50, 0)).ToString());
+	PawnController->MoveToLocation(TargetLocation + FVector(-50,-50,0), 0, false, false, false);	// 일부 보정
 
 	if (CurrentIndex != 0) 
 	{
@@ -181,6 +186,10 @@ void AXCOMPlayerController::MovingStepByStep(Path Target, int32 CurrentIndex)
 	}
 }
 
+/**
+* 캐릭터의 주변에 Wall이 위치했는지 확인합니다.
+* 델리게이트로 수정가능할것으로 보임
+*/
 void AXCOMPlayerController::CheckWallAround() 
 {
 	if (!SelectedCharacter) { return; }
@@ -199,42 +208,50 @@ void AXCOMPlayerController::CheckWallAround()
 	CheckWallAroundOneDirection(CharacterTileIndex, NorthIndex);
 	CheckWallAroundOneDirection(CharacterTileIndex, WestIndex);
 
-	if (SelectedCharacter->bIsCovering) {
+	if (SelectedCharacter->bIsCovering) 
+	{
 		SelectedCharacter->RotateTowardWall();
 	}
 }
 
-void AXCOMPlayerController::CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex)
+/**
+* Cadinal 방향에 대해서 벽이 있는지 확인합니다.
+* @param CharacterIndex - 캐릭터가 위치한 타일의 인덱스
+* @param CardinalIndex - Cardinal 방향의 타일 인덱스
+*/
+void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex)
 {
 	int32 RowNumber = 0;
 	ECoverDirection CoverDirection = ECoverDirection::None;
-	if (CardinalIndex == (CharacterIndex + TileManager->GetGridXLength())) {
+	if (CardinalIndex == (CharacterIndex + TileManager->GetGridXLength())) 
+	{
 		CoverDirection = ECoverDirection::North; // 북
 		RowNumber = 1;
 	}
-	else if (CardinalIndex == (CharacterIndex - TileManager->GetGridXLength())) {
+	else if (CardinalIndex == (CharacterIndex - TileManager->GetGridXLength())) 
+	{
 		CoverDirection = ECoverDirection::South; // 남
 		RowNumber = -1;
 	}
-	else {
-		if (CardinalIndex == CharacterIndex + 1) {
+	else
+	{
+		if (CardinalIndex == CharacterIndex + 1)
+		{
 			CoverDirection = ECoverDirection::East; // 동
 		}
-		else {
+		else 
+		{
 			CoverDirection = ECoverDirection::West;	// 서
 		}
 		RowNumber = 0;
 	}
-	UE_LOG(LogTemp, Warning, L"^^2 char:  %d,  cardinal:  %d    row n : %d", CharacterIndex, CardinalIndex, RowNumber)
-
-	UE_LOG(LogTemp, Warning, L"^^2 wall : %d  same line : %d", TileManager->PathArr[CardinalIndex].bWall, TileManager->IsSameLine(CharacterIndex, RowNumber, CardinalIndex))
 
 	if (TileManager->CheckWithinBounds(CardinalIndex) && TileManager->IsSameLine(CharacterIndex, RowNumber, CardinalIndex) &&
-		TileManager->PathArr[CardinalIndex].bWall) {
+		TileManager->PathArr[CardinalIndex].bWall) 
+	{
 		SelectedCharacter->CoverDirection = CoverDirection;
 		SelectedCharacter->CoverDirectionMap.Add(CoverDirection, true);
 		SelectedCharacter->bIsCovering = true;
-		UE_LOG(LogTemp,Warning, L"^^@@@@@")
 	}
 }
 
@@ -243,22 +260,23 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(int32 CharacterIndex, in
 // 이후에 삭제 또는 수정 필요
 bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter) 
 {
-	if (!SelectedCharacter) { 
+	if (!SelectedCharacter) 
+	{ 
 		SelectedCharacter = ClickedCharacter;
 		return true; 
 	}
 
-	if (SelectedCharacter->GetTeamFlag()  == ClickedCharacter->GetTeamFlag()) {
+	if (SelectedCharacter->GetTeamFlag()  == ClickedCharacter->GetTeamFlag())
+	{
 		return true;
 	}
-	else if(!(SelectedCharacter->bCanAction)){
+	else if(!(SelectedCharacter->bCanAction))
+	{
 		return true;
 	}
 
 	return false;
 }
-
-
 
 void AXCOMPlayerController::ChangeToDefaultPawn() {
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);

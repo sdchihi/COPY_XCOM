@@ -24,14 +24,12 @@ APlayerPawn::APlayerPawn()
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-
 }
 
 // Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -94,7 +92,6 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerPawn::CameraZoomIn() 
 {
-	
 	float PlayerPawnSpringArmLength= FMath::Clamp(SpringArm->TargetArmLength - CameraZoomSpeed, 100.f, 700.f);
 	//100 ~ 700
 	SpringArm->TargetArmLength = PlayerPawnSpringArmLength;
@@ -156,17 +153,3 @@ void APlayerPawn::HoverCamera(float AxisValue)
 }
 
 
-void APlayerPawn::SetCameraPositionInAimingSituation(FVector AimingCharLoc, FVector AimedCharLoc) 
-{
-	PrevPlayerPawnTransform = GetActorTransform();
-	FVector StraightLineDirection = (AimedCharLoc - AimingCharLoc).GetSafeNormal();
-	FVector NewPawnPosition = AimingCharLoc + (StraightLineDirection * 100) + StraightLineDirection.RightVector * 100;
-	float DistanceBtwChar = FVector::Distance(AimingCharLoc, AimedCharLoc);
-
-	FVector TargetLocation = AimedCharLoc + StraightLineDirection * (DistanceBtwChar / 2);
-	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetLocation);
-
-	// Lerp 시킬건데 일단 테스트용으로 위치 변경으로
-	SetActorLocation(NewPawnPosition);
-	SetActorRotation(NewPawnRotation);
-};

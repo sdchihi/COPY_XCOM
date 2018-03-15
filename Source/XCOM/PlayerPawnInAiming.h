@@ -31,7 +31,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* Camera;
 
-	void SetCameraPositionInAimingSituation(FVector AimingCharLoc, FVector AimedCharLoc);
+	void SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc);
 
 	UPROPERTY(EditDefaultsOnly)
 	float BackWardDistance = 100;

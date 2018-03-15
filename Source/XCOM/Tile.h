@@ -21,25 +21,6 @@ enum class EDecalShape : uint8 {
 	None
 };
 
-//
-//UENUM(BlueprintType)
-//enum class EDecalShape : uint8 {
-//	Vertical,
-//	Horizontal,
-//	RisingDiagonal,
-//	DescendingDiagonal,
-//	EndPointFromEast,
-//	EndPointFromWest,
-//	EndPointFromSouth,
-//	EndPointFromNorth,
-//	EndPointFromNorthEast,
-//	EndPointFromNorthWest,
-//	EndPointFromSouthEast,
-//	EndPointFromSouthWest,
-//	None
-//};
-//
-
 
 /**
  * 
@@ -55,11 +36,12 @@ public:
 	
 	EDecalShape DecalShape = EDecalShape::None;
 
-	void SetDecalVisibility(bool Visibility);
-	void SetDecalRotationYaw(float Yaw);
+	void SetDecalVisibility(const bool Visibility);
+
+	void SetDecalRotationYaw(const float Yaw);
+
 	bool GetTileVisibility();
 
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 protected:

@@ -99,7 +99,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float AttackRange = 500;
 
-	float CalculateAttackSuccessRatio(FHitResult HitResult, APawn* TargetPawn);
+	float CalculateAttackSuccessRatio(const FHitResult HitResult, APawn* TargetPawn);
 
 
 	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn);

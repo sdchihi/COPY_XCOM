@@ -16,12 +16,15 @@ void AGun::BeginPlay() {
 
 }
 
+/**
+* 투사체를 생성하여 총을 발사합니다.
+*/
 void AGun::Fire() 
 {
 	FRotator FireRotation[6] = { FRotator(0, 0, 0), FRotator(2, 0, 0),FRotator(0.5, 1.5, 0) ,FRotator(-1, 1, 0), FRotator(-1, -1, 0), FRotator(0.5, -1.5, 0) };
 
-
-	if (ProejctileBlueprint) {
+	if (ProejctileBlueprint) 
+	{
 		GetWorld()->SpawnActor<AProjectile>(
 			ProejctileBlueprint,
 			FirePos->GetComponentLocation(),
@@ -29,10 +32,12 @@ void AGun::Fire()
 			);
 	}
 
-	if (FiringRotOrder == 5) {
+	if (FiringRotOrder == 5)
+	{
 		FiringRotOrder = 0;
 	}
-	else {
+	else
+	{
 		FiringRotOrder++;
 	}
 }

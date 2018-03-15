@@ -27,25 +27,25 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void GetAvailableTiles(ATile* StartingTile, int32 MovingAbility, TArray<ATile*>& AvailableTiles);
+	void GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, TArray<ATile*>& AvailableTiles);
 
-	int32 ConvertVectorToIndex(FVector WorldLocation);
+	int32 ConvertVectorToIndex(const FVector WorldLocation);
 
-	FVector ConvertIndexToVector(int32 Index);
+	FVector ConvertIndexToVector(const int32 Index);
 
-	void ConvertVectorToCoord(FVector WorldLocation,OUT int& x,OUT int& y);
+	void ConvertVectorToCoord(const FVector WorldLocation,OUT int& x,OUT int& y);
 
-	bool IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex);
+	bool IsSameLine(const int32 OverlappedTileIndex, const int RowNumber, const int32 TargetIndex);
 	
-	bool CheckWithinBounds(int32 TileIndex);
+	bool CheckWithinBounds(const int32 TileIndex);
 
-	void ClearAllTiles(bool bClearAll = false);
+	void ClearAllTiles(const bool bClearAll = false);
 
 	TArray<Path> PathArr;
 
 	int32 GetGridXLength() { return x; }
 
-	void SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 NumberOfTimes, bool bVisibility);
+	void SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, const int32 NumberOfTimes, const bool bVisibility);
 
 	UFUNCTION()
 	void MouseOnTile(UPrimitiveComponent* OverlappedComponent);
@@ -83,22 +83,22 @@ private:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 
-	int32 ComputeManhattanDistance(int32 StartIndex, int32 TargetIndex);
+	int32 ComputeManhattanDistance(const int32 StartIndex, const int32 TargetIndex);
 
 	void FindingWallOnTile(ATile* TileActor);
 
 
-	TArray<ATile*> FindPath(int32 StartingIndex,int32 MovingAbility, TArray<int32> TileIndexInRange);
+	TArray<ATile*> FindPath(const int32 StartingIndex, const int32 MovingAbility, TArray<int32> TileIndexInRange);
 
-	bool UpdatePathInfo(int32 CurrentIndex, int32 StartIndex, int32 TargetIndex);
+	bool UpdatePathInfo(const int32 CurrentIndex, const int32 StartIndex, const int32 TargetIndex);
 
-	void UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex);
+	void UpdateCardinalPath(const int32 CurrentIndex, const int32 TargetIndex);
 
-	void UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPathIndex, int32 TargetIndex);
+	void UpdateOneCardinalPath(const int32 CurrentIndex, const int32 CardinalPathIndex, const int32 TargetIndex);
 
-	void UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex);
+	void UpdateDiagonalPath(const int32 CurrentIndex, const int32 TargetIndex);
 
-	void UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPathIndex, int32 TargetIndex);
+	void UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 DiagonalPathIndex, const int32 TargetIndex);
 
 	int32 FindMinCostFIndex();
 

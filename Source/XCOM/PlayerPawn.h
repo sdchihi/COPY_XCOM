@@ -49,7 +49,6 @@ public:
 	FRotateUIDelegate RotateUIDelegate;
 	FControlDistanceToUIDelegate ControlDistanceToUIDelegate;
 
-	void SetCameraPositionInAimingSituation(FVector AimingCharLoc, FVector AimedCharLoc);
 private:
 
 	//º¯¼ö

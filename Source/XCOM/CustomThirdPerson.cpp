@@ -10,7 +10,6 @@
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -19,7 +18,6 @@ ACustomThirdPerson::ACustomThirdPerson()
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	
 }
 
 void ACustomThirdPerson::BeginPlay()
@@ -38,7 +36,8 @@ void ACustomThirdPerson::BeginPlay()
 		);
 
 	USkeletalMeshComponent* Mesh = FindComponentByClass<USkeletalMeshComponent>();
-	if (Mesh) {
+	if (Mesh) 
+	{
 		GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform,  FName(L"Gun"));
 	}
 }
@@ -55,6 +54,7 @@ void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+
 void ACustomThirdPerson::ClearCoverDirectionInfo() 
 {
 	// Add 메소드가 중복된 Key값에대해선 갱신 역할을 함.
@@ -67,22 +67,16 @@ void ACustomThirdPerson::ClearCoverDirectionInfo()
 }
 
 
-
+/**
+* 대상을 공격할 수 있는지 확인하고, 공격이 가능하다면 공격 확률을 계산해냅니다.
+* @param TargetPawn - 공격 대상이되는 Pawn 입니다.
+*/
 void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn) 
 {
-	FCollisionQueryParams CollisionQueryParam;
-	CollisionQueryParam;
-	FCollisionResponseParams CollisionResponseParam;
-
 	const FName TraceTag("MyTraceTag");
-
 	GetWorld()->DebugDrawTraceTag = TraceTag;
-
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.TraceTag = TraceTag;
-
-
-	//GetActorLocation() +GetActorForwardVector() * 50
 
 	FHitResult HitResult;
 	GetActorLocation();
@@ -94,13 +88,12 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		CollisionParams
 	);
 
-
 	ACustomThirdPerson* DetectedPawn = Cast<ACustomThirdPerson>(HitResult.GetActor());
-	if (DetectedPawn) {
+	if (DetectedPawn) 
+	{
 		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, TargetPawn);
 		//GunReference->Fire();
 		bIsAttack = true;
-		//ChangePlayerPawnDelegate.Excute();
 
 		bCanAction = false;
 		UE_LOG(LogTemp, Warning, L"Hit Result Actor : %s  , TargetActor : %s  Success  Percentage : %f", *DetectedPawn->GetName(), *TargetPawn->GetName(), AttackSuccessRatio);
@@ -108,30 +101,29 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
-
-
-		//TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::NotifyShootingOver);
 	}
 }
 
-float ACustomThirdPerson::CalculateAttackSuccessRatio(FHitResult HitResult, APawn* TargetPawn)
+/**
+* 공격 성공 확률을 계산합니다.
+* @param HitResult - 공격 대상을 향해 RayCast 결과 얻어진 결과입니다.
+* @param TargetPawn - 공격 대상이 되는 Pawn입니다.
+* @return 공격 성공 확률을 반환합니다.
+*/
+float ACustomThirdPerson::CalculateAttackSuccessRatio(const FHitResult HitResult, APawn* TargetPawn)
 {
 	float FailureRatio = 0;
 	FVector AimDirection = (GetActorLocation() - HitResult.GetActor()->GetActorLocation()).GetSafeNormal();
 	ACustomThirdPerson* TargetThirdPerson = Cast<ACustomThirdPerson>(TargetPawn);
 	
 	// 클래스가 유연하지 않으므로 이후 수정
-	if (!TargetThirdPerson) {
-		return 0; 
-	}
-
+	if (!TargetThirdPerson) { return 0; }
 	
 	//엄폐 상태 확인 수정
 	if (TargetThirdPerson->bIsCovering)
 	{
 		float AngleBetweenAimAndWall = 0;
 		AngleBetweenAimAndWall = CalculateAngleBtwAimAndWall(AimDirection, TargetThirdPerson);
-		
 		if (AngleBetweenAimAndWall < 90)
 		{
 			// 장애물에 의한 실패 확률 상승
@@ -143,10 +135,16 @@ float ACustomThirdPerson::CalculateAttackSuccessRatio(FHitResult HitResult, APaw
 
 	UE_LOG(LogTemp, Warning, L"Distance : %f, 거리에 의한 실패 확률 : %f , 성공 확률 : %f" ,HitResult.Distance, (HitResult.Distance * (15 / AttackRange)) / 100, FailureRatio);
 
-
 	return 1 - FailureRatio;
 }
 
+
+/**
+* 공격 대상이 엄폐하고있는 벽과 조준선이 이루는 각도를 계산합니다.
+* @param AimDirection - 조준선의 방향 벡터입니다.
+* @param TargetPawn - 공격 대상이 되는 Pawn입니다.
+* @return 벽과 조준선이 이루는 각도를 Degree로 반환합니다.
+*/
 float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection,ACustomThirdPerson* TargetPawn)
 {
 	float MinAngleBetweenAimAndWall = MAX_FLT;
@@ -165,7 +163,8 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 		float AngleBetweenAimAndWall = 0; 
 		if (CoverDirectionState.Value == true)
 		{
-			switch (CoverDirectionState.Key) {
+			switch (CoverDirectionState.Key) 
+			{
 			case ECoverDirection::East:
 				WallForwardVector = East;
 				DirectionString = "East";
@@ -187,24 +186,29 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 			}
 			AngleBetweenAimAndWall = FMath::RadiansToDegrees(acosf(FVector::DotProduct(AimDirection, WallForwardVector)));
 			
-			if (MinAngleBetweenAimAndWall > AngleBetweenAimAndWall) {
+			if (MinAngleBetweenAimAndWall > AngleBetweenAimAndWall) 
+			{
 				MinAngleBetweenAimAndWall = AngleBetweenAimAndWall;
 				resultString = DirectionString;
 			}
 		}
 	}
-
 	UE_LOG(LogTemp, Warning, L"Minimum Angle : %f , %s", MinAngleBetweenAimAndWall, *resultString);
 
 	return MinAngleBetweenAimAndWall;
 }
 
-// 엄폐 상황에서 애니메이션을 위한 함수
+/**
+* 엄폐시 올바른 애니메이션을 위해 벽을 향해 회전합니다.
+*/
 void ACustomThirdPerson::RotateTowardWall() {
-	for (auto CoverDirection : CoverDirectionMap) {
-		if (CoverDirection.Value == true) {
+	for (auto CoverDirection : CoverDirectionMap) 
+	{
+		if (CoverDirection.Value == true) 
+		{
 			FRotator Direction;
-			switch (CoverDirection.Key) {
+			switch (CoverDirection.Key) 
+			{
 			case ECoverDirection::East:
 				Direction = FRotator(0, 0, 0);
 				break;
@@ -218,19 +222,24 @@ void ACustomThirdPerson::RotateTowardWall() {
 				Direction = FRotator(0, 270, 0);
 				break;
 			}
-
 			SetActorRotation(Direction);
 			return;
 		}
 	}
 }
 
+
+/**
+* 공격이 끝난 후 델리게이트 실행, Flag 변환
+*/
 void ACustomThirdPerson::SetOffAttackState() {
 	bIsAttack = false;
-	if (ChangePlayerPawnDelegate.IsBound()) {
+	if (ChangePlayerPawnDelegate.IsBound()) 
+	{
 		ChangePlayerPawnDelegate.Execute();
 	}
-	else {
-		UE_LOG(LogTemp, Warning, L"Un bound");
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"Unbound");
 	}
 }

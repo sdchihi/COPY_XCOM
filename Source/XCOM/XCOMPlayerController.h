@@ -53,11 +53,11 @@ private:
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 
-	void MovingStepByStep(Path Target, int32 CurrentIndex);
+	void MovingStepByStep(const Path Target, const int32 CurrentIndex);
 
 	void CheckWallAround();
 
-	void CheckWallAroundOneDirection(int32 CharacterIndex, int CardinalIndex);
+	void CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex);
 
 	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
 

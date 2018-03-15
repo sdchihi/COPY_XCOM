@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HUDComponent.h"
-//#include "Runtime/UMG/Public/Components/WidgetComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
 #include "PlayerPawn.h"
@@ -39,16 +38,17 @@ void UHUDComponent::BeginPlay()
 	}
 }
 
-
-void UHUDComponent::HoverHUD(float AxisValue)
+/**
+* 플레이어 카메라의 회전에따라  HUD의 위치를 변경합니다.
+* @param AxisValue - 마우스 x축 이동 입력 값을 받아옵니다.
+*/
+void UHUDComponent::HoverHUD(const float AxisValue)
 {
-	//this->GetRelativeTransform().GetLocation()
 	FRotator newRotator = GetRelativeTransform().GetRotation().Rotator() + FRotator(0, 2 * AxisValue, 0);
 	SetRelativeRotation(newRotator);
-	UE_LOG(LogTemp, Warning, L"HUD Rot = %s", *newRotator.ToString());
 }
 
-void UHUDComponent::ControlSpringArmLength(float value)
+void UHUDComponent::ControlSpringArmLength(const float Length)
 {
-	TargetArmLength = value;
+	TargetArmLength = Length;
 }

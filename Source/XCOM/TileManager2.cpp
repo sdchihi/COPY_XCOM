@@ -22,7 +22,8 @@ void ATileManager2::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	for (int i = 0; i < (x*y); i++) {
+	for (int i = 0; i < (x*y); i++) 
+	{
 		int collum = i % x;
 		int row = i / x;
 		
@@ -70,13 +71,17 @@ void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 	//PathArr[OverlappedTileIndex].bWall = false;
 }
 
-
+/**
+* 타일위에 Wall이 있는지 확인.. 
+* TODO
+*/
 void ATileManager2::FindingWallOnTile(ATile* TileActor) 
 {
 	TArray<AActor*> OverlappedTile;
 	TileActor->GetOverlappingActors(OverlappedTile);
 
-	if (OverlappedTile.Num() != 0) {
+	if (OverlappedTile.Num() != 0) 
+	{
 		int32 OverlappedTileIndex = ConvertVectorToIndex(TileActor->GetActorLocation());
 		PathArr[OverlappedTileIndex].bWall = true;
 
@@ -84,8 +89,12 @@ void ATileManager2::FindingWallOnTile(ATile* TileActor)
 	}
 }
 
-// @Param Vector : Tile's World Location;
-int32 ATileManager2::ConvertVectorToIndex(FVector WorldLocation) 
+/**
+* Location을 이용해 Tile의 Index를 얻어냅니다.
+* @param WorldLocation - 타일의 월드 좌표
+* @return 타일의 Index를 반환합니다.
+*/
+int32 ATileManager2::ConvertVectorToIndex(const FVector WorldLocation) 
 {
 	FVector RelativeLocation = GetActorLocation() - WorldLocation;
 
@@ -95,8 +104,12 @@ int32 ATileManager2::ConvertVectorToIndex(FVector WorldLocation)
 	return (row * x) + collum;
 }
 
-
-FVector ATileManager2::ConvertIndexToVector(int32 Index)
+/**
+* 타일의 Index를 이용해 월드 좌표를 얻어냅니다.
+* @param Index - 타일의 인덱스
+* @return 타일의 월드좌표를 반환합니다.
+*/
+FVector ATileManager2::ConvertIndexToVector(const int32 Index)
 {
 	int collum = Index % x;
 	int row = Index / x;
@@ -111,8 +124,13 @@ void ATileManager2::ConvertVectorToCoord(FVector WorldLocation, OUT int& CoordX,
 }
 
 
-
-void ATileManager2::GetAvailableTiles(ATile* StartingTile, int32 MovingAbility, TArray<ATile*>& AvailableTiles)
+/**
+* 한 타일을 기준으로 이동 가능한 타일들을 얻어냅니다.
+* @param StartingTile - 시작점이될 Pawn이 올라가있는 타일
+* @param MovingAbility - 행동력 ( 최대 이동 거리 )
+* @param AvailableTiles - 이동 가능한 타일들이 담길 Array
+*/
+void ATileManager2::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, TArray<ATile*>& AvailableTiles)
 {
 	TileIndexInRange.Empty();
 	int OverlappedTileIndex = ConvertVectorToIndex(StartingTile->GetActorLocation());
@@ -146,41 +164,52 @@ void ATileManager2::GetAvailableTiles(ATile* StartingTile, int32 MovingAbility, 
 			{
 				continue;
 			}
-
 			ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]);
 			TileIndexInRange.Add(TargetIndex);
 		}	
 	}
-
-	//UE_LOG(LogTemp, Warning, L"%d 개의 Wall!", TileIndexInRange.Num());
-
 	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, TileIndexInRange);
 }
 
-
-bool ATileManager2::IsSameLine(int32 OverlappedTileIndex, int RowNumber, int32 TargetIndex) 
+/**
+* 
+* @param OverlappedTileIndex - 타일의 OverlappedTileIndex 좌표
+* @param RowNumber - 타일의 월드 좌표
+* @param TargetIndex - 타일의 월드 좌표
+* @return 타일의 Index를 반환합니다.
+*/
+bool ATileManager2::IsSameLine(const int32 OverlappedTileIndex, const int RowNumber, const int32 TargetIndex)
 {
 	return ((OverlappedTileIndex / x) + RowNumber) == (TargetIndex / x);
 }
 
-void ATileManager2::ClearAllTiles(bool bClearAll) {
+/**
+* A* 알고리즘에 이용되는 데이터들을 초기화한다.
+* @param bClearAll - Path정보까지 모두 지울지 결정하는 변수
+*/
+void ATileManager2::ClearAllTiles(const bool bClearAll) {
 	TArray<AActor*> ChildTiles;
 	GetAttachedActors(ChildTiles);
 
-	for (AActor* Tile : ChildTiles) {
+	for (AActor* Tile : ChildTiles) 
+	{
 		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		UDecalComponent* Decal = Tile->FindComponentByClass<UDecalComponent>();
 		TileMesh->SetVisibility(false);
 		Decal->SetVisibility(false);
 	}
 
-	if (bClearAll) {
-		for (Path& path : PathArr) {
+	if (bClearAll) 
+	{
+		for (Path& path : PathArr) 
+		{
 			path.Clear(true);
 		}
 	}
-	else {
-		for (Path& path : PathArr) {
+	else 
+	{
+		for (Path& path : PathArr) 
+		{
 			path.Clear();
 		}
 	}
@@ -189,7 +218,13 @@ void ATileManager2::ClearAllTiles(bool bClearAll) {
 	ClosedList.Empty();
 }
 
-int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetIndex) 
+/**
+* 타일간 맨하탄 거리를 얻어냅니다.
+* @param StartIndex - 시작 타일 인덱스
+* @param TargetIndex - 목표 타일 인덱스
+* @return 맨하탄 거리를 반환합니다.
+*/
+int32 ATileManager2::ComputeManhattanDistance(const int32 StartIndex, const int32 TargetIndex)
 {
 	int32 CollumDifference = FMath::Abs((StartIndex / x) - (TargetIndex / x));
 	int32 RowDifference = FMath::Abs((StartIndex % x) - (TargetIndex % x));
@@ -197,14 +232,22 @@ int32 ATileManager2::ComputeManhattanDistance(int32 StartIndex, int32 TargetInde
 	return (CollumDifference + RowDifference) * TileSize;
 }
 
-TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,TArray<int32> TileIndexInRange)
+/**
+* 이동 범위내에 있는 각 타일들에 대해서 A* 알고리즘을 적용해 실제 이동가능한 타일들의 목록을 얻어냅니다.
+* @param StartingIndex - 시작점이될 Pawn이 올라가있는 타일
+* @param MovingAbility - 행동력 ( 최대 이동 거리 )
+* @param TileIndexInRange - 이동 범위내에 존재하는 타일들
+* @return 실제 이동가능한 타일들의 Array
+*/
+TArray<ATile*> ATileManager2::FindPath(const int32 StartingIndex, const int32 MovingAbility,TArray<int32> TileIndexInRange)
 {
 	TArray<ATile*> AvailableTiles;
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
 
 	ClosedList.Add(StartingIndex);
-	for (int32 TargetIndex : TileIndexInRange) {
+	for (int32 TargetIndex : TileIndexInRange)
+	{
 		
 		bool bFindPath = UpdatePathInfo(StartingIndex,StartingIndex,TargetIndex);
 
@@ -215,7 +258,8 @@ TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,T
 			/*for (int i = 0; i < PathLenght; i++) {
 				UE_LOG(LogTemp, Warning, L"%d", PathArr[TargetIndex].OnTheWay[i]);
 			}*/
-			if (PathLenght <= MovingAbility) {
+			if (PathLenght <= MovingAbility)
+			{
 				AvailableTiles.Add(Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]));
 			}
 		}
@@ -224,7 +268,14 @@ TArray<ATile*> ATileManager2::FindPath(int32 StartingIndex,int32 MovingAbility,T
 	return AvailableTiles;
 }
 
-bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 TargetIndex)
+/**
+* A* 알고리즘에 따라 길을 찾습니다.
+* @param CurrentIndex - 길찾기 진행중인 타일 인덱스 
+* @param StartIndex - 시작 지점의 타일 인덱스
+* @param TargetIndex - 목표 지점의 타일 인덱스
+* @return 목표 지점의 타일로 이동가능 여부를 반환합니다.
+*/
+bool ATileManager2::UpdatePathInfo(const int32 CurrentIndex, const int32 StartIndex , const int32 TargetIndex)
 {
 	UpdateCardinalPath(CurrentIndex, TargetIndex);
 	UpdateDiagonalPath(CurrentIndex, TargetIndex);
@@ -261,7 +312,12 @@ bool ATileManager2::UpdatePathInfo(int32 CurrentIndex, int32 StartIndex ,int32 T
 	}
 }
 
-void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
+/**
+* 모든 Cardinal 방향에 대해서 A*알고리즘을 적용합니다.
+* @param CurrentIndex - 길찾기 진행중인 타일 인덱스 
+* @param TargetIndex - 목표 지점의 타일 인덱스
+*/
+void ATileManager2::UpdateCardinalPath(const int32 CurrentIndex, const int32 TargetIndex)
 {
 	int32 EastIndex = CurrentIndex + 1;
 	int32 WestIndex = CurrentIndex - 1;
@@ -275,38 +331,49 @@ void ATileManager2::UpdateCardinalPath(int32 CurrentIndex, int32 TargetIndex)
 	UpdateOneCardinalPath(CurrentIndex, NorthIndex, TargetIndex);
 }
 
-void ATileManager2::UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPathIndex, int32 TargetIndex) {
+/**
+* 하나의 Cadinal 방향의 Tile에 대해서 비용 계산을 합니다.
+* @param CurrentIndex - 길찾기 진행중인 타일 인덱스
+* @param CardinalPathIndex - 비용계산에 이용될 Cardinal 방향의 타일 인덱스
+* @param TargetIndex - 목표 지점의 타일 인덱스
+*/
+void ATileManager2::UpdateOneCardinalPath(const int32 CurrentIndex, const int32 CardinalPathIndex, const int32 TargetIndex) {
 	int32 RowNumber = 0;
 	int32 NewCostG = PathArr[CurrentIndex].CostG + TileSize;
-
 	float PathDecalDirection = 0;
 
-	if (CardinalPathIndex == (CurrentIndex + x)) {
+	if (CardinalPathIndex == (CurrentIndex + x)) 
+	{
 		RowNumber = 1;
-
 		PathDecalDirection = 270;
 	}
-	else if (CardinalPathIndex == (CurrentIndex - x)) {
+	else if (CardinalPathIndex == (CurrentIndex - x)) 
+	{
 		RowNumber = -1;
-
 		PathDecalDirection = 90;
 	}
-	else {
+	else 
+	{
 		RowNumber = 0;
 
-		if (CardinalPathIndex == (CurrentIndex + 1)) {
+		if (CardinalPathIndex == (CurrentIndex + 1)) 
+		{
 			PathDecalDirection = 180;
 		}
-		else if(CardinalPathIndex == (CurrentIndex -1)) {
+		else if(CardinalPathIndex == (CurrentIndex -1)) 
+		{
 			PathDecalDirection = 0;
 		}
 	}
 	
-	if (CheckWithinBounds(CardinalPathIndex) && IsSameLine(CurrentIndex, RowNumber, CardinalPathIndex) && !ClosedList.Contains(CardinalPathIndex) && TileIndexInRange.Contains(CardinalPathIndex)) {
+	if (CheckWithinBounds(CardinalPathIndex) && IsSameLine(CurrentIndex, RowNumber, CardinalPathIndex) && !ClosedList.Contains(CardinalPathIndex) && TileIndexInRange.Contains(CardinalPathIndex)) 
+	{
 		//Open List 안에 존재할때
-		if (OpenList.Contains(CardinalPathIndex)) {
+		if (OpenList.Contains(CardinalPathIndex)) 
+		{
 			//갱신 필요할때
-			if (PathArr[CardinalPathIndex].CostG > NewCostG) {
+			if (PathArr[CardinalPathIndex].CostG > NewCostG) 
+			{
 				PathArr[CardinalPathIndex].CostG = NewCostG;
 				PathArr[CardinalPathIndex].CostF = PathArr[CardinalPathIndex].CostG + PathArr[CardinalPathIndex].CostH;
 				PathArr[CardinalPathIndex].ParentIndex = CurrentIndex;
@@ -320,13 +387,17 @@ void ATileManager2::UpdateOneCardinalPath(int32 CurrentIndex, int32 CardinalPath
 			PathArr[CardinalPathIndex].CostF = PathArr[CardinalPathIndex].CostG + PathArr[CardinalPathIndex].CostH;
 			PathArr[CardinalPathIndex].ParentIndex = CurrentIndex;
 			PathArr[CardinalPathIndex].PathDirection = PathDecalDirection;
-
 			OpenList.Add(CardinalPathIndex);
 		}
 	}
 }
 
-void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
+/**
+* 모든 Diagonal 방향에 대해서 A*알고리즘을 적용합니다.
+* @param CurrentIndex - 길찾기 진행중인 타일 인덱스
+* @param TargetIndex - 목표 지점의 타일 인덱스
+*/
+void ATileManager2::UpdateDiagonalPath(const int32 CurrentIndex, const int32 TargetIndex)
 {
 	int32 NorthEastIndex = CurrentIndex + x + 1;
 	int32 NorthWestIndex = CurrentIndex + x - 1;
@@ -339,7 +410,13 @@ void ATileManager2::UpdateDiagonalPath(int32 CurrentIndex, int32 TargetIndex)
 	UpdateOneDiagonalPath(CurrentIndex, SouthWestIndex, TargetIndex);
 }
 
-void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPathIndex, int32 TargetIndex) {
+/**
+* 하나의 Diagonal 방향의 Tile에 대해서 비용 계산을 합니다.
+* @param CurrentIndex - 길찾기 진행중인 타일 인덱스
+* @param DiagonalPathIndex - 비용계산에 이용될 Diagonal 방향의 타일 인덱스
+* @param TargetIndex - 목표 지점의 타일 인덱스
+*/
+void ATileManager2::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 DiagonalPathIndex, const int32 TargetIndex) {
 	
 	int32 NorthEastIndex = CurrentIndex + x + 1;
 	int32 NorthWestIndex = CurrentIndex + x - 1;
@@ -354,25 +431,29 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 
 	int32 NewCostG = PathArr[CurrentIndex].CostG + (int)(TileSize*1.5);
 
-	if (DiagonalPathIndex == NorthEastIndex) {
+	if (DiagonalPathIndex == NorthEastIndex) 
+	{
 		FromCurrentToDiagonal = 1;
 		RowDifference = -x;
 		CollumDifference = -1;
 		PathDecalDirection = 225;
 	}
-	else if (DiagonalPathIndex == NorthWestIndex) {
+	else if (DiagonalPathIndex == NorthWestIndex) 
+	{
 		FromCurrentToDiagonal = 1;
 		RowDifference = -x;
 		CollumDifference = 1;
 		PathDecalDirection = 315;
 	}
-	else if (DiagonalPathIndex == SouthEastIndex) {
+	else if (DiagonalPathIndex == SouthEastIndex) 
+	{
 		FromCurrentToDiagonal = -1;
 		RowDifference = x;
 		CollumDifference = -1;
 		PathDecalDirection = 135;
 	}
-	else if (DiagonalPathIndex == SouthWestIndex) {
+	else if (DiagonalPathIndex == SouthWestIndex) 
+	{
 		FromCurrentToDiagonal = -1;
 		RowDifference = x;
 		CollumDifference = 1;
@@ -398,7 +479,8 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 		if (OpenList.Contains(DiagonalPathIndex))
 		{
 			// CostG의 비교 결과  갱신이 필요한 경우
-			if (PathArr[DiagonalPathIndex].CostG > NewCostG) {
+			if (PathArr[DiagonalPathIndex].CostG > NewCostG)
+			{
 				PathArr[DiagonalPathIndex].CostG = PathArr[CurrentIndex].CostG + (int)(TileSize*1.5);
 				PathArr[DiagonalPathIndex].CostF = PathArr[DiagonalPathIndex].CostG + PathArr[DiagonalPathIndex].CostH;
 				PathArr[DiagonalPathIndex].ParentIndex = CurrentIndex;
@@ -418,18 +500,28 @@ void ATileManager2::UpdateOneDiagonalPath(int32 CurrentIndex, int32 DiagonalPath
 	}
 }
 
-
-bool ATileManager2::CheckWithinBounds(int32 TileIndex)
+/**
+* 타일의 인덱스가 최대 범위를 넘어가는지 확인합니다.
+* @param TileIndex - 검사하게 될 타일의 index
+* @return 해당 타일이 유효 범위를 벗어나는지 여부를 반환합니다.
+*/
+bool ATileManager2::CheckWithinBounds(const int32 TileIndex)
 {
 	return  (0 <= TileIndex) && (TileIndex < (x * y));
 }
 
+/**
+* F 비용이 가장 낮은 길의 Index를 얻어냅니다
+* @return F 비용이 가장 낮은 길의 Index
+*/
 int32 ATileManager2::FindMinCostFIndex() {
 	int32 MinCostF = INT_MAX;
 	int32 MinCostPathIndex = 0;
 
-	for (int i = OpenList.Num() - 1 ; i >= 0; i--) {
-		if (MinCostF > PathArr[OpenList[i]].CostF) {
+	for (int i = OpenList.Num() - 1 ; i >= 0; i--) 
+	{
+		if (MinCostF > PathArr[OpenList[i]].CostF) 
+		{
 			MinCostF = PathArr[OpenList[i]].CostF;
 			MinCostPathIndex = OpenList[i];
 		}
@@ -438,15 +530,20 @@ int32 ATileManager2::FindMinCostFIndex() {
 	return MinCostPathIndex;
 }
 
-void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 NumberOfTimes, bool bVisibility) {
-
+/**
+* 타일위에 나타나는 화살표 Decal 방향을 변경하고, 가시성을 제어합니다.
+* @param PathInfo - Key : 타일(key)에서 다음 타일로  이동방향(value)을 갖고있는 Map
+* @param NumberOfTimes - 함수 반복 횟수
+* @param bVisibility - Decal을 보일지 말지 결정합니다.
+*/
+void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, const int32 NumberOfTimes, const bool bVisibility) {
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
 
-	for (auto OnePathInfo : PathInfo) {
+	for (auto OnePathInfo : PathInfo) 
+	{
 		int32 TargetTileIndex = OnePathInfo.Key;
 		//UE_LOG(LogTemp, Warning, L"Decal Tile Index : %d , Yaw : %f", TargetTileIndex, OnePathInfo.Value);
-
 
 		ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
 		Tile->SetDecalVisibility(bVisibility);
@@ -455,6 +552,7 @@ void ATileManager2::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, int32 
 		}
 	}
 }
+
 
 void ATileManager2::MouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();

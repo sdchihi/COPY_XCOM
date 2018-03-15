@@ -33,8 +33,8 @@ private:
 	TSubclassOf<UUserWidget> HUDWidgetBlueprint;
 
 	UFUNCTION()
-	void ControlSpringArmLength(float value);
+	void ControlSpringArmLength(const float Length);
 
 	UFUNCTION()
-	void HoverHUD(float AxisValue);
+	void HoverHUD(const float AxisValue);
 };

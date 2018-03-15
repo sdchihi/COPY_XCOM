@@ -20,12 +20,12 @@ void ATile::BeginPlay() {
 };
 
 
-void ATile::SetDecalVisibility(bool Visibility) {
+void ATile::SetDecalVisibility(const bool Visibility) {
 	DecalComponent->SetVisibility(Visibility);
 }
 
 
-void ATile::SetDecalRotationYaw(float Yaw) {
+void ATile::SetDecalRotationYaw(const float Yaw) {
 	FRotator NewDecalRotation = DecalComponent->GetComponentRotation();
 	NewDecalRotation.Yaw = Yaw;
 	NewDecalRotation.Roll = 0;
