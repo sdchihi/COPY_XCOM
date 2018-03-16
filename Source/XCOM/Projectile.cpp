@@ -3,6 +3,8 @@
 #include "Projectile.h"
 #include "Classes/Components/StaticMeshComponent.h"
 #include "Classes/GameFramework/ProjectileMovementComponent.h"
+#include "Classes/Kismet/GameplayStatics.h"
+#include "Classes/PhysicsEngine/DestructibleActor.h"
 
 AProjectile::AProjectile() 
 {
@@ -23,13 +25,37 @@ AProjectile::AProjectile()
 	
 
 
-void AProjectile::BeginPlay() {
+void AProjectile::BeginPlay() 
+{
 
 }
 
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) {
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) 
+{
+	if (OtherActor) 
+	{
+		if (Cast<ADestructibleActor>(OtherActor))
+		{
+			ApplyToDestructibleActor(Hit.Location);
+		}
+	}
+	
 	//UE_LOG(LogTemp, Warning, L"Hit Obj name : %s", *OtherActor->GetName());
 	//Todo - 파티클 생성 및 삭제 후 Destroy
 	//Destroy();
+}
+
+void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
+{
+	TSubclassOf<UDamageType> DamageType;
+	UGameplayStatics::ApplyRadialDamage(
+		GetWorld(),
+		Damage,
+		HitLocation,
+		20,
+		DamageType,
+		TArray<AActor*>()
+		);
+
 }

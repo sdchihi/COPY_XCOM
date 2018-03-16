@@ -284,6 +284,7 @@ void APlayerPawn::MoveCharacterBasedOnState(int32 TargetTileIndex)
 {
 	DisableInput(this);
 
+	SelectedCharacter->NumberOfRemainingActivities = NumberOfRemainingActivities->NumberOfRemainingActivities - 1;
 	if (SelectedCharacter->bIsCovering)
 	{
 		SelectedCharacter->ClearCoverDirectionInfo();

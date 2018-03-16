@@ -47,7 +47,6 @@ public:
 	
 	TMap<ECoverDirection, bool> CoverDirectionMap;
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<AGun> GunBlueprint;
 
@@ -68,13 +67,11 @@ public:
 
 	bool bCanAction = true;
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int MaxHP = 5;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int CurrentHP;
-
 
 	void RotateTowardWall();
 
@@ -91,22 +88,18 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* FollowCamera = nullptr;
 	
-
 	UPROPERTY(EditDefaultsOnly)
 	bool bTeam = true;
 
 	UPROPERTY(EditDefaultsOnly)
 	int step = 0;
 
-
 	UPROPERTY(EditDefaultsOnly)
 	float AttackRange = 500;
 
 	float CalculateAttackSuccessRatio(const FHitResult HitResult, APawn* TargetPawn);
 
-
 	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn);
 
 	void SetOffAttackState();
-
 };

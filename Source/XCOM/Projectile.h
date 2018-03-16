@@ -29,11 +29,15 @@ public:
 
 	float GetDamage() { return Damage; }
 
+
+
 private: 
 	//UProjectileMovementComponent* ProjectileMovementComponent;
 	UStaticMeshComponent* Mesh = nullptr;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	void ApplyToDestructibleActor(const FVector HitLocation);
 
 };
