@@ -80,6 +80,9 @@ public:
 
 	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
 
+	UPROPERTY(EditDefaultsOnly)
+	int32 NumberOfRemainingActivities = 2;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm= nullptr;
