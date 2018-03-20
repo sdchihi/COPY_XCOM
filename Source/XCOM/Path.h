@@ -40,5 +40,7 @@ public:
 
 	float PathDirection;
 
+	bool bCanMoveWithOneAct;
+
 	void Clear(bool bClearAll = false);
 };

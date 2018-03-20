@@ -73,6 +73,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int CurrentHP;
 
+	int32 CurrentMovableStep;
+
 	void RotateTowardWall();
 
 	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
@@ -89,6 +91,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartFiring();
 
+	int32 GetStep() { return Step; };
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm= nullptr;
@@ -101,7 +105,7 @@ private:
 	bool bTeam = true;
 
 	UPROPERTY(EditDefaultsOnly)
-	int step = 0;
+	int32 Step = 10;
 
 	UPROPERTY(EditDefaultsOnly)
 	float AttackRange = 500;

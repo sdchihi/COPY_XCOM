@@ -34,7 +34,6 @@ void AXCOMPlayerController::BeginPlay()
 	Initialize();
 };
 
-
 //아직 사용 안함
 void AXCOMPlayerController::Tick(float DeltaTime)
 {
@@ -106,7 +105,10 @@ void AXCOMPlayerController::OnClick()
 				UE_LOG(LogTemp, Warning, L"Can not be moved there");
 				return;
 			}
-
+			if(!TargetTile->bCanMoveWithOneAct) 
+			{
+				SelectedCharacter->NumberOfRemainingActivities = 0;
+			}
 			int32 TargetTileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
 			MoveCharacterBasedOnState(TargetTileIndex);
 		}
@@ -116,7 +118,6 @@ void AXCOMPlayerController::OnClick()
 		}
 	}
 }
-
 
 /**
 * 같은 편 안에서 현재 선택되어 있는 캐릭터가 아닌 다른 캐릭터로 전환될때 호출됩니다.
@@ -135,7 +136,7 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 			return;
 		}
 		FTimerHandle UnUsedHandle;
-		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), 4);
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), SelectedCharacter->GetStep(), SelectedCharacter->CurrentMovableStep);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
 
 		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
@@ -147,27 +148,34 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 	}
 }
 
-
 /**
 * 다른 캐릭터를 클릭해 전환됬을때 호출됩니다.
 * @param OverlappedTile - 선택된 캐릭터가 올라가있는 타일
 * @param MovingAbility - 이동 가능한 칸 수
 */
-void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility)
+void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility,const int32 CurrentMovableStep)
 {
 	EnableInput(this);
 	TileManager->ClearAllTiles(true);
 
 	TArray<ATile*> TilesInRange;
-	TileManager->GetAvailableTiles(OverlappedTile, MovingAbility, TilesInRange);
+	TileManager->GetAvailableTiles(OverlappedTile, MovingAbility, CurrentMovableStep, TilesInRange);
 
 	for (ATile* Tile : TilesInRange)
 	{
 		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
+		if (Tile->bCanMoveWithOneAct) 
+		{
+			Tile->SelectCloseTileMaterial();
+		}
+		else 
+		{
+			Tile->SelectDistantTileMaterial();
+		}
+
 		TileMesh->SetVisibility(true);
 	}
 }
-
 
 /**
 * 목표 타일로 이동할때 단계별로 이동하게 합니다
@@ -194,6 +202,7 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay 고정
+		SelectedCharacter->CurrentMovableStep /= 2;
 	}
 }
 
@@ -288,7 +297,6 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterInd
 	}
 }
 
-
 // 테스트를 위한 메소드
 // 이후에 삭제 또는 수정 필요
 bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter) 
@@ -307,7 +315,6 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 	{
 		return true;
 	}
-
 	return false;
 }
 

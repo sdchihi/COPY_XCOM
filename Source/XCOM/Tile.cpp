@@ -8,11 +8,12 @@
 
 
 
-ATile::ATile() {
+ATile::ATile() 
+{
 }
 
-void ATile::BeginPlay() {
-
+void ATile::BeginPlay()
+{
 	Super::BeginPlay();
 
 	DecalComponent = FindComponentByClass<UDecalComponent>();
@@ -20,12 +21,14 @@ void ATile::BeginPlay() {
 };
 
 
-void ATile::SetDecalVisibility(const bool Visibility) {
+void ATile::SetDecalVisibility(const bool Visibility) 
+{
 	DecalComponent->SetVisibility(Visibility);
 }
 
 
-void ATile::SetDecalRotationYaw(const float Yaw) {
+void ATile::SetDecalRotationYaw(const float Yaw) 
+{
 	FRotator NewDecalRotation = DecalComponent->GetComponentRotation();
 	NewDecalRotation.Yaw = Yaw;
 	NewDecalRotation.Roll = 0;
@@ -33,6 +36,19 @@ void ATile::SetDecalRotationYaw(const float Yaw) {
 	DecalComponent->SetRelativeRotation(FRotator(90.f,Yaw,0.f));
 };
 
-bool ATile::GetTileVisibility() {
+bool ATile::GetTileVisibility() 
+{
 	return TileMesh->IsVisible();
+}
+
+void ATile::SelectCloseTileMaterial()
+{
+	if (!CloseTileMat) { return; }
+	TileMesh->SetMaterial(0, CloseTileMat);
+}
+
+void ATile::SelectDistantTileMaterial() 
+{
+	if (!DistantTileMat) { return; }
+	TileMesh->SetMaterial(0, DistantTileMat);
 }

@@ -24,6 +24,8 @@ void ACustomThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CurrentMovableStep = Step;
+
 	CoverDirectionMap.Add(ECoverDirection::East, false);
 	CoverDirectionMap.Add(ECoverDirection::West, false);
 	CoverDirectionMap.Add(ECoverDirection::North, false);
@@ -95,16 +97,7 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		FVector AimDirection = HitResult.Location - GetActorLocation();
 
 		//GunReference->Fire();
-		/*
-		bIsAttack = true;
-
-		bCanAction = false;
-		UE_LOG(LogTemp, Warning, L"Hit Result Actor : %s  , TargetActor : %s  Success  Percentage : %f", *DetectedPawn->GetName(), *TargetPawn->GetName(), AttackSuccessRatio);
-
-		FTimerHandle UnUsedHandle;
-		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
-		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
-		*/
+		
 		AimAt(AimDirection);
 	}
 }
@@ -244,7 +237,6 @@ void ACustomThirdPerson::SetOffAttackState() {
 	}
 	if (ChangePlayerPawnDelegate.IsBound()) 
 	{
-
 		ChangePlayerPawnDelegate.Execute();
 	}
 	else 
@@ -252,7 +244,6 @@ void ACustomThirdPerson::SetOffAttackState() {
 		UE_LOG(LogTemp, Warning, L"Unbound");
 	}
 }
-
 
 /**
 * 블루프린트에서 호출될 수 있는 메소드로 일정 시간내에 캐릭터를 목표 방향으로 회전시킵니다. (Timeline과 연계해서 사용)
@@ -263,7 +254,6 @@ void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha)
 {
 	float CharacterRotatorYaw = GetActorRotation().Yaw;
 	float AimAsRotatorYaw = AimDirection.Rotation().Yaw;
-	UE_LOG(LogTemp, Warning, L"Char Rot : %s , Char Yaw :  %f, Aim Yaw:  %f",*GetActorRotation().ToString(), CharacterRotatorYaw, AimAsRotatorYaw)
 
 	SetActorRotation(FRotator(0,FMath::Lerp(CharacterRotatorYaw, AimAsRotatorYaw, LerpAlpha), 0));
 }

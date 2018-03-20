@@ -47,6 +47,7 @@ private:
 
 	APlayerPawn* DefaultPlayerPawn = nullptr;
 
+
 	//¸Þ¼Òµå
 	void Initialize();
 
@@ -66,7 +67,7 @@ private:
 	void ChangeToDefaultPawn();
 
 	UFUNCTION()
-	void SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility);
+	void SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility, const int32 CurrentMovableStep);
 
 	void MoveCharacterBasedOnState(int32 TargetTileIndex);
 

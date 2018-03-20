@@ -27,7 +27,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, TArray<ATile*>& AvailableTiles);
+	void GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility,int32 MovableStepsPerAct, TArray<ATile*>& AvailableTiles);
 
 	int32 ConvertVectorToIndex(const FVector WorldLocation);
 
@@ -88,7 +88,7 @@ private:
 	void FindingWallOnTile(ATile* TileActor);
 
 
-	TArray<ATile*> FindPath(const int32 StartingIndex, const int32 MovingAbility, TArray<int32> TileIndexInRange);
+	TArray<ATile*> FindPath(const int32 StartingIndex, const int32 MovingAbility, int32 MovableStepsPerAct, TArray<int32> TileIndexInRange);
 
 	bool UpdatePathInfo(const int32 CurrentIndex, const int32 StartIndex, const int32 TargetIndex);
 

@@ -44,6 +44,19 @@ public:
 
 	virtual void BeginPlay() override;
 
+	bool bCanMoveWithOneAct;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInterface* CloseTileMat;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInterface* DistantTileMat;
+
+
+	void SelectCloseTileMaterial();
+
+	void SelectDistantTileMaterial();
+
 protected:
 	
 

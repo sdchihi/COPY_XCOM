@@ -130,7 +130,7 @@ void ATileManager2::ConvertVectorToCoord(FVector WorldLocation, OUT int& CoordX,
 * @param MovingAbility - 행동력 ( 최대 이동 거리 )
 * @param AvailableTiles - 이동 가능한 타일들이 담길 Array
 */
-void ATileManager2::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, TArray<ATile*>& AvailableTiles)
+void ATileManager2::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, int32 MovableStepsPerAct, TArray<ATile*>& AvailableTiles)
 {
 	TileIndexInRange.Empty();
 	int OverlappedTileIndex = ConvertVectorToIndex(StartingTile->GetActorLocation());
@@ -168,7 +168,7 @@ void ATileManager2::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbi
 			TileIndexInRange.Add(TargetIndex);
 		}	
 	}
-	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, TileIndexInRange);
+	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, MovableStepsPerAct, TileIndexInRange);
 }
 
 /**
@@ -239,7 +239,7 @@ int32 ATileManager2::ComputeManhattanDistance(const int32 StartIndex, const int3
 * @param TileIndexInRange - 이동 범위내에 존재하는 타일들
 * @return 실제 이동가능한 타일들의 Array
 */
-TArray<ATile*> ATileManager2::FindPath(const int32 StartingIndex, const int32 MovingAbility,TArray<int32> TileIndexInRange)
+TArray<ATile*> ATileManager2::FindPath(const int32 StartingIndex, const int32 MovingAbility, int32 MovableStepsPerAct, TArray<int32> TileIndexInRange)
 {
 	TArray<ATile*> AvailableTiles;
 	TArray<AActor*> ChildActors;
@@ -253,14 +253,20 @@ TArray<ATile*> ATileManager2::FindPath(const int32 StartingIndex, const int32 Mo
 
 		if (bFindPath) 
 		{
-			//UE_LOG(LogTemp, Warning, L"%d is Available", TargetIndex);
-			int32 PathLenght = PathArr[TargetIndex].OnTheWay.Num();
+			int32 PathLength = PathArr[TargetIndex].OnTheWay.Num();
 			/*for (int i = 0; i < PathLenght; i++) {
 				UE_LOG(LogTemp, Warning, L"%d", PathArr[TargetIndex].OnTheWay[i]);
 			}*/
-			if (PathLenght <= MovingAbility)
+			ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]);
+			if (MovableStepsPerAct < PathLength && PathLength <= MovingAbility)
 			{
-				AvailableTiles.Add(Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]));
+				TargetTile->bCanMoveWithOneAct = false;
+				AvailableTiles.Add(TargetTile);
+			}
+			else if (PathLength <= MovableStepsPerAct)
+			{
+				TargetTile->bCanMoveWithOneAct = true;
+				AvailableTiles.Add(TargetTile);
 			}
 		}
 		ClearAllTiles();
