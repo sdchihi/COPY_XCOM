@@ -154,3 +154,29 @@ void APlayerPawn::HoverCamera(float AxisValue)
 		RotateUIDelegate.Broadcast(AxisValue);
 	}
 }
+
+void APlayerPawn::TurnCamera(const float PrevArmYaw, const float LerpAlpha)
+{
+	FRotator SpringArmRotator = SpringArm->GetComponentRotation();
+	
+	//float StartCameraYaw = PrevLocationOrder * 90;
+	//float TargetYaw = CameraLocationOrder * 90;
+	
+
+	SpringArm->SetWorldRotation(FRotator(SpringArmRotator.Pitch, FMath::Lerp(PrevArmYaw, ArmYaw, LerpAlpha), SpringArmRotator.Roll));
+}
+
+float APlayerPawn::GetNextCameraArmYaw(const bool bTurnCameraClockWise)
+{
+	float PrevArmYaw = ArmYaw;
+	if (bTurnCameraClockWise)
+	{
+		ArmYaw += 90;
+	}
+	else
+	{
+		ArmYaw -= 90;
+	}
+	
+	return PrevArmYaw;
+}

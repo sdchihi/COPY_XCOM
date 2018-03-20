@@ -49,6 +49,14 @@ public:
 	FRotateUIDelegate RotateUIDelegate;
 	FControlDistanceToUIDelegate ControlDistanceToUIDelegate;
 
+	UFUNCTION(BlueprintCallable)
+	void TurnCamera(const float PrevArmYaw,const float LerpAlpha);
+
+	UFUNCTION(BlueprintCallable)
+	float GetNextCameraArmYaw(const bool bTurnCameraClockWise);
+
+	float ArmYaw = 0;
+
 private:
 
 	//변수
@@ -68,7 +76,8 @@ private:
 
 	bool bCanHover = false;
 
-
+	//0 ~ 3
+	int32 CameraLocationOrder = 0;
 	// 메소드
 
 	UFUNCTION()
@@ -91,5 +100,6 @@ private:
 	
 	UFUNCTION()
 	void DisableHover();
+
 
 };
