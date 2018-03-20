@@ -39,7 +39,9 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		{
 			ApplyToDestructibleActor(Hit.Location);
 		}
+
 	}
+
 	
 	//UE_LOG(LogTemp, Warning, L"Hit Obj name : %s", *OtherActor->GetName());
 	//Todo - 파티클 생성 및 삭제 후 Destroy
@@ -53,9 +55,11 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 		GetWorld(),
 		Damage,
 		HitLocation,
-		20,
+		40,
 		DamageType,
 		TArray<AActor*>()
 		);
+	//TODO - Particle 효과 삽입
 
+	Destroy();
 }

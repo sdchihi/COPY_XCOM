@@ -82,7 +82,7 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 	GetActorLocation();
 	GetWorld()->LineTraceSingleByChannel(
 		HitResult,
-		GetActorLocation(),// + GetActorForwardVector() * 50,
+		GetActorLocation() +GetActorUpVector() * 110,
 		TargetPawn->GetActorLocation(),
 		ECollisionChannel::ECC_EngineTraceChannel2,
 		CollisionParams
@@ -92,7 +92,10 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 	if (DetectedPawn) 
 	{
 		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, TargetPawn);
+		FVector AimDirection = HitResult.Location - GetActorLocation();
+
 		//GunReference->Fire();
+		/*
 		bIsAttack = true;
 
 		bCanAction = false;
@@ -101,6 +104,8 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
+		*/
+		AimAt(AimDirection);
 	}
 }
 
@@ -234,12 +239,41 @@ void ACustomThirdPerson::RotateTowardWall() {
 */
 void ACustomThirdPerson::SetOffAttackState() {
 	bIsAttack = false;
+	if (bIsCovering) {
+		RotateTowardWall();
+	}
 	if (ChangePlayerPawnDelegate.IsBound()) 
 	{
+
 		ChangePlayerPawnDelegate.Execute();
 	}
 	else 
 	{
 		UE_LOG(LogTemp, Warning, L"Unbound");
 	}
+}
+
+
+/**
+* 블루프린트에서 호출될 수 있는 메소드로 일정 시간내에 캐릭터를 목표 방향으로 회전시킵니다. (Timeline과 연계해서 사용)
+* @param AimDirection - 목표 방향 벡터입니다.
+* @param LerpAlpha - Lerp에 사용될 Alpha값입니다.
+*/
+void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha) 
+{
+	float CharacterRotatorYaw = GetActorRotation().Yaw;
+	float AimAsRotatorYaw = AimDirection.Rotation().Yaw;
+	UE_LOG(LogTemp, Warning, L"Char Rot : %s , Char Yaw :  %f, Aim Yaw:  %f",*GetActorRotation().ToString(), CharacterRotatorYaw, AimAsRotatorYaw)
+
+	SetActorRotation(FRotator(0,FMath::Lerp(CharacterRotatorYaw, AimAsRotatorYaw, LerpAlpha), 0));
+}
+
+void ACustomThirdPerson::StartFiring() 
+{
+	bIsAttack = true;
+	bCanAction = false;
+
+	FTimerHandle UnUsedHandle;
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
 }

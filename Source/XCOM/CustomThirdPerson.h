@@ -80,6 +80,15 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	int32 NumberOfRemainingActivities = 2;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void AimAt(FVector AimDirection);
+
+	UFUNCTION(BlueprintCallable)
+	void RotateCharacter(FVector AimDirection, float LerpAlpha);
+
+	UFUNCTION(BlueprintCallable)
+	void StartFiring();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm= nullptr;

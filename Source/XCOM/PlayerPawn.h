@@ -69,20 +69,6 @@ private:
 	bool bCanHover = false;
 
 
-	//Todo
-
-	FTransform PrevPlayerPawnTransform;
-
-	UPROPERTY(VisibleAnywhere)
-	ATileManager2* TileManager = nullptr;
-
-	ACustomThirdPerson* SelectedCharacter = nullptr;
-
-	APlayerPawnInAiming* PawnInAimingSituation = nullptr;
-
-	APlayerPawn* DefaultPlayerPawn = nullptr;
-
-
 	// ¸Þ¼Òµå
 
 	UFUNCTION()
@@ -105,17 +91,5 @@ private:
 	
 	UFUNCTION()
 	void DisableHover();
-
-	UFUNCTION()
-	void OnClick();
-
-
-	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
-
-	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
-
-	void SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility);
-
-	void MoveCharacterBasedOnState(int32 TargetTileIndex);
 
 };

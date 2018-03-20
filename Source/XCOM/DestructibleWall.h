@@ -6,6 +6,13 @@
 #include "PhysicsEngine/DestructibleActor.h"
 #include "DestructibleWall.generated.h"
 
+UENUM(BlueprintType)
+enum class EWallState : uint8
+{
+	FullCover,
+	HalfCover
+};
+
 /**
  * 
  */
@@ -19,6 +26,7 @@ public:
 
 	virtual void BeginPlay() override;
 
+	EWallState WallState;
 
 private:
 

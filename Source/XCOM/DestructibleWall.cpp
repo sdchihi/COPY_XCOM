@@ -9,10 +9,10 @@
 ADestructibleWall::ADestructibleWall() 
 {
 
-	DestructibleCompReference = Cast<UDestructibleComponent>(RootComponent);
+	DestructibleCompReference = FindComponentByClass<UDestructibleComponent>();
 	if (DestructibleCompReference) {
 		//DestructibleCompReference->SetSimulatePhysics(true);
-		//DestructibleCompReference->OnComponentHit.AddDynamic(this, &ADestructibleWall::OnHit);
+		DestructibleCompReference->OnComponentHit.AddDynamic(this, &ADestructibleWall::OnHit);
 		//DestructibleCompReference->SetNotifyRigidBodyCollision(true); // 확인 필요   Hit Event 발생 여부
 	}
 
@@ -42,4 +42,8 @@ void ADestructibleWall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 
 	}
 }
-
+//
+//void ADestructibleWall::ChangeObjectType()
+//{
+//	; 
+//}

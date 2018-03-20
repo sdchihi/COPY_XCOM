@@ -31,20 +31,7 @@ void AXCOMPlayerController::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager2>(FoundActors[0]);
 
-	FoundActors.Empty();
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawnInAiming::StaticClass(), FoundActors);
-	PawnInAimingSituation = Cast<APlayerPawnInAiming>(FoundActors[0]);
-
-	FoundActors.Empty();
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawn::StaticClass(), FoundActors);
-	DefaultPlayerPawn = Cast<APlayerPawn>(FoundActors[0]);
-
-	FoundActors.Empty();
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
-	for (auto ThirdPersonAsActor : FoundActors) {
-		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
-		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
-	}
+	Initialize();
 };
 
 
@@ -60,50 +47,59 @@ void AXCOMPlayerController::SetupInputComponent() {
 	this->InputComponent->BindAction("Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
 }
 
+void AXCOMPlayerController::Initialize() {
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
+	TileManager = Cast<ATileManager2>(FoundActors[0]);
+
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawnInAiming::StaticClass(), FoundActors);
+	PawnInAimingSituation = Cast<APlayerPawnInAiming>(FoundActors[0]);
+
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawn::StaticClass(), FoundActors);
+	DefaultPlayerPawn = Cast<APlayerPawn>(FoundActors[0]);
+
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
+	for (auto ThirdPersonAsActor : FoundActors) {
+		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
+		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+	}
+}
 
 void AXCOMPlayerController::OnClick()
 {
 	FHitResult TraceResult;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, true, TraceResult);
-	AActor* actor= TraceResult.GetActor();
+	AActor* actor = TraceResult.GetActor();
 
-	if (!ensure(TraceResult.GetActor())) 	{ return; }
+	if (!ensure(TraceResult.GetActor())) { return; }
 	else
 	{
 		ACustomThirdPerson* TargetCharacter = Cast<ACustomThirdPerson>(actor);
 		ATile* TargetTile = Cast<ATile>(actor);
-		if (TargetCharacter) 
+		if (TargetCharacter)
 		{
-			if (CheckClickedCharacterTeam(TargetCharacter)) 
+			if (CheckClickedCharacterTeam(TargetCharacter))
 			{
-				DisableInput(this);
-
-				FTimerHandle UnUsedHandle;
-				FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SwitchCharacter, TargetCharacter);
-
-
-				//클릭시 카메라 위치 변경 효과 차후 수정 필요
-				//SetViewTargetWithBlend(TargetCharacter, 0.5);
-
-				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
-				SelectedCharacter = TargetCharacter;
+				SwitchCharacter(TargetCharacter);
 			}
 			else
-			{	//적 클릭시
+			{	//적 클릭시			(테스트용 코드- 이후에 옮길것이라서 함수화 하지 않는다.)
 				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				//Possess(PawnInAimingSituation);
-				SetViewTargetWithBlend(PawnInAimingSituation,0.5);
+				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);
 				SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
 		}
-		else if (TargetTile) 
+		else if (TargetTile)
 		{
 			if (!IsValid(SelectedCharacter))
-			{ 
+			{
 				UE_LOG(LogTemp, Warning, L"SelectedCharacter invalid!");
-				return; 
+				return;
 			}
-			//UE_LOG(LogTemp, Warning, L"%d Tile Clicked!", TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation()));
 
 			if (TargetTile->GetTileVisibility() == false)
 			{
@@ -111,52 +107,67 @@ void AXCOMPlayerController::OnClick()
 				return;
 			}
 
-			int32 TileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
-
-			DisableInput(this);
-
-			if (SelectedCharacter->bIsCovering)
-			{
-				SelectedCharacter->ClearCoverDirectionInfo();
-				FTimerHandle UnUsedHandle;
-				FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::MovingStepByStep, TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
-				GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.2, false);	// 0.5 Delay 고정
-			}
-			else 
-			{
-				MovingStepByStep(TileManager->PathArr[TileIndex], TileManager->PathArr[TileIndex].OnTheWay.Num() - 1);
-			}
+			int32 TargetTileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
+			MoveCharacterBasedOnState(TargetTileIndex);
 		}
-		else 
+		else
 		{
-			//TODO
+			//TODO 타일과 캐릭터가 아닌 obj 클릭시 처리
 		}
 	}
 }
 
+
 /**
-* 다른 캐릭터를 클릭해 전환됬을때 호출됩니다.
+* 같은 편 안에서 현재 선택되어 있는 캐릭터가 아닌 다른 캐릭터로 전환될때 호출됩니다.
 * @param TargetCharacter - 전환할 캐릭터
 */
-void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter) 
+void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
+{
+	if (TargetCharacter->NumberOfRemainingActivities > 0) {
+		DisableInput(this);
+
+		TArray<AActor*> OverlappedTile;
+		TargetCharacter->GetOverlappingActors(OverlappedTile);
+		if (OverlappedTile.Num() == 0)		//예외처리 
+		{
+			EnableInput(this);
+			return;
+		}
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), 4);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
+
+		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
+		SelectedCharacter = TargetCharacter;
+	}
+	else
+	{
+		//행동 횟수 0 일때
+	}
+}
+
+
+/**
+* 다른 캐릭터를 클릭해 전환됬을때 호출됩니다.
+* @param OverlappedTile - 선택된 캐릭터가 올라가있는 타일
+* @param MovingAbility - 이동 가능한 칸 수
+*/
+void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility)
 {
 	EnableInput(this);
 	TileManager->ClearAllTiles(true);
 
-	TArray<AActor*> OverlappedTile;
-	TargetCharacter->GetOverlappingActors(OverlappedTile);
-
-	if (OverlappedTile.Num() == 0) { return; }
-
 	TArray<ATile*> TilesInRange;
-	TileManager->GetAvailableTiles(Cast<ATile>(OverlappedTile[0]), 4, TilesInRange);
+	TileManager->GetAvailableTiles(OverlappedTile, MovingAbility, TilesInRange);
 
-	for (ATile* Tile : TilesInRange) 
+	for (ATile* Tile : TilesInRange)
 	{
-		UStaticMeshComponent* TileMesh =Cast<UStaticMeshComponent>(Tile->GetRootComponent());
+		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		TileMesh->SetVisibility(true);
 	}
 }
+
 
 /**
 * 목표 타일로 이동할때 단계별로 이동하게 합니다
@@ -183,6 +194,28 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay 고정
+	}
+}
+
+/**
+* 목표로 하는 타일로 캐릭터의 엄폐 상태에 따라 캐릭터가 다르게 움직입니다.
+* @param TargetTileIndex - 이동할 타일의 인덱스
+*/
+void AXCOMPlayerController::MoveCharacterBasedOnState(int32 TargetTileIndex)
+{
+	DisableInput(this);
+
+	SelectedCharacter->NumberOfRemainingActivities = SelectedCharacter->NumberOfRemainingActivities - 1;
+	if (SelectedCharacter->bIsCovering)
+	{
+		SelectedCharacter->ClearCoverDirectionInfo();
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::MovingStepByStep, TileManager->PathArr[TargetTileIndex], TileManager->PathArr[TargetTileIndex].OnTheWay.Num() - 1);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.2, false);	// 0.5 Delay 고정
+	}
+	else
+	{
+		MovingStepByStep(TileManager->PathArr[TargetTileIndex], TileManager->PathArr[TargetTileIndex].OnTheWay.Num() - 1);
 	}
 }
 
