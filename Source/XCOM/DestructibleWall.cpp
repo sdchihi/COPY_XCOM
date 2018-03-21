@@ -39,11 +39,5 @@ void ADestructibleWall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	}
 	else {
 		UE_LOG(LogTemp, Warning, L"Not Projectile Hit");
-
 	}
 }
-//
-//void ADestructibleWall::ChangeObjectType()
-//{
-//	; 
-//}

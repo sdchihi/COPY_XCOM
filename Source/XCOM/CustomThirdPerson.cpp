@@ -261,9 +261,20 @@ void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha)
 void ACustomThirdPerson::StartFiring() 
 {
 	bIsAttack = true;
-	bCanAction = false;
+	
+	UseActionPoint(2);
 
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
 	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
+}
+
+void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
+{
+	RemainingActionPoint -= PointToUse;
+	UE_LOG(LogTemp, Warning, L"Use %d Action Point  --  Remaining : %d", PointToUse, RemainingActionPoint);
+	if (RemainingActionPoint <=0) 
+	{
+		bCanAction = false;
+	}
 }

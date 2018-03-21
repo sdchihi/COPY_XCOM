@@ -74,13 +74,15 @@ public:
 	int CurrentHP;
 
 	int32 CurrentMovableStep;
+	
+	int32 GetMovableStepPerActionPoint() { return Step / 2; };
 
 	void RotateTowardWall();
 
 	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 NumberOfRemainingActivities = 2;
+	int32 RemainingActionPoint = 2;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void AimAt(FVector AimDirection);
@@ -92,6 +94,9 @@ public:
 	void StartFiring();
 
 	int32 GetStep() { return Step; };
+
+	void UseActionPoint(int32 PointToUse);
+
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -112,7 +117,8 @@ private:
 
 	float CalculateAttackSuccessRatio(const FHitResult HitResult, APawn* TargetPawn);
 
-	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn);
+	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn); 
 
 	void SetOffAttackState();
+
 };

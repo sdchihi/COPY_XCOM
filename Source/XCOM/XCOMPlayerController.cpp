@@ -105,9 +105,16 @@ void AXCOMPlayerController::OnClick()
 				UE_LOG(LogTemp, Warning, L"Can not be moved there");
 				return;
 			}
-			if(!TargetTile->bCanMoveWithOneAct) 
+			
+			//행동력 소비
+			if(TargetTile->bCanMoveWithOneAct) 
 			{
-				SelectedCharacter->NumberOfRemainingActivities = 0;
+				SelectedCharacter->UseActionPoint(1);
+				SelectedCharacter->CurrentMovableStep /= 2;
+			}
+			else 
+			{
+				SelectedCharacter->UseActionPoint(2);
 			}
 			int32 TargetTileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
 			MoveCharacterBasedOnState(TargetTileIndex);
@@ -125,7 +132,7 @@ void AXCOMPlayerController::OnClick()
 */
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 {
-	if (TargetCharacter->NumberOfRemainingActivities > 0) {
+	if (TargetCharacter->RemainingActionPoint > 0) {
 		DisableInput(this);
 
 		TArray<AActor*> OverlappedTile;
@@ -136,7 +143,7 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 			return;
 		}
 		FTimerHandle UnUsedHandle;
-		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), SelectedCharacter->GetStep(), SelectedCharacter->CurrentMovableStep);
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), SelectedCharacter->CurrentMovableStep, SelectedCharacter->GetMovableStepPerActionPoint());
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
 
 		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
@@ -153,13 +160,13 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 * @param OverlappedTile - 선택된 캐릭터가 올라가있는 타일
 * @param MovingAbility - 이동 가능한 칸 수
 */
-void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility,const int32 CurrentMovableStep)
+void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility,const int32 MovableStepPerAct)
 {
 	EnableInput(this);
 	TileManager->ClearAllTiles(true);
 
 	TArray<ATile*> TilesInRange;
-	TileManager->GetAvailableTiles(OverlappedTile, MovingAbility, CurrentMovableStep, TilesInRange);
+	TileManager->GetAvailableTiles(OverlappedTile, MovingAbility, MovableStepPerAct, TilesInRange);
 
 	for (ATile* Tile : TilesInRange)
 	{
@@ -202,7 +209,7 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay 고정
-		SelectedCharacter->CurrentMovableStep /= 2;
+		
 	}
 }
 
@@ -213,8 +220,7 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 void AXCOMPlayerController::MoveCharacterBasedOnState(int32 TargetTileIndex)
 {
 	DisableInput(this);
-
-	SelectedCharacter->NumberOfRemainingActivities = SelectedCharacter->NumberOfRemainingActivities - 1;
+	
 	if (SelectedCharacter->bIsCovering)
 	{
 		SelectedCharacter->ClearCoverDirectionInfo();

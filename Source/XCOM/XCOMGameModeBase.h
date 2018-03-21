@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "XCOMGameModeBase.generated.h"
 
+class ACustomThirdPerson;
 /**
  * 
  */
@@ -14,7 +15,20 @@ class XCOM_API AXCOMGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	AXCOMGameModeBase();
 	
+	virtual void BeginPlay() override;
+
+	void CheckTurnOver(const bool bIsPlayerTeam);
+
+	void CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson>& Characters);
+
+
+private:
+	TArray<ACustomThirdPerson> PlayerCharacters;
+
+	TArray<ACustomThirdPerson> EnemyCharacters;
 	
-	
+
 };
