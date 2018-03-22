@@ -44,6 +44,7 @@ void AXCOMPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
 
 	this->InputComponent->BindAction("Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
+
 }
 
 void AXCOMPlayerController::Initialize() {
@@ -61,9 +62,14 @@ void AXCOMPlayerController::Initialize() {
 
 	FoundActors.Empty();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
-	for (auto ThirdPersonAsActor : FoundActors) {
+	for (auto ThirdPersonAsActor : FoundActors) 
+	{
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+		if (SingleThirdPerson->GetTeamFlag()) 
+		{
+			PlayerCharacters.Add(SingleThirdPerson);
+		}
 	}
 }
 
@@ -87,6 +93,7 @@ void AXCOMPlayerController::OnClick()
 			else
 			{	//적 클릭시			(테스트용 코드- 이후에 옮길것이라서 함수화 하지 않는다.)
 				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
+				TileManager->ClearAllTiles(true);
 				//Possess(PawnInAimingSituation);
 				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);
 				SelectedCharacter->CheckAttackPotential(TargetCharacter);
@@ -327,3 +334,19 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 void AXCOMPlayerController::ChangeToDefaultPawn() {
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
 };
+
+FVector AXCOMPlayerController::GetNextAvailableCharLocation() 
+{
+	TArray<ACustomThirdPerson*> AvailableCharacters;
+	for (auto SinglePlayerChar : PlayerCharacters)
+	{
+		if (SinglePlayerChar->bCanAction) 
+		{
+			AvailableCharacters.Add(SinglePlayerChar);
+		}
+	}
+	int32 NextIndex = CharacterSwitchIndex % AvailableCharacters.Num();
+	CharacterSwitchIndex++;
+
+	return AvailableCharacters[NextIndex]->GetActorLocation();;
+}

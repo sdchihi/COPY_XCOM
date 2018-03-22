@@ -5,6 +5,7 @@
 #include "Classes/GameFramework/ProjectileMovementComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
 #include "Classes/PhysicsEngine/DestructibleActor.h"
+#include "CustomThirdPerson.h"
 
 AProjectile::AProjectile() 
 {
@@ -39,6 +40,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		{
 			ApplyToDestructibleActor(Hit.Location);
 		}
+		else if (Cast<ACustomThirdPerson>(OtherActor)) 
+		{
+			ApplyToCharacter(OtherActor);
+		}
 
 	}
 
@@ -60,6 +65,24 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 		TArray<AActor*>()
 		);
 	//TODO - Particle È¿°ú »ðÀÔ
+
+	Destroy();
+}
+
+
+
+void AProjectile::ApplyToCharacter(AActor* DamagedActor)
+{
+	TSubclassOf<UDamageType> DamageType;
+	
+	UGameplayStatics::ApplyDamage(
+		DamagedActor,
+		Damage,
+		nullptr,
+		this,
+		DamageType
+	);
+	
 
 	Destroy();
 }

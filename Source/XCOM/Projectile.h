@@ -40,4 +40,6 @@ private:
 
 	void ApplyToDestructibleActor(const FVector HitLocation);
 
+	void ApplyToCharacter(AActor* DamagedActor);
+
 };

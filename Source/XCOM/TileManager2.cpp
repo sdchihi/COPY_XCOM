@@ -191,19 +191,21 @@ void ATileManager2::ClearAllTiles(const bool bClearAll) {
 	TArray<AActor*> ChildTiles;
 	GetAttachedActors(ChildTiles);
 
-	for (AActor* Tile : ChildTiles) 
-	{
-		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
-		UDecalComponent* Decal = Tile->FindComponentByClass<UDecalComponent>();
-		TileMesh->SetVisibility(false);
-		Decal->SetVisibility(false);
-	}
+	
 
 	if (bClearAll) 
 	{
 		for (Path& path : PathArr) 
 		{
 			path.Clear(true);
+		}
+
+		for (AActor* Tile : ChildTiles)
+		{
+			UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
+			UDecalComponent* Decal = Tile->FindComponentByClass<UDecalComponent>();
+			TileMesh->SetVisibility(false);
+			Decal->SetVisibility(false);
 		}
 	}
 	else 

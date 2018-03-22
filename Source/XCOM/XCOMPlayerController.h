@@ -28,7 +28,12 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetNextAvailableCharLocation();
 
+
+	UPROPERTY(BlueprintReadOnly)
+	APlayerPawn* DefaultPlayerPawn = nullptr;
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -36,16 +41,16 @@ protected:
 
 private:
 	//변수
-
+	int32 CharacterSwitchIndex = 0;
 
 	UPROPERTY(VisibleAnywhere)
 	ATileManager2* TileManager = nullptr;
 
+	TArray<ACustomThirdPerson*> PlayerCharacters;
+
 	ACustomThirdPerson* SelectedCharacter= nullptr;
 
 	APlayerPawnInAiming* PawnInAimingSituation= nullptr;
-
-	APlayerPawn* DefaultPlayerPawn = nullptr;
 
 
 	//메소드
@@ -71,4 +76,5 @@ private:
 
 	void MoveCharacterBasedOnState(int32 TargetTileIndex);
 
+	
 };

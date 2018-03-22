@@ -97,6 +97,8 @@ public:
 
 	void UseActionPoint(int32 PointToUse);
 
+protected:
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -120,5 +122,6 @@ private:
 	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn); 
 
 	void SetOffAttackState();
+
 
 };

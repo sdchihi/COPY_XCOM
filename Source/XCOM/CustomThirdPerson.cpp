@@ -278,3 +278,16 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 		bCanAction = false;
 	}
 }
+
+float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) 
+{
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	CurrentHP -= ActualDamage;
+	if (CurrentHP <= 0) 
+	{
+		//TODO »ç¸Á Event
+		UE_LOG(LogTemp, Warning, L"Dead");
+	}
+
+	return ActualDamage;
+}
