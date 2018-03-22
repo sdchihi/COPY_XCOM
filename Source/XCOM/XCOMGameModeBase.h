@@ -22,13 +22,13 @@ public:
 
 	void CheckTurnOver(const bool bIsPlayerTeam);
 
-	void CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Characters);
+	void CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson>& Characters);
 
 
 private:
-	TArray<ACustomThirdPerson*> PlayerCharacters;
+	TArray<ACustomThirdPerson> PlayerCharacters;
 
-	TArray<ACustomThirdPerson*> EnemyCharacters;
+	TArray<ACustomThirdPerson> EnemyCharacters;
 	
 
 };

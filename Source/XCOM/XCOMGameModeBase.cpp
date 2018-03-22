@@ -6,6 +6,8 @@
 
 AXCOMGameModeBase::AXCOMGameModeBase() 
 {
+	
+	
 }
 
 
@@ -20,14 +22,14 @@ void AXCOMGameModeBase::BeginPlay()
 	for (auto SingleActor : FoundActors)
 	{
 		ACustomThirdPerson* SingleCharacter = Cast<ACustomThirdPerson>(SingleActor);
-		if (SingleCharacter->GetTeamFlag()) 
-		{
-			PlayerCharacters.Add(SingleCharacter);
-		}
-		else 
-		{
-			EnemyCharacters.Add(SingleCharacter);
-		}
+		//if (SingleCharacter->GetTeamFlag()) 
+		//{
+		//	PlayerCharacters.Add(SingleCharacter);
+		//}
+		//else 
+		//{
+		//	EnemyCharacters.Add(SingleCharacter);
+		//}
 	}
 }
 
@@ -43,9 +45,9 @@ void AXCOMGameModeBase::CheckTurnOver(const bool bIsPlayerTeam)
 	}
 }
 
-void AXCOMGameModeBase::CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Characters)
+void AXCOMGameModeBase::CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson>& Characters)
 {
-	for (auto SingleCharacter : Characters) 
+	/*for (auto SingleCharacter : Characters) 
 	{
-	}
+	}*/
 }
