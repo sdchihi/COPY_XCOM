@@ -26,10 +26,10 @@ void ACustomThirdPerson::BeginPlay()
 
 	CurrentMovableStep = Step;
 
-	CoverDirectionMap.Add(ECoverDirection::East, false);
-	CoverDirectionMap.Add(ECoverDirection::West, false);
-	CoverDirectionMap.Add(ECoverDirection::North, false);
-	CoverDirectionMap.Add(ECoverDirection::South, false);
+	CoverDirectionMap.Add(ECoverDirection::East, ECoverInfo::None);
+	CoverDirectionMap.Add(ECoverDirection::West, ECoverInfo::None);
+	CoverDirectionMap.Add(ECoverDirection::North, ECoverInfo::None);
+	CoverDirectionMap.Add(ECoverDirection::South, ECoverInfo::None);
 	
 	GunReference = GetWorld()->SpawnActor<AGun>(
 		GunBlueprint,
@@ -60,10 +60,10 @@ void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void ACustomThirdPerson::ClearCoverDirectionInfo() 
 {
 	// Add 메소드가 중복된 Key값에대해선 갱신 역할을 함.
-	CoverDirectionMap.Add(ECoverDirection::East, false);
-	CoverDirectionMap.Add(ECoverDirection::West, false);
-	CoverDirectionMap.Add(ECoverDirection::North, false);
-	CoverDirectionMap.Add(ECoverDirection::South, false);
+	CoverDirectionMap.Add(ECoverDirection::East, ECoverInfo::None);
+	CoverDirectionMap.Add(ECoverDirection::West, ECoverInfo::None);
+	CoverDirectionMap.Add(ECoverDirection::North, ECoverInfo::None);
+	CoverDirectionMap.Add(ECoverDirection::South, ECoverInfo::None);
 
 	bIsCovering = false;
 }
@@ -96,9 +96,37 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, TargetPawn);
 		FVector AimDirection = HitResult.Location - GetActorLocation();
 
-		//GunReference->Fire();
-		
-		AimAt(AimDirection);
+		float RandomValue = FMath::RandRange(0, 1);
+		//성공
+		if (RandomValue < AttackSuccessRatio) 
+		{
+			FVector AimDirection = HitResult.Location - GetActorLocation();
+			AimAt(AimDirection, FName("ProjectileToChar"));
+			UE_LOG(LogTemp, Warning, L"공격 성공");
+
+		}
+		else 
+		{
+			if (DetectedPawn->bIsCovering) 
+			{
+				RandomValue = FMath::RandRange(0, 1);
+				if (RandomValue < 0.5) // 허공 조준
+				{
+					AimAt(AimDirection + FVector(0, 70, 150), FName("ProjectileToWall"));
+					UE_LOG(LogTemp, Warning, L"실패 : 허공향해 사격");
+				}
+				else				// 벽 조준
+				{
+					AimAt(AimDirection + RelativeCoverLoc, FName("ProjectileToWall"));
+					UE_LOG(LogTemp, Warning, L"실패 : 엄폐 벽을 향해 사격");
+				}
+			}
+			else 
+			{
+				AimAt(AimDirection + FVector(0, 20, 50), FName("ProjectileToWall"));
+				UE_LOG(LogTemp, Warning, L"실패 : 엄폐 벽을 향해 사격");
+			}
+		}
 	}
 }
 
@@ -113,29 +141,44 @@ float ACustomThirdPerson::CalculateAttackSuccessRatio(const FHitResult HitResult
 	float FailureRatio = 0;
 	FVector AimDirection = (GetActorLocation() - HitResult.GetActor()->GetActorLocation()).GetSafeNormal();
 	ACustomThirdPerson* TargetThirdPerson = Cast<ACustomThirdPerson>(TargetPawn);
-	
+
 	// 클래스가 유연하지 않으므로 이후 수정
-	if (!TargetThirdPerson) { return 0; }
-	
+	if (!TargetThirdPerson) 
+	{
+		UE_LOG(LogTemp, Warning, L"벽에 의해 가로막힘");
+		return 0; 
+	}
+
 	//엄폐 상태 확인 수정
 	if (TargetThirdPerson->bIsCovering)
 	{
 		float AngleBetweenAimAndWall = 0;
-		AngleBetweenAimAndWall = CalculateAngleBtwAimAndWall(AimDirection, TargetThirdPerson);
+		ECoverInfo CoverInfo = ECoverInfo::None;
+		AngleBetweenAimAndWall = CalculateAngleBtwAimAndWall(AimDirection, TargetThirdPerson, CoverInfo);
+
 		if (AngleBetweenAimAndWall < 90)
 		{
 			// 장애물에 의한 실패 확률 상승
-			FailureRatio += FMath::Cos(FMath::DegreesToRadians(AngleBetweenAimAndWall)) * 0.4;
+			float FailureDueToCover = 0;
+			if (CoverInfo == ECoverInfo::HalfCover) 
+			{
+				FailureDueToCover = 0.2;
+			}
+			else if (CoverInfo == ECoverInfo::FullCover) 
+			{
+				FailureDueToCover = 0.4;
+			}
+			FailureRatio += FailureDueToCover;
+			UE_LOG(LogTemp, Warning, L"엄폐로 인한 실패 확률 계산 결과 : %f", FailureDueToCover);
 		}
 	}
-	// 적과의 거리에 따른 실패 확률 상승
+	// Todo - 적과의 거리에 따른 실패 확률 상승 ( 수정 필요 )
 	FailureRatio += (HitResult.Distance * (15 / AttackRange)) / 100;
 
-	UE_LOG(LogTemp, Warning, L"Distance : %f, 거리에 의한 실패 확률 : %f , 성공 확률 : %f" ,HitResult.Distance, (HitResult.Distance * (15 / AttackRange)) / 100, FailureRatio);
+	UE_LOG(LogTemp, Warning, L"Distance : %f, 거리에 의한 실패 확률 : %f , 실패 확률 : %f", HitResult.Distance, (HitResult.Distance * (15 / AttackRange)) / 100, FailureRatio);
 
 	return 1 - FailureRatio;
 }
-
 
 /**
 * 공격 대상이 엄폐하고있는 벽과 조준선이 이루는 각도를 계산합니다.
@@ -143,7 +186,7 @@ float ACustomThirdPerson::CalculateAttackSuccessRatio(const FHitResult HitResult
 * @param TargetPawn - 공격 대상이 되는 Pawn입니다.
 * @return 벽과 조준선이 이루는 각도를 Degree로 반환합니다.
 */
-float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection,ACustomThirdPerson* TargetPawn)
+float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo)
 {
 	float MinAngleBetweenAimAndWall = MAX_FLT;
 
@@ -159,7 +202,7 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 	{
 		FVector WallForwardVector;
 		float AngleBetweenAimAndWall = 0; 
-		if (CoverDirectionState.Value == true)
+		if (CoverDirectionState.Value != ECoverInfo::None)
 		{
 			switch (CoverDirectionState.Key) 
 			{
@@ -186,12 +229,16 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 			
 			if (MinAngleBetweenAimAndWall > AngleBetweenAimAndWall) 
 			{
+				CoverInfo = CoverDirectionState.Value;
+				RelativeCoverLoc = WallForwardVector;
 				MinAngleBetweenAimAndWall = AngleBetweenAimAndWall;
 				resultString = DirectionString;
 			}
 		}
 	}
 	UE_LOG(LogTemp, Warning, L"Minimum Angle : %f , %s", MinAngleBetweenAimAndWall, *resultString);
+
+	RelativeCoverLoc *= 100;
 
 	return MinAngleBetweenAimAndWall;
 }
@@ -202,7 +249,7 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 void ACustomThirdPerson::RotateTowardWall() {
 	for (auto CoverDirection : CoverDirectionMap) 
 	{
-		if (CoverDirection.Value == true) 
+		if (CoverDirection.Value != ECoverInfo::None)
 		{
 			FRotator Direction;
 			switch (CoverDirection.Key) 
@@ -225,7 +272,6 @@ void ACustomThirdPerson::RotateTowardWall() {
 		}
 	}
 }
-
 
 /**
 * 공격이 끝난 후 델리게이트 실행, Flag 변환
@@ -258,10 +304,10 @@ void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha)
 	SetActorRotation(FRotator(0,FMath::Lerp(CharacterRotatorYaw, AimAsRotatorYaw, LerpAlpha), 0));
 }
 
-void ACustomThirdPerson::StartFiring() 
+void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
 	bIsAttack = true;
-	
+	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
 	UseActionPoint(2);
 
 	FTimerHandle UnUsedHandle;
@@ -276,6 +322,10 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 	if (RemainingActionPoint <=0) 
 	{
 		bCanAction = false;
+		if (CheckTurnDelegate.IsBound())
+		{
+			CheckTurnDelegate.Execute(bTeam);
+		}
 	}
 }
 
@@ -291,3 +341,13 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 
 	return ActualDamage;
 }
+
+void ACustomThirdPerson::RestoreActionPoint()
+{
+	bCanAction = true;
+	RemainingActionPoint = 2;
+}
+
+void ACustomThirdPerson::GetAttackableEnemy() 
+{
+};

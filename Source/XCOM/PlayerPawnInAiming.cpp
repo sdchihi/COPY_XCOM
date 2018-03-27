@@ -23,7 +23,6 @@ void APlayerPawnInAiming::BeginPlay()
 void APlayerPawnInAiming::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

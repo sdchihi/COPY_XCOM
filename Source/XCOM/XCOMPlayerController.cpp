@@ -66,6 +66,8 @@ void AXCOMPlayerController::Initialize() {
 	{
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+
+
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
 			PlayerCharacters.Add(SingleThirdPerson);
@@ -94,7 +96,6 @@ void AXCOMPlayerController::OnClick()
 			{	//적 클릭시			(테스트용 코드- 이후에 옮길것이라서 함수화 하지 않는다.)
 				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				TileManager->ClearAllTiles(true);
-				//Possess(PawnInAimingSituation);
 				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);
 				SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
@@ -305,7 +306,7 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterInd
 		TileManager->PathArr[CardinalIndex].bWall) 
 	{
 		SelectedCharacter->CoverDirection = CoverDirection;
-		SelectedCharacter->CoverDirectionMap.Add(CoverDirection, true);
+		SelectedCharacter->CoverDirectionMap.Add(CoverDirection, TileManager->PathArr[CardinalIndex].CoverInfo);
 		SelectedCharacter->bIsCovering = true;
 	}
 }

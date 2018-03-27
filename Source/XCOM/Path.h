@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DestructibleWall.h"
 
 /**
  * 
@@ -43,4 +44,7 @@ public:
 	bool bCanMoveWithOneAct;
 
 	void Clear(bool bClearAll = false);
+
+	ECoverInfo CoverInfo = ECoverInfo::None;
+
 };

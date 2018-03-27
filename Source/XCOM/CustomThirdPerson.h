@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "DestructibleWall.h"
 #include "CustomThirdPerson.generated.h"
 
 class AGun;
@@ -11,6 +12,8 @@ class USpringArmComponent;
 class UCameraComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate , bool , bIsPlayerTeam);
+
 
 UENUM(BlueprintType)
 enum class ECoverDirection : uint8
@@ -45,7 +48,7 @@ public:
 
 	ECoverDirection CoverDirection = ECoverDirection::None;
 	
-	TMap<ECoverDirection, bool> CoverDirectionMap;
+	TMap<ECoverDirection, ECoverInfo> CoverDirectionMap;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<AGun> GunBlueprint;
@@ -73,6 +76,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int CurrentHP;
 
+	UPROPERTY(EditDefaultsOnly)
+	float AttackRadius = 1000;
+
 	int32 CurrentMovableStep;
 	
 	int32 GetMovableStepPerActionPoint() { return Step / 2; };
@@ -81,21 +87,27 @@ public:
 
 	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
 
+	FCheckTurnDelegate CheckTurnDelegate;
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 RemainingActionPoint = 2;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void AimAt(FVector AimDirection);
+	void AimAt(FVector AimDirection, FName NewCollisionPresetName);
 
 	UFUNCTION(BlueprintCallable)
 	void RotateCharacter(FVector AimDirection, float LerpAlpha);
 
 	UFUNCTION(BlueprintCallable)
-	void StartFiring();
+	void StartFiring(FName NewCollisionPresetName);
 
 	int32 GetStep() { return Step; };
 
 	void UseActionPoint(int32 PointToUse);
+
+	void RestoreActionPoint();
+
+	void GetAttackableEnemy();
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -119,9 +131,12 @@ private:
 
 	float CalculateAttackSuccessRatio(const FHitResult HitResult, APawn* TargetPawn);
 
-	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn); 
+	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo);
 
 	void SetOffAttackState();
 
+	FVector RelativeCoverLoc;
 
+	//이후에 클래스로 묶일 능력치들
+	int32 Aiming = 80;
 };

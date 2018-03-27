@@ -24,7 +24,6 @@ public:
 
 	virtual void BeginPlay() override;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UArrowComponent* FirePos;
 
@@ -34,13 +33,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Fire();
 
+	FName ProjectileCollisionPresetName;
 
 private:
-
 	UStaticMeshComponent* StaticMeshComponentRef = nullptr;
 	
 	//0 ~ 5
 	int32 FiringRotOrder = 0;
-	
-
 };

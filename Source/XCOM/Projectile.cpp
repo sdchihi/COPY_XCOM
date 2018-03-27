@@ -86,3 +86,12 @@ void AProjectile::ApplyToCharacter(AActor* DamagedActor)
 
 	Destroy();
 }
+
+void AProjectile::SetProjCollisionChannel(FName NewPresetName)
+{
+	if (Mesh) 
+	{
+		//Mesh->SetCollisionObjectType(NewCollisionChannel);
+		Mesh->SetCollisionProfileName(NewPresetName);
+	}
+}

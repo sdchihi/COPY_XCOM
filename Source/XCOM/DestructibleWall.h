@@ -6,11 +6,14 @@
 #include "PhysicsEngine/DestructibleActor.h"
 #include "DestructibleWall.generated.h"
 
+class UBoxComponent;
+
 UENUM(BlueprintType)
-enum class EWallState : uint8
+enum class ECoverInfo : uint8
 {
 	FullCover,
-	HalfCover
+	HalfCover,
+	None
 };
 
 /**
@@ -26,11 +29,22 @@ public:
 
 	virtual void BeginPlay() override;
 
-	EWallState WallState;
+	UPROPERTY(EditDefaultsOnly)
+	ECoverInfo CoverInfo = ECoverInfo::FullCover;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxDurability = 6;
+
+	int32 Durability;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBoxComponent* BoxCollision = nullptr;;
+
 
 private:
 
 	UDestructibleComponent* DestructibleCompReference;
+
 	
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);

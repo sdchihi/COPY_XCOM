@@ -7,6 +7,7 @@
 #include "Classes/GameFramework/Actor.h"
 #include "Path.h"
 #include "Tile.h"
+#include "DestructibleWall.h"
 
 ATileManager2::ATileManager2()
 {
@@ -77,15 +78,28 @@ void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 */
 void ATileManager2::FindingWallOnTile(ATile* TileActor) 
 {
-	TArray<AActor*> OverlappedTile;
-	TileActor->GetOverlappingActors(OverlappedTile);
+	TArray<AActor*> OverlappedActor;
+	TileActor->GetOverlappingActors(OverlappedActor);
 
-	if (OverlappedTile.Num() != 0) 
+	if (OverlappedActor.Num() != 0)
 	{
-		int32 OverlappedTileIndex = ConvertVectorToIndex(TileActor->GetActorLocation());
-		PathArr[OverlappedTileIndex].bWall = true;
+		APawn* OverlappedPawn = Cast<APawn>(OverlappedActor[0]);
+		ADestructibleWall* OverlappedDestuctibleWall = Cast<ADestructibleWall>(OverlappedActor[0]);
+		if (OverlappedPawn) {}
+		else if(OverlappedDestuctibleWall)
+		{
+			int32 OverlappedTileIndex = ConvertVectorToIndex(TileActor->GetActorLocation());
+			PathArr[OverlappedTileIndex].CoverInfo = OverlappedDestuctibleWall->CoverInfo;
+			PathArr[OverlappedTileIndex].bWall = true;
+		}
+		else 
+		{
+			int32 OverlappedTileIndex = ConvertVectorToIndex(TileActor->GetActorLocation());
+			PathArr[OverlappedTileIndex].bWall = true;
+		}
+		int32 OverlappedTileIndex = ConvertVectorToIndex(OverlappedActor[0]->GetActorLocation());
 
-		//UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
+		UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
 	}
 }
 
@@ -575,3 +589,4 @@ void ATileManager2::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 
 	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), false);
 };
+

@@ -29,7 +29,7 @@ public:
 
 	float GetDamage() { return Damage; }
 
-
+	void SetProjCollisionChannel(FName NewPresetName);
 
 private: 
 	//UProjectileMovementComponent* ProjectileMovementComponent;
