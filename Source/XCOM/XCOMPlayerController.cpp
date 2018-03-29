@@ -214,10 +214,10 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 	{
 		EnableInput(this);
 		TileManager->ClearAllTiles(true);
+
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay °íÁ¤
-		
 	}
 }
 
@@ -268,6 +268,9 @@ void AXCOMPlayerController::CheckWallAround()
 	{
 		SelectedCharacter->RotateTowardWall();
 	}
+
+	//Todo
+	SelectedCharacter->GetAttackableEnemyInfo();
 }
 
 /**

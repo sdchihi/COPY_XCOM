@@ -7,6 +7,8 @@
 #include "Classes/GameFramework/SpringArmComponent.h"
 #include "Classes/GameFramework/CharacterMovementComponent.h"
 #include "Runtime/Engine/Public/TimerManager.h"
+#include "Classes/Kismet/KismetSystemLibrary.h"
+
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
 {
@@ -86,14 +88,14 @@ void ACustomThirdPerson::CheckAttackPotential(APawn* TargetPawn)
 		HitResult,
 		GetActorLocation() +GetActorUpVector() * 110,
 		TargetPawn->GetActorLocation(),
-		ECollisionChannel::ECC_EngineTraceChannel2,
+		ECollisionChannel::ECC_GameTraceChannel8,
 		CollisionParams
 	);
 
 	ACustomThirdPerson* DetectedPawn = Cast<ACustomThirdPerson>(HitResult.GetActor());
 	if (DetectedPawn) 
 	{
-		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, TargetPawn);
+		float AttackSuccessRatio = CalculateAttackSuccessRatio(HitResult, DetectedPawn);
 		FVector AimDirection = HitResult.Location - GetActorLocation();
 
 		float RandomValue = FMath::RandRange(0, 1);
@@ -247,12 +249,13 @@ float ACustomThirdPerson::CalculateAngleBtwAimAndWall(const FVector AimDirection
 * 엄폐시 올바른 애니메이션을 위해 벽을 향해 회전합니다.
 */
 void ACustomThirdPerson::RotateTowardWall() {
-	for (auto CoverDirection : CoverDirectionMap) 
+
+	for (auto CoverDirection : CoverDirectionMap)
 	{
 		if (CoverDirection.Value != ECoverInfo::None)
 		{
 			FRotator Direction;
-			switch (CoverDirection.Key) 
+			switch (CoverDirection.Key)
 			{
 			case ECoverDirection::East:
 				Direction = FRotator(0, 0, 0);
@@ -268,7 +271,6 @@ void ACustomThirdPerson::RotateTowardWall() {
 				break;
 			}
 			SetActorRotation(Direction);
-			return;
 		}
 	}
 }
@@ -348,6 +350,187 @@ void ACustomThirdPerson::RestoreActionPoint()
 	RemainingActionPoint = 2;
 }
 
-void ACustomThirdPerson::GetAttackableEnemy() 
+void ACustomThirdPerson::GetAttackableEnemyInfo() 
 {
+	TArray<ACustomThirdPerson*> EnemyInRange;
+	if (GetEnemyInRange(EnemyInRange) == false) 
+	{
+		return;
+	};
+
+	TArray<FHitResult> AttackableEnemysHitResult;
+	if (FilterAttackableEnemy(EnemyInRange, AttackableEnemysHitResult) == false)
+	{
+		return;
+	};
+
+	TArray<FAimingInfo> AimingInfoInAllCase;
+	TArray<FVector> TargetLocationArr;
+	for (FHitResult FilteredHitResult : AttackableEnemysHitResult)
+	{
+		APawn* DetectedPawn = Cast<APawn>(FilteredHitResult.GetActor());
+		if (DetectedPawn) 
+		{
+			float Probability = CalculateAttackSuccessRatio(FilteredHitResult, DetectedPawn);
+			FVector StartLocation = FilteredHitResult.TraceStart;
+			FVector TargetLocation = DetectedPawn->GetActorLocation();
+			TargetLocationArr.AddUnique(TargetLocation);
+			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability));
+		}
+	}
+	
+	FindBestCaseInAimingInfo(AimingInfoInAllCase, AimingInfoList, TargetLocationArr);
+	UE_LOG(LogTemp, Warning, L"감지 결과 검출된 Target 수 : %d ", AimingInfoList.Num());
+	
 };
+
+bool ACustomThirdPerson::GetEnemyInRange(OUT TArray<ACustomThirdPerson*>& CharacterInRange) 
+{
+	TArray<TEnumAsByte<EObjectTypeQuery>> UnUsedObjectType;
+	TArray<AActor*> ActorsToIgnore;
+	TArray<AActor*> ActorsInRange;
+
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), AttackRadius, UnUsedObjectType, ACustomThirdPerson::StaticClass(), ActorsToIgnore, ActorsInRange);
+	if (ActorsInRange.Num() == 0) { return false; }
+
+	for (AActor* SingleActor : ActorsInRange) 
+	{
+		ACustomThirdPerson* EnemyCharacter = Cast<ACustomThirdPerson>(SingleActor);
+		if (EnemyCharacter)
+		{
+			CharacterInRange.Add(EnemyCharacter);
+		}
+	}
+	if (CharacterInRange.Num() == 0) { return false; }
+
+	return true;
+}
+
+bool ACustomThirdPerson::FilterAttackableEnemy(const TArray<ACustomThirdPerson*>& EnemiesInRange, OUT TArray<FHitResult>& SensibleEnemyInfo)
+{
+	TArray<FHitResult> ResultRequireInspection;
+
+	//엄폐 상태일때 다각도에서 확인이 필요함
+	if (this->bIsCovering) 
+	{
+		for (auto CoverDirection : CoverDirectionMap)
+		{
+			if (CoverDirection.Value != ECoverInfo::None)
+			{
+				FRotator Direction = FindCoverDirection(CoverDirection);
+
+				FVector RightVector = FVector::CrossProduct(FVector::UpVector, Direction.Vector());
+				FVector RightSide = GetActorLocation() + RightVector * 100;
+				FVector LeftSide = GetActorLocation() - RightVector * 100;
+
+				TArray<FHitResult> SurroundingAreaInfo;
+				GetAimingInfoFromSurroundingArea(RightSide, SurroundingAreaInfo);
+				GetAimingInfoFromSurroundingArea(LeftSide, SurroundingAreaInfo);
+
+				for (FHitResult SingleSurroundingAreaInfo : SurroundingAreaInfo) 
+				{
+				
+					for (ACustomThirdPerson* SingleTargetEnemy : EnemiesInRange) 
+					{
+						FHitResult HitResult = LineTraceWhenAiming(SingleSurroundingAreaInfo.TraceEnd, SingleTargetEnemy->GetActorLocation());
+						ResultRequireInspection.Add(HitResult);
+					}
+				}
+				
+			}
+		}
+	}
+
+	// 엄폐아닌 위치에서 확인
+	for (ACustomThirdPerson* SingleTargetEnemy : EnemiesInRange) 
+	{
+		FHitResult HitResult = LineTraceWhenAiming(GetActorLocation() /*+ GetActorUpVector() * 110*/ , SingleTargetEnemy->GetActorLocation());
+		ResultRequireInspection.Add(HitResult);
+	}
+
+	for (FHitResult SingleHitResult : ResultRequireInspection) 
+	{
+		ACustomThirdPerson* DetectedPawn = Cast<ACustomThirdPerson>(SingleHitResult.GetActor());
+		if (DetectedPawn)
+		{
+			SensibleEnemyInfo.Add(SingleHitResult);
+		}
+	}
+	if (SensibleEnemyInfo.Num() == 0) 
+	{ 
+		return false;
+	}
+
+	return true;
+}
+
+
+FHitResult ACustomThirdPerson::LineTraceWhenAiming(const FVector StartLocation, const FVector TargetLocation)
+{
+	const FName TraceTag("MyTraceTag");
+	GetWorld()->DebugDrawTraceTag = TraceTag;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.TraceTag = TraceTag;
+	CollisionParams.bFindInitialOverlaps = false;
+
+	FHitResult HitResult;
+	GetActorLocation();
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartLocation,
+		TargetLocation,
+		ECollisionChannel::ECC_GameTraceChannel8,
+		CollisionParams
+	);
+
+	return HitResult;
+}
+
+void ACustomThirdPerson::GetAimingInfoFromSurroundingArea(const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo)
+{
+	FHitResult HitResultFromCharToSurroundingArea = LineTraceWhenAiming(GetActorLocation(), SurroundingArea);
+	if (!HitResultFromCharToSurroundingArea.GetActor()) 
+	{
+		AimingInfo.Add(HitResultFromCharToSurroundingArea);
+	}
+}
+
+FRotator ACustomThirdPerson::FindCoverDirection(TPair<ECoverDirection,ECoverInfo> DirectionAndInfoPair)
+{
+	FRotator Direction = FRotator(0, 0, 0);
+	switch (DirectionAndInfoPair.Key)
+	{
+	case ECoverDirection::East:
+		Direction = FRotator(0, 0, 0);
+		break;
+	case ECoverDirection::West:
+		Direction = FRotator(0, 180, 0);
+		break;
+	case ECoverDirection::North:
+		Direction = FRotator(0, 90, 0);
+		break;
+	case ECoverDirection::South:
+		Direction = FRotator(0, 270, 0);
+		break;
+	}
+	return Direction;
+}
+
+
+void ACustomThirdPerson::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCaseInfo, TArray<FAimingInfo>& BestCaseArr, const TArray<FVector> TargetLocArr) 
+{
+	for (FVector TargetLoc : TargetLocArr) 
+	{
+		FAimingInfo SingleBestCase;
+		float HighestProbability = 0;
+		for (FAimingInfo SingleCaseInCheck : AllCaseInfo)
+		{
+			if (HighestProbability < SingleCaseInCheck.Probability)
+			{
+				SingleBestCase = SingleCaseInCheck;
+			}
+		}
+		BestCaseArr.Add(SingleBestCase);
+	}
+}
+

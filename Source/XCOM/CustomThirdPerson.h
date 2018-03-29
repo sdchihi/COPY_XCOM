@@ -25,6 +25,33 @@ enum class ECoverDirection : uint8
 	None
 };
 
+USTRUCT()
+struct FAimingInfo
+{
+	GENERATED_BODY()
+
+	FVector StartLocation;
+
+	FVector TargetLocation;
+
+	float Probability;
+
+
+	FAimingInfo()
+	{
+		StartLocation = FVector(0, 0, 0);
+		TargetLocation = FVector(0, 0, 0);
+		Probability = 0;
+	}
+
+	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability)
+	{
+		StartLocation = StartLoc;
+		TargetLocation = TargetLoc;
+		Probability = SucessProbability;
+	}
+};
+
 
 UCLASS()
 class XCOM_API ACustomThirdPerson : public ACharacter
@@ -107,7 +134,7 @@ public:
 
 	void RestoreActionPoint();
 
-	void GetAttackableEnemy();
+	void GetAttackableEnemyInfo();
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -139,4 +166,19 @@ private:
 
 	//이후에 클래스로 묶일 능력치들
 	int32 Aiming = 80;
+
+	bool GetEnemyInRange(OUT TArray<ACustomThirdPerson*>& CharacterInRange);
+
+	bool FilterAttackableEnemy(const TArray<ACustomThirdPerson*>& EnemiesInRange, OUT TArray<FHitResult>& SensibleEnemyInfo);
+
+	FHitResult LineTraceWhenAiming(const FVector StartLocation,const FVector TargetLocation);
+
+	void GetAimingInfoFromSurroundingArea(const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo);
+
+	FRotator FindCoverDirection(TPair<ECoverDirection, ECoverInfo> DirectionAndInfoPair);
+
+	TArray<FAimingInfo> AimingInfoList;
+
+	void FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCaseInfo, TArray<FAimingInfo>& BestCase, const TArray<FVector> TargetLocArr);
+
 };
