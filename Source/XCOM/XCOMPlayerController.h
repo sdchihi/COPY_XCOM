@@ -76,5 +76,6 @@ private:
 
 	void MoveCharacterBasedOnState(int32 TargetTileIndex);
 
-	
+	void ReleaseCharacter();
+
 };

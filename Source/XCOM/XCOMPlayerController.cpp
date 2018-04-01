@@ -97,7 +97,7 @@ void AXCOMPlayerController::OnClick()
 				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				TileManager->ClearAllTiles(true);
 				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);
-				SelectedCharacter->CheckAttackPotential(TargetCharacter);
+				//SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
 		}
 		else if (TargetTile)
@@ -270,7 +270,7 @@ void AXCOMPlayerController::CheckWallAround()
 	}
 
 	//Todo
-	SelectedCharacter->GetAttackableEnemyInfo();
+	SelectedCharacter->ScanEnemy();
 }
 
 /**
@@ -353,4 +353,12 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 	CharacterSwitchIndex++;
 
 	return AvailableCharacters[NextIndex]->GetActorLocation();;
+}
+
+void AXCOMPlayerController::ReleaseCharacter() 
+{
+	TileManager->ClearAllTiles(true);
+	//TODO UI OFF
+	
+	
 }

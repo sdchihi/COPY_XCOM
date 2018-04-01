@@ -5,15 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "DestructibleWall.h"
+#include "AimingComponent.h"
 #include "CustomThirdPerson.generated.h"
 
 class AGun;
 class USpringArmComponent;
 class UCameraComponent;
+class UAimingComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate , bool , bIsPlayerTeam);
-
 
 UENUM(BlueprintType)
 enum class ECoverDirection : uint8
@@ -23,33 +24,6 @@ enum class ECoverDirection : uint8
 	East,
 	West,
 	None
-};
-
-USTRUCT()
-struct FAimingInfo
-{
-	GENERATED_BODY()
-
-	FVector StartLocation;
-
-	FVector TargetLocation;
-
-	float Probability;
-
-
-	FAimingInfo()
-	{
-		StartLocation = FVector(0, 0, 0);
-		TargetLocation = FVector(0, 0, 0);
-		Probability = 0;
-	}
-
-	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability)
-	{
-		StartLocation = StartLoc;
-		TargetLocation = TargetLoc;
-		Probability = SucessProbability;
-	}
 };
 
 
@@ -83,7 +57,7 @@ public:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	AGun* GunReference;
 
-	void CheckAttackPotential(APawn* TargetPawn);
+	//void CheckAttackPotential(APawn* TargetPawn);
 
 	bool GetTeamFlag() { return bTeam; };
 
@@ -134,18 +108,13 @@ public:
 
 	void RestoreActionPoint();
 
-	void GetAttackableEnemyInfo();
+	void ScanEnemy();
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	USpringArmComponent* SpringArm= nullptr;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	UCameraComponent* FollowCamera = nullptr;
+	UAimingComponent* AimingComponent = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
 	bool bTeam = true;
@@ -153,32 +122,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 Step = 10;
 
-	UPROPERTY(EditDefaultsOnly)
-	float AttackRange = 500;
-
-	float CalculateAttackSuccessRatio(const FHitResult HitResult, APawn* TargetPawn);
-
-	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo);
-
 	void SetOffAttackState();
 
-	FVector RelativeCoverLoc;
+	FVector RelativeCoverLoc = FVector(0,0,0);
+
+	TArray<FAimingInfo> AimingInfo;
 
 	//이후에 클래스로 묶일 능력치들
-	int32 Aiming = 80;
+	int32 Aiming = 0.8;
 
-	bool GetEnemyInRange(OUT TArray<ACustomThirdPerson*>& CharacterInRange);
-
-	bool FilterAttackableEnemy(const TArray<ACustomThirdPerson*>& EnemiesInRange, OUT TArray<FHitResult>& SensibleEnemyInfo);
-
-	FHitResult LineTraceWhenAiming(const FVector StartLocation,const FVector TargetLocation);
-
-	void GetAimingInfoFromSurroundingArea(const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo);
-
-	FRotator FindCoverDirection(TPair<ECoverDirection, ECoverInfo> DirectionAndInfoPair);
-
-	TArray<FAimingInfo> AimingInfoList;
-
-	void FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCaseInfo, TArray<FAimingInfo>& BestCase, const TArray<FVector> TargetLocArr);
 
 };
