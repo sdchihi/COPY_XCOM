@@ -7,27 +7,22 @@
 
 AXCOMGameMode::AXCOMGameMode()
 {
-	UE_LOG(LogTemp, Warning, L"실행확인 4555");
-
 }
 
 
 
 void AXCOMGameMode::BeginPlay()
 {
-	UE_LOG(LogTemp, Warning, L"실행확인 43");
 
 	Super::BeginPlay();
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
-	UE_LOG(LogTemp, Warning, L"실행확인 4");
 
 	for (auto SingleActor : FoundActors)
 	{
 		ACustomThirdPerson* SingleCharacter = Cast<ACustomThirdPerson>(SingleActor);
 		SingleCharacter->CheckTurnDelegate.BindDynamic(this, &AXCOMGameMode::CheckTurnOver);
-		UE_LOG(LogTemp, Warning, L"실행확인 5");
 
 		if (SingleCharacter->GetTeamFlag()) 
 		{

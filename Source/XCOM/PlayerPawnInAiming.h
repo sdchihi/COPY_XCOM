@@ -39,7 +39,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float RightDistance = 100;
 
-
 	UPROPERTY(EditDefaultsOnly)
 	float UpwardDistance = 100;
 };

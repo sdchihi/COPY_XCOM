@@ -156,6 +156,9 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 
 		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
 		SelectedCharacter = TargetCharacter;
+		SelectedCharacter->ScanEnemy();
+
+		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo());
 	}
 	else
 	{
@@ -187,7 +190,6 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 		{
 			Tile->SelectDistantTileMaterial();
 		}
-
 		TileMesh->SetVisibility(true);
 	}
 }

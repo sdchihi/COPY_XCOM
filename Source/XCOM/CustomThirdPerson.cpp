@@ -174,6 +174,7 @@ void ACustomThirdPerson::RestoreActionPoint()
 // 이동 후, 턴이 다시 돌아왔을때
 void ACustomThirdPerson::ScanEnemy() 
 {
+	AimingInfo.Empty();
 	AimingComponent->GetAttackableEnemyInfo(AttackRadius, bIsCovering, CoverDirectionMap, AimingInfo);
 
 };

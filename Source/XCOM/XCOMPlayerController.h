@@ -6,11 +6,15 @@
 #include "GameFramework/PlayerController.h"
 #include "XCOMPlayerController.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FDeleverInfoDelegate, const TArray<FAimingInfo>&, SelectedCharacterAimingInfo);
+
+
 class ATileManager2;
 class ACustomThirdPerson;
 class APlayerPawnInAiming;
 class Path;
 class APlayerPawn;
+
 /**
  * 
  */
@@ -31,6 +35,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetNextAvailableCharLocation();
 
+	FDeleverInfoDelegate DeleverInfoDelegate;
 
 	UPROPERTY(BlueprintReadOnly)
 	APlayerPawn* DefaultPlayerPawn = nullptr;
@@ -38,6 +43,11 @@ public:
 protected:
 	virtual void SetupInputComponent() override;
 
+	TSubclassOf<class UUserWidget> CombatWidgetClass;
+
+	// Instance
+	UPROPERTY()
+	class UUserWidget* CombatWidget;
 
 private:
 	//º¯¼ö
