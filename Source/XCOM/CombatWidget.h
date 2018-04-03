@@ -19,17 +19,20 @@ class XCOM_API UCombatWidget : public UUserWidget
 	
 public:
 
-	//virtual void Construct_Implementation() override;
-	virtual	bool Initialize() override;	
+	//virtual	bool Initialize() override;	
 	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> SideContentBoxBlueprint;
 
+	UFUNCTION(BlueprintCallable)
+	void InitializeInBP();
+
+
 protected:
 
 private:
-	void ClearContents();
+	void ClearContents(const bool bClearAll = false);
 
 	TArray<struct FAimingInfo> SelectedCharacterAimingInfo;
 
@@ -42,11 +45,22 @@ private:
 	UPROPERTY()
 	UHorizontalBox* CenterActionHBox = nullptr;;
 
+	UPROPERTY()
+	UHorizontalBox* EnemyIconHBox = nullptr;;
+
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray);
 	
 	void ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT FString& Explanation, OUT float& Percentage);
 
 	void FillContnents(const FString& Explanation, const float Percentage);
+
+	void FillEnemyList();
+
+	UFUNCTION()
+	void TempFunction();
+
+	UFUNCTION()
+	void EnemyButtonClicked(int32 ButtonIndex);
 
 };

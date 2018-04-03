@@ -49,6 +49,7 @@ void UAimingComponent::GetAttackableEnemyInfo(const float AttackRadius, const bo
 			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, AimingFactor));
 		}
 	}
+
 	FindBestCaseInAimingInfo(AimingInfoInAllCase, AimingInfoList, TargetLocationArr);
 	UE_LOG(LogTemp, Warning, L"감지 결과 검출된 Target 수 : %d ", AimingInfoList.Num());
 };
@@ -104,7 +105,8 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FHitResult HitResult, 
 	FailureRatio += FailureDueToDistance;
 	AimingFactor.Add(EAimingFactor::Disatnce, -FailureDueToDistance);
 
-	UE_LOG(LogTemp, Warning, L"Distance : %f, 거리에 의한 실패 확률 : %f , 실패 확률 : %f", HitResult.Distance, (HitResult.Distance * (15 / AttackRadius)) / 100, FailureRatio);
+	
+	UE_LOG(LogTemp, Warning, L"최종 실패 확률 : %f", 0.8f - FailureRatio);
 
 	return 0.8f - FailureRatio;
 }
@@ -318,9 +320,13 @@ void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCas
 		float HighestProbability = 0;
 		for (FAimingInfo SingleCaseInCheck : AllCaseInfo)
 		{
-			if (HighestProbability < SingleCaseInCheck.Probability)
+			if (SingleCaseInCheck.TargetLocation.Equals(TargetLoc)) 
 			{
-				SingleBestCase = SingleCaseInCheck;
+				if (HighestProbability < SingleCaseInCheck.Probability)
+				{
+					HighestProbability = SingleCaseInCheck.Probability;
+					SingleBestCase = SingleCaseInCheck;
+				}
 			}
 		}
 		BestCaseArr.Add(SingleBestCase);
