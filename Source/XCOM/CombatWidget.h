@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "XCOMPlayerController.h"
+#include "CustomThirdPerson.h"
 #include "CombatWidget.generated.h"
 
+
+DECLARE_DYNAMIC_DELEGATE_OneParam(FChangeViewTargetDelegate, const FVector, TargetLoc);
 
 class UVerticalBox;
 class UHorizontalBox;
@@ -29,12 +33,16 @@ public:
 	void InitializeInBP();
 
 
+	FChangeViewTargetDelegate ChangeViewTargetDelegate;
+
 protected:
 
 private:
 	void ClearContents(const bool bClearAll = false);
 
 	TArray<struct FAimingInfo> SelectedCharacterAimingInfo;
+
+	TMap<EAction, bool> PossibleActionMap;
 
 	UPROPERTY()
 	UVerticalBox* LeftVBox = nullptr;;
@@ -49,7 +57,7 @@ private:
 	UHorizontalBox* EnemyIconHBox = nullptr;;
 
 	UFUNCTION()
-	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray);
+	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
 	
 	void ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT FString& Explanation, OUT float& Percentage);
 
@@ -58,9 +66,8 @@ private:
 	void FillEnemyList();
 
 	UFUNCTION()
-	void TempFunction();
-
-	UFUNCTION()
 	void EnemyButtonClicked(int32 ButtonIndex);
+
+	void FillActionButtonList();
 
 };

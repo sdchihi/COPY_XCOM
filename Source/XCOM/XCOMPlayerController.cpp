@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "XCOMPlayerController.h"
-#include "CustomThirdPerson.h"
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "Classes/Components/StaticMeshComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
@@ -12,6 +11,7 @@
 #include "Gun.h"
 #include "PlayerPawn.h"
 #include "PlayerPawnInAiming.h"
+#include "CombatWidget.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -43,9 +43,12 @@ void AXCOMPlayerController::Tick(float DeltaTime)
 void AXCOMPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
 
-	this->InputComponent->BindAction("Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
-
+	this->InputComponent->BindAction(L"Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
+	this->InputComponent->BindAction(L"Cancel", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::CancelWithESC);
 }
+
+
+
 
 void AXCOMPlayerController::Initialize() {
 	TArray<AActor*> FoundActors;
@@ -54,7 +57,9 @@ void AXCOMPlayerController::Initialize() {
 
 	FoundActors.Empty();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawnInAiming::StaticClass(), FoundActors);
-	PawnInAimingSituation = Cast<APlayerPawnInAiming>(FoundActors[0]);
+	PawnInAimingSituation[0] = Cast<APlayerPawnInAiming>(FoundActors[0]);
+	PawnInAimingSituation[1] = Cast<APlayerPawnInAiming>(FoundActors[1]);
+
 
 	FoundActors.Empty();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawn::StaticClass(), FoundActors);
@@ -72,6 +77,17 @@ void AXCOMPlayerController::Initialize() {
 		{
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
+	}
+
+	if (CombatWidgetBlueprint)
+	{
+		CombatWidget = CreateWidget<UCombatWidget>(this, CombatWidgetBlueprint);
+		if (CombatWidget)
+		{
+			CombatWidget->AddToViewport();
+			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetWithBlend);
+		}
+		bShowMouseCursor = true;
 	}
 }
 
@@ -94,9 +110,9 @@ void AXCOMPlayerController::OnClick()
 			}
 			else
 			{	//적 클릭시			(테스트용 코드- 이후에 옮길것이라서 함수화 하지 않는다.)
-				PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
+				/*PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
 				TileManager->ClearAllTiles(true);
-				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);
+				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);*/
 				//SelectedCharacter->CheckAttackPotential(TargetCharacter);
 			}
 		}
@@ -158,7 +174,10 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 		SelectedCharacter = TargetCharacter;
 		SelectedCharacter->ScanEnemy();
 
-		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo());
+		FPossibleActionWrapper PossibleActionWrapper;
+		PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
+
+		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
 	}
 	else
 	{
@@ -361,6 +380,25 @@ void AXCOMPlayerController::ReleaseCharacter()
 {
 	TileManager->ClearAllTiles(true);
 	//TODO UI OFF
-	
-	
+}
+
+void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocation)
+{
+	if(bCameraOrder)
+	{
+		PawnInAimingSituation[0]->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+		SetViewTargetWithBlend(PawnInAimingSituation[0], 0.5);
+	}
+	else 
+	{
+		PawnInAimingSituation[1]->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+		SetViewTargetWithBlend(PawnInAimingSituation[1], 0.5);
+	}
+	TileManager->ClearAllTiles(true);
+	bCameraOrder = !bCameraOrder;
+}
+
+void AXCOMPlayerController::CancelWithESC() 
+{
+	ChangeToDefaultPawn();
 }

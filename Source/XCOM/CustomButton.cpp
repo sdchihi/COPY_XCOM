@@ -11,5 +11,8 @@ UCustomButton::UCustomButton()
 
 void UCustomButton::ConveyButtonIndex()
 {
-	ConveyIndexDelegate.Execute(ButtonIndex);
+	if (ConveyIndexDelegate.IsBound()) 
+	{
+		ConveyIndexDelegate.Execute(ButtonIndex);
+	}
 }

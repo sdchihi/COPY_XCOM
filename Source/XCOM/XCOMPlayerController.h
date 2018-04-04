@@ -3,14 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CustomThirdPerson.h"
 #include "GameFramework/PlayerController.h"
 #include "XCOMPlayerController.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FDeleverInfoDelegate, const TArray<FAimingInfo>&, SelectedCharacterAimingInfo);
+// TMap은 , 에 대한 Parser문제로 Delegate선언에 사용하지 못하므로 불편하지만 Struct로 감싼후에 선언한다.
+USTRUCT()
+struct FPossibleActionWrapper
+{
+	GENERATED_BODY()
 
+	TMap<EAction, bool> PossibleAction;
+};
+
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FDeleverInfoDelegate, const TArray<FAimingInfo>&, AiminigInfo, const FPossibleActionWrapper&, PossibleAction);
 
 class ATileManager2;
-class ACustomThirdPerson;
 class APlayerPawnInAiming;
 class Path;
 class APlayerPawn;
@@ -40,14 +48,15 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	APlayerPawn* DefaultPlayerPawn = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<class UCombatWidget> CombatWidgetBlueprint;
+
+	// Variable to hold the widget After Creating it.
+	UCombatWidget* CombatWidget;
+
+
 protected:
 	virtual void SetupInputComponent() override;
-
-	TSubclassOf<class UUserWidget> CombatWidgetClass;
-
-	// Instance
-	UPROPERTY()
-	class UUserWidget* CombatWidget;
 
 private:
 	//변수
@@ -60,7 +69,7 @@ private:
 
 	ACustomThirdPerson* SelectedCharacter= nullptr;
 
-	APlayerPawnInAiming* PawnInAimingSituation= nullptr;
+	APlayerPawnInAiming* PawnInAimingSituation[2];
 
 
 	//메소드
@@ -87,5 +96,12 @@ private:
 	void MoveCharacterBasedOnState(int32 TargetTileIndex);
 
 	void ReleaseCharacter();
+
+	UFUNCTION()
+	void ChangeViewTargetWithBlend(const FVector TargetLocation);
+
+	bool bCameraOrder = false;
+
+	void CancelWithESC();
 
 };

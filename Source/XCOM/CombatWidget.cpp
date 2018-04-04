@@ -3,7 +3,6 @@
 #include "CombatWidget.h"
 #include "Components/VerticalBox.h"
 #include "Components/HorizontalBox.h"
-#include "CustomThirdPerson.h"
 #include "Classes/Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
 #include "XCOMPlayerController.h"
@@ -38,16 +37,21 @@ void UCombatWidget::ClearContents(const bool bClearAll)
 	}
 }
 
-void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray)
+void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper)
 {
 	ClearContents(true);
 
 	SelectedCharacterAimingInfo = AimingInfoArray;
-	
+	PossibleActionMap = PossibleActionMapWrapper.PossibleAction;
+
 	FString Explanation;
 	float Percentage; 
+	
+	//Fill Side Contents 
 	ConvertToSuitableFormat(SelectedCharacterAimingInfo[0], Explanation, Percentage); 
+	// 상단 Enemy Icon
 	FillEnemyList();
+	FillActionButtonList();
 }
 
 void UCombatWidget::ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT FString& Explanation, OUT float& Percentage) 
@@ -99,13 +103,6 @@ void UCombatWidget::FillEnemyList()
 {
 	for (int i = 0; i < SelectedCharacterAimingInfo.Num(); i++) 
 	{
-		/*UImage* EnemyImage = NewObject<UImage>(UImage::StaticClass());
-		FString ImagePath = "/Game/Texture/EnemyIcon.EnemyIcon";
-		UTexture2D* Texture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), NULL, *(ImagePath)));
-		EnemyImage->SetBrushFromTexture(Texture);
-		EnemyImage->Brush.ImageSize = FVector2D(50, 50);
-		*/
-
 		UCustomButton* ButtonForMarkingEnemy = NewObject<UCustomButton>(UCustomButton::StaticClass());;
 		FString ImagePath = "/Game/Texture/EnemyIcon.EnemyIcon";
 		UTexture2D* Texture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), NULL, *(ImagePath)));
@@ -123,21 +120,56 @@ void UCombatWidget::FillEnemyList()
 	}
 }
 
-void UCombatWidget::TempFunction()
-{
-	UE_LOG(LogTemp, Warning, L"아이콘 클릭");
-}
-
 void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex) 
 {
-	UE_LOG(LogTemp, Warning, L"아이콘 클릭: %d , length : %d", ButtonIndex, SelectedCharacterAimingInfo.Num());
 	ClearContents();
 
 	FString Explanation;
 	float Percentage;
-
 	ConvertToSuitableFormat(SelectedCharacterAimingInfo[ButtonIndex], Explanation, Percentage);
-	UE_LOG(LogTemp, Warning, L"Perc : %f", Percentage);
 
-	//FillEnemyList();
+	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetLocation);
+}
+
+
+void UCombatWidget::FillActionButtonList() 
+{
+	for (auto SinglePossibleAction : PossibleActionMap) 
+	{
+		FString ButtonImagePath;
+		switch (SinglePossibleAction.Key) 
+		{
+		case EAction::Attack:
+			ButtonImagePath = "";
+			break;
+		case EAction::Ambush:
+			ButtonImagePath = "";
+			break;
+		case EAction::Grenade:
+			ButtonImagePath = "";
+			break;
+		case EAction::Vigilance:
+			ButtonImagePath = "";
+			break;
+		case EAction::None:
+			ButtonImagePath = "";
+			break;
+		}
+
+		if (SinglePossibleAction.Value == true)
+		{
+			UTexture2D* Texture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), NULL, *(ButtonImagePath)));
+			
+			UCustomButton* ButtonForMarkingEnemy = NewObject<UCustomButton>(UCustomButton::StaticClass());;
+			FSlateBrush TempBrush;
+			TempBrush.SetResourceObject(Texture);
+			TempBrush.DrawAs = ESlateBrushDrawType::Image;
+
+			FButtonStyle ButtonStyle;
+			ButtonStyle.SetNormal(TempBrush);
+			ButtonForMarkingEnemy->SetStyle(ButtonStyle);
+
+			CenterActionHBox->AddChild(ButtonForMarkingEnemy);
+		}
+	}
 }

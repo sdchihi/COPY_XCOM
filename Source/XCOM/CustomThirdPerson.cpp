@@ -26,6 +26,13 @@ void ACustomThirdPerson::BeginPlay()
 	CoverDirectionMap.Add(ECoverDirection::West, ECoverInfo::None);
 	CoverDirectionMap.Add(ECoverDirection::North, ECoverInfo::None);
 	CoverDirectionMap.Add(ECoverDirection::South, ECoverInfo::None);
+
+	//Todo - 이후 정리
+	PossibleActionMap.Add(EAction::Attack, true);
+	PossibleActionMap.Add(EAction::Grenade, true);
+	PossibleActionMap.Add(EAction::Ambush, true);
+	PossibleActionMap.Add(EAction::Vigilance, true);
+
 	
 	GunReference = GetWorld()->SpawnActor<AGun>(
 		GunBlueprint,

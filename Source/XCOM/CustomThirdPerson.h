@@ -26,6 +26,16 @@ enum class ECoverDirection : uint8
 	None
 };
 
+UENUM(BlueprintType)
+enum class EAction : uint8
+{
+	Attack,
+	Vigilance,
+	Ambush,
+	Grenade,
+	None
+};
+
 
 UCLASS()
 class XCOM_API ACustomThirdPerson : public ACharacter
@@ -112,6 +122,8 @@ public:
 
 	TArray<FAimingInfo>& GetAimingInfo() { return AimingInfo; };
 
+	TMap<EAction, bool> GetPossibleAction() { return PossibleActionMap; };
+
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
@@ -133,5 +145,5 @@ private:
 	//이후에 클래스로 묶일 능력치들
 	int32 Aiming = 0.8;
 
-
+	TMap<EAction, bool> PossibleActionMap;
 };
