@@ -86,6 +86,7 @@ void AXCOMPlayerController::Initialize() {
 		{
 			CombatWidget->AddToViewport();
 			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetWithBlend);
+			CombatWidget->StartAttackDelegate.BindDynamic(this, &AXCOMPlayerController::OrderAttack);
 		}
 		bShowMouseCursor = true;
 	}
@@ -401,4 +402,9 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocati
 void AXCOMPlayerController::CancelWithESC() 
 {
 	ChangeToDefaultPawn();
+}
+
+void AXCOMPlayerController::OrderAttack(const int32 TargetEnemyIndex)
+{
+	SelectedCharacter->AttackEnemy(TargetEnemyIndex);
 }

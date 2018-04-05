@@ -104,4 +104,8 @@ private:
 
 	void CancelWithESC();
 
+	UFUNCTION()
+	void OrderAttack(const int32 TargetEnemyIndex);
+
+
 };

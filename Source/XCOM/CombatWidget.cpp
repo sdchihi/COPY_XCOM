@@ -11,6 +11,7 @@
 #include "Misc/Paths.h"
 #include "Classes/Engine/Texture2D.h"
 #include "CustomButton.h"
+#include "Components/HorizontalBoxSlot.h"
 
 void UCombatWidget::InitializeInBP() 
 {
@@ -18,10 +19,10 @@ void UCombatWidget::InitializeInBP()
 	LeftVBox = Cast<UVerticalBox>(GetWidgetFromName(FName("LeftContentsVBox")));
 	CenterActionHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("ActionHBox")));
 	EnemyIconHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("EnemyListHBox")));
+	MainStartActionButton = Cast<UButton>(GetWidgetFromName(FName("MainActionButton")));
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
-
 };
 
 void UCombatWidget::ClearContents(const bool bClearAll)
@@ -129,6 +130,7 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	ConvertToSuitableFormat(SelectedCharacterAimingInfo[ButtonIndex], Explanation, Percentage);
 
 	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetLocation);
+	TargetEnemyIndex = ButtonIndex;
 }
 
 
@@ -136,31 +138,42 @@ void UCombatWidget::FillActionButtonList()
 {
 	for (auto SinglePossibleAction : PossibleActionMap) 
 	{
-		FString ButtonImagePath;
-		switch (SinglePossibleAction.Key) 
-		{
-		case EAction::Attack:
-			ButtonImagePath = "";
-			break;
-		case EAction::Ambush:
-			ButtonImagePath = "";
-			break;
-		case EAction::Grenade:
-			ButtonImagePath = "";
-			break;
-		case EAction::Vigilance:
-			ButtonImagePath = "";
-			break;
-		case EAction::None:
-			ButtonImagePath = "";
-			break;
-		}
 
 		if (SinglePossibleAction.Value == true)
 		{
+			UCustomButton* ButtonForMarkingEnemy = NewObject<UCustomButton>(UCustomButton::StaticClass());;
+
+			FString ButtonImagePath;
+			FName ButtonClickFunctionName;
+			switch (SinglePossibleAction.Key)
+			{
+			case EAction::Attack:
+				ButtonImagePath = "/Game/Texture/NormalAttack.NormalAttack";
+				ButtonClickFunctionName = L"AttackButtonClicked";
+				break;
+			case EAction::Ambush:
+				ButtonImagePath = "/Game/Texture/NormalAmbush.NormalAmbush";
+				ButtonClickFunctionName = L"AttackButtonClicked";
+				break;
+			case EAction::Grenade:
+				ButtonImagePath = "/Game/Texture/NormalGrenade.NormalGrenade";
+				ButtonClickFunctionName = L"AttackButtonClicked";
+				break;
+			case EAction::Vigilance:
+				ButtonImagePath = "/Game/Texture/NormalVigilance.NormalVigilance";
+				ButtonClickFunctionName = L"AttackButtonClicked";
+				break;
+			case EAction::None:
+				ButtonImagePath = "/Game/Texture/EnemyIcon.EnemyIcon";
+				ButtonClickFunctionName = L"AttackButtonClicked";
+				break;
+			}
+			TScriptDelegate<FWeakObjectPtr> delegateFunction;
+			delegateFunction.BindUFunction(this, ButtonClickFunctionName);
+			ButtonForMarkingEnemy->OnClicked.Add(delegateFunction);
+			
 			UTexture2D* Texture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), NULL, *(ButtonImagePath)));
 			
-			UCustomButton* ButtonForMarkingEnemy = NewObject<UCustomButton>(UCustomButton::StaticClass());;
 			FSlateBrush TempBrush;
 			TempBrush.SetResourceObject(Texture);
 			TempBrush.DrawAs = ESlateBrushDrawType::Image;
@@ -168,8 +181,52 @@ void UCombatWidget::FillActionButtonList()
 			FButtonStyle ButtonStyle;
 			ButtonStyle.SetNormal(TempBrush);
 			ButtonForMarkingEnemy->SetStyle(ButtonStyle);
-
-			CenterActionHBox->AddChild(ButtonForMarkingEnemy);
+			
+			UHorizontalBoxSlot* HBoxSlot = CenterActionHBox->AddChildToHorizontalBox(ButtonForMarkingEnemy);
+			HBoxSlot->SetPadding(FMargin(0, 0, 5, 0));
 		}
 	}
+}
+
+
+void UCombatWidget::AttackButtonClicked() 
+{
+	EnemyButtonClicked(0);
+
+	MainStartActionButton->OnClicked.Clear();
+
+	TScriptDelegate<FWeakObjectPtr> delegateFunction;
+	delegateFunction.BindUFunction(this, "StartAttackButtonClicked");
+	MainStartActionButton->OnClicked.Add(delegateFunction);
+	UTextBlock* StartActionButtonText = Cast<UTextBlock>(MainStartActionButton->GetChildAt(0));
+	if (StartActionButtonText) 
+	{
+		StartActionButtonText->SetText(FText::FromString(L"무기 발사"));
+	}
+}
+
+void UCombatWidget::StartAttackButtonClicked() 
+{
+	UE_LOG(LogTemp, Warning, L"공격 시작");
+	if (StartAttackDelegate.IsBound())
+	{
+		StartAttackDelegate.Execute(TargetEnemyIndex);
+	}
+}
+
+
+void UCombatWidget::StartVigilanceButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, L"경계 시작");
+	//todo
+}
+
+void UCombatWidget::StartAmbushButtonClicked() 
+{
+	UE_LOG(LogTemp, Warning, L"은신 시작");
+}
+
+void UCombatWidget::StartGrenadeButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, L"수류탄 조정 시작");
 }

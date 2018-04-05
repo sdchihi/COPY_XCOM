@@ -10,7 +10,10 @@
 
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FChangeViewTargetDelegate, const FVector, TargetLoc);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FStartAttackDelegate, const int32, TargetEnemyIndex);
 
+//DECLARE_DYNAMIC_DELEGATE_OneParam(FStartActionDelegate, FVector*, TargetLoc);
+class UButton;
 class UVerticalBox;
 class UHorizontalBox;
 /**
@@ -35,9 +38,14 @@ public:
 
 	FChangeViewTargetDelegate ChangeViewTargetDelegate;
 
+	FStartAttackDelegate StartAttackDelegate;
+//	FStartActionDelegate StartActionDelegate;
+
 protected:
 
 private:
+	int32 TargetEnemyIndex = 0;
+
 	void ClearContents(const bool bClearAll = false);
 
 	TArray<struct FAimingInfo> SelectedCharacterAimingInfo;
@@ -56,6 +64,9 @@ private:
 	UPROPERTY()
 	UHorizontalBox* EnemyIconHBox = nullptr;;
 
+	UPROPERTY()
+	UButton* MainStartActionButton = nullptr;
+
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
 	
@@ -69,5 +80,21 @@ private:
 	void EnemyButtonClicked(int32 ButtonIndex);
 
 	void FillActionButtonList();
+
+	UFUNCTION()
+	void AttackButtonClicked();
+
+	UFUNCTION()
+	void StartAttackButtonClicked();
+
+	UFUNCTION()
+	void StartVigilanceButtonClicked();
+	
+	UFUNCTION()
+	void StartAmbushButtonClicked();
+
+	UFUNCTION()
+	void StartGrenadeButtonClicked();
+
 
 };

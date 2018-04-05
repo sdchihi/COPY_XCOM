@@ -255,7 +255,6 @@ bool UAimingComponent::FilterAttackableEnemy(const TMap<ECoverDirection, ECoverI
 	{
 		return false;
 	}
-
 	return true;
 }
 
@@ -277,7 +276,6 @@ FHitResult UAimingComponent::LineTraceWhenAiming(const FVector StartLocation, co
 		ECollisionChannel::ECC_GameTraceChannel8,
 		CollisionParams
 	);
-
 	return HitResult;
 }
 

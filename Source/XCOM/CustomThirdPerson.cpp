@@ -185,3 +185,63 @@ void ACustomThirdPerson::ScanEnemy()
 	AimingComponent->GetAttackableEnemyInfo(AttackRadius, bIsCovering, CoverDirectionMap, AimingInfo);
 
 };
+ 
+void ACustomThirdPerson::AttackEnemy(const int32 TargetEnemyIndex)
+{
+	FAimingInfo SingleAimingInfo = AimingInfo[TargetEnemyIndex];
+	
+	FVector AimDirection = SingleAimingInfo.TargetLocation - GetActorLocation();
+	float AttackSuccessProbability = SingleAimingInfo.Probability;
+	float RandomValue = FMath::FRandRange(0, 1);
+
+	//성공
+	if (RandomValue <= AttackSuccessProbability)
+	{
+		AimAt(AimDirection, FName(L"ProjectileToChar"));
+
+		UE_LOG(LogTemp, Warning, L"Prob : %f,  Rand : %f ", AttackSuccessProbability, RandomValue);
+
+	}
+	else //실패
+	{
+		if (CheckTargetEnemyCoverState(SingleAimingInfo.Factor)) 
+		{
+			//은신중
+			RandomValue = FMath::FRandRange(0, 1);
+			if (RandomValue < 0.5) 
+			{
+				AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
+				UE_LOG(LogTemp, Warning, L"공격 실패 : (엄폐) 허공향해 사격");
+			}
+			else 
+			{
+				AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
+				UE_LOG(LogTemp, Warning, L"공격 실패 : (엄폐)벽을향해 사격");
+			}
+		}
+		else 
+		{
+			AimAt(AimDirection + FVector(0, 50, 50), FName(L"ProjectileToWall"));
+			UE_LOG(LogTemp, Warning, L"공격 실패 : 허공향해 사격");
+		}
+	}
+}
+
+bool ACustomThirdPerson::CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo)
+{
+	for (auto SingleEnemyInfo : TargetEnemyInfo) 
+	{
+		switch (SingleEnemyInfo.Key) 
+		{
+		case EAimingFactor::FullCover:
+		case EAimingFactor::HalfCover:
+			if (SingleEnemyInfo.Value != 0) 
+			{
+				UE_LOG(LogTemp, Warning, L" 엄폐 지수 : %f ", SingleEnemyInfo.Value);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}

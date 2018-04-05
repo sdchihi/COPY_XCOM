@@ -124,6 +124,8 @@ public:
 
 	TMap<EAction, bool> GetPossibleAction() { return PossibleActionMap; };
 
+	void AttackEnemy(const int32 TargetEnemyIndex);
+
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
@@ -146,4 +148,7 @@ private:
 	int32 Aiming = 0.8;
 
 	TMap<EAction, bool> PossibleActionMap;
+
+	bool CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo);
+
 };
