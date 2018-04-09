@@ -182,7 +182,6 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 				break;
 			}
 			AngleBetweenAimAndWall = FMath::RadiansToDegrees(acosf(FVector::DotProduct(AimDirection, WallForwardVector)));
-
 			if (MinAngleBetweenAimAndWall > AngleBetweenAimAndWall)
 			{
 				CoverInfo = CoverDirectionState.Value;

@@ -29,12 +29,12 @@ void UCombatWidget::ClearContents(const bool bClearAll)
 {
 	RightVBox->ClearChildren();
 	LeftVBox->ClearChildren();
-	CenterActionHBox->ClearChildren();
 
 	if (bClearAll) 
 	{
 		EnemyIconHBox->ClearChildren();
 		SelectedCharacterAimingInfo.Empty();
+		CenterActionHBox->ClearChildren();
 	}
 }
 
@@ -157,7 +157,7 @@ void UCombatWidget::FillActionButtonList()
 				break;
 			case EAction::Grenade:
 				ButtonImagePath = "/Game/Texture/NormalGrenade.NormalGrenade";
-				ButtonClickFunctionName = L"AttackButtonClicked";
+				ButtonClickFunctionName = L"GrenadeButtonClicked";
 				break;
 			case EAction::Vigilance:
 				ButtonImagePath = "/Game/Texture/NormalVigilance.NormalVigilance";
@@ -204,6 +204,29 @@ void UCombatWidget::AttackButtonClicked()
 		StartActionButtonText->SetText(FText::FromString(L"¹«±â ¹ß»ç"));
 	}
 }
+
+
+void UCombatWidget::GrenadeButtonClicked()
+{
+
+	MainStartActionButton->OnClicked.Clear();
+
+	if (StartTrajectoryDelegate.IsBound())
+	{
+		StartTrajectoryDelegate.Execute();
+	}
+/*
+	TScriptDelegate<FWeakObjectPtr> delegateFunction;
+	delegateFunction.BindUFunction(this, "StartAttackButtonClicked");
+	MainStartActionButton->OnClicked.Add(delegateFunction);
+*/
+	UTextBlock* StartActionButtonText = Cast<UTextBlock>(MainStartActionButton->GetChildAt(0));
+	if (StartActionButtonText)
+	{
+		StartActionButtonText->SetText(FText::FromString(L"¼ö·ùÅº ÅõÃ´"));
+	}
+}
+
 
 void UCombatWidget::StartAttackButtonClicked() 
 {

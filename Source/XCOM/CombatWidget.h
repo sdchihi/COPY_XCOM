@@ -11,6 +11,9 @@
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FChangeViewTargetDelegate, const FVector, TargetLoc);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FStartAttackDelegate, const int32, TargetEnemyIndex);
+DECLARE_DYNAMIC_DELEGATE(FStartTrajectoryDelegate);
+
+
 
 //DECLARE_DYNAMIC_DELEGATE_OneParam(FStartActionDelegate, FVector*, TargetLoc);
 class UButton;
@@ -40,6 +43,7 @@ public:
 
 	FStartAttackDelegate StartAttackDelegate;
 //	FStartActionDelegate StartActionDelegate;
+	FStartTrajectoryDelegate StartTrajectoryDelegate;
 
 protected:
 
@@ -78,6 +82,10 @@ private:
 
 	UFUNCTION()
 	void EnemyButtonClicked(int32 ButtonIndex);
+
+	UFUNCTION()
+	void GrenadeButtonClicked();
+
 
 	void FillActionButtonList();
 

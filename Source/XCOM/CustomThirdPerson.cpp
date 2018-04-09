@@ -7,6 +7,7 @@
 #include "Classes/GameFramework/SpringArmComponent.h"
 #include "Classes/GameFramework/CharacterMovementComponent.h"
 #include "Runtime/Engine/Public/TimerManager.h"
+#include "TrajectoryComponent.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -14,6 +15,8 @@ ACustomThirdPerson::ACustomThirdPerson()
 	PrimaryActorTick.bCanEverTick = true;
 
 	AimingComponent = CreateDefaultSubobject<UAimingComponent>(TEXT("AimingComponent"));
+	TrajectoryComponent = CreateDefaultSubobject<UTrajectoryComponent>(TEXT("TrajectoryComponent"));
+
 }
 
 void ACustomThirdPerson::BeginPlay()
@@ -244,4 +247,9 @@ bool ACustomThirdPerson::CheckTargetEnemyCoverState(const TMap<EAimingFactor, fl
 	}
 
 	return false;
+}
+
+void ACustomThirdPerson::StartTrajectory() 
+{
+	TrajectoryComponent->StartDraw();
 }

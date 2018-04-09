@@ -107,5 +107,8 @@ private:
 	UFUNCTION()
 	void OrderAttack(const int32 TargetEnemyIndex);
 
+	UFUNCTION()
+	void OrderStartTrajectory();
+
 
 };

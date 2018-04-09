@@ -84,9 +84,10 @@ void AXCOMPlayerController::Initialize() {
 		CombatWidget = CreateWidget<UCombatWidget>(this, CombatWidgetBlueprint);
 		if (CombatWidget)
 		{
-			CombatWidget->AddToViewport();
+			CombatWidget->AddToViewport();	
 			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetWithBlend);
 			CombatWidget->StartAttackDelegate.BindDynamic(this, &AXCOMPlayerController::OrderAttack);
+			CombatWidget->StartTrajectoryDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartTrajectory);
 		}
 		bShowMouseCursor = true;
 	}
@@ -407,4 +408,10 @@ void AXCOMPlayerController::CancelWithESC()
 void AXCOMPlayerController::OrderAttack(const int32 TargetEnemyIndex)
 {
 	SelectedCharacter->AttackEnemy(TargetEnemyIndex);
+}
+
+void AXCOMPlayerController::OrderStartTrajectory()
+{
+	TileManager->ClearAllTiles(true);
+	SelectedCharacter->StartTrajectory();
 }

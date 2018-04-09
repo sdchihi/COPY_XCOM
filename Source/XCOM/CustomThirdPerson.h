@@ -12,6 +12,7 @@ class AGun;
 class USpringArmComponent;
 class UCameraComponent;
 class UAimingComponent;
+class UTrajectoryComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate , bool , bIsPlayerTeam);
@@ -126,12 +127,18 @@ public:
 
 	void AttackEnemy(const int32 TargetEnemyIndex);
 
+	void StartTrajectory();
+
+
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
 private:
 	UAimingComponent* AimingComponent = nullptr;
 	
+	UPROPERTY(EditDefaultsOnly)
+	UTrajectoryComponent* TrajectoryComponent = nullptr;
+
 	UPROPERTY(EditDefaultsOnly)
 	bool bTeam = true;
 
