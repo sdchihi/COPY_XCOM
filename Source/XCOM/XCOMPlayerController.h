@@ -110,5 +110,6 @@ private:
 	UFUNCTION()
 	void OrderStartTrajectory();
 
+	void OrderFinishTrajectory();
 
 };

@@ -28,6 +28,8 @@ void UCombatWidget::InitializeInBP()
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
+
+	ConstructWidgetMinimum();
 };
 
 void UCombatWidget::ClearContents(const bool bClearAll)
@@ -140,7 +142,6 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	TargetEnemyIndex = ButtonIndex;
 }
 
-
 void UCombatWidget::FillActionButtonList() 
 {
 	for (auto SinglePossibleAction : PossibleActionMap) 
@@ -160,7 +161,7 @@ void UCombatWidget::FillActionButtonList()
 				break;
 			case EAction::Ambush:
 				ButtonImagePath = "/Game/Texture/NormalAmbush.NormalAmbush";
-				ButtonClickFunctionName = L"AttackButtonClicked";
+				ButtonClickFunctionName = L"AmbushButtonClicked";
 				break;
 			case EAction::Grenade:
 				ButtonImagePath = "/Game/Texture/NormalGrenade.NormalGrenade";
@@ -168,7 +169,7 @@ void UCombatWidget::FillActionButtonList()
 				break;
 			case EAction::Vigilance:
 				ButtonImagePath = "/Game/Texture/NormalVigilance.NormalVigilance";
-				ButtonClickFunctionName = L"AttackButtonClicked";
+				ButtonClickFunctionName = L"VisilianceButtonClicked";
 				break;
 			case EAction::None:
 				ButtonImagePath = "/Game/Texture/EnemyIcon.EnemyIcon";
@@ -236,6 +237,25 @@ void UCombatWidget::GrenadeButtonClicked()
 	}
 }
 
+void UCombatWidget::VisilianceButtonClicked()
+{
+	ConstructWidgetNormal();
+	UTextBlock* StartActionButtonText = Cast<UTextBlock>(MainStartActionButton->GetChildAt(0));
+	if (StartActionButtonText)
+	{
+		StartActionButtonText->SetText(FText::FromString(L"경계 시작"));
+	}	
+}
+
+void UCombatWidget::AmbushButtonClicked()
+{
+	ConstructWidgetNormal();
+	UTextBlock* StartActionButtonText = Cast<UTextBlock>(MainStartActionButton->GetChildAt(0));
+	if (StartActionButtonText)
+	{
+		StartActionButtonText->SetText(FText::FromString(L"잠복 시작"));
+	}
+}
 
 void UCombatWidget::StartAttackButtonClicked() 
 {
@@ -246,16 +266,23 @@ void UCombatWidget::StartAttackButtonClicked()
 	}
 }
 
-
 void UCombatWidget::StartVigilanceButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, L"경계 시작");
 	//todo
+	if (StartVisilianceDelegate.IsBound())
+	{
+		StartVisilianceDelegate.Execute();
+	}
 }
 
 void UCombatWidget::StartAmbushButtonClicked() 
 {
 	UE_LOG(LogTemp, Warning, L"은신 시작");
+	if (StartAmbushDelegate.IsBound())
+	{
+		StartAmbushDelegate.Execute();
+	}
 }
 
 void UCombatWidget::StartGrenadeButtonClicked()

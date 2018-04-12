@@ -100,6 +100,7 @@ void UTrajectoryComponent::FinishDraw()
 	ImpactRangeActor = nullptr;
 
 	bIsDrawing = false;
+	UE_LOG(LogTemp, Warning , L"FinishDraw in Component")
 };
 
 float UTrajectoryComponent::CorrectPower(const float Power)

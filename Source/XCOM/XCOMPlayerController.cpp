@@ -72,12 +72,12 @@ void AXCOMPlayerController::Initialize() {
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
 
-
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
 	}
+	SwitchCharacter(PlayerCharacters[0]);
 
 	if (CombatWidgetBlueprint)
 	{
@@ -183,7 +183,7 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 	}
 	else
 	{
-		//행동 횟수 0 일때
+		//행동 횟수 0 일때	
 	}
 }
 
@@ -374,6 +374,7 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 	}
 	int32 NextIndex = CharacterSwitchIndex % AvailableCharacters.Num();
 	CharacterSwitchIndex++;
+	SwitchCharacter(AvailableCharacters[NextIndex]);	
 
 	return AvailableCharacters[NextIndex]->GetActorLocation();;
 }
@@ -402,6 +403,10 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocati
 
 void AXCOMPlayerController::CancelWithESC() 
 {
+	OrderFinishTrajectory();
+	//Todo
+	SwitchCharacter(SelectedCharacter);
+
 	ChangeToDefaultPawn();
 }
 
@@ -414,4 +419,12 @@ void AXCOMPlayerController::OrderStartTrajectory()
 {
 	TileManager->ClearAllTiles(true);
 	SelectedCharacter->StartTrajectory();
+}
+
+void AXCOMPlayerController::OrderFinishTrajectory()
+{
+	//TileManager->ClearAllTiles(true);
+	//Todo - Tile들 보이게 만들어야 함.
+	SelectedCharacter->FinishTrajectory();
+	UE_LOG(LogTemp, Warning, L"Order Finish");
 }

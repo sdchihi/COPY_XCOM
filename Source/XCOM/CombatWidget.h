@@ -12,7 +12,8 @@
 DECLARE_DYNAMIC_DELEGATE_OneParam(FChangeViewTargetDelegate, const FVector, TargetLoc);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FStartAttackDelegate, const int32, TargetEnemyIndex);
 DECLARE_DYNAMIC_DELEGATE(FStartTrajectoryDelegate);
-
+DECLARE_DYNAMIC_DELEGATE(FStartAmbushDelegate);
+DECLARE_DYNAMIC_DELEGATE(FStartVisilianceDelegate);
 
 
 //DECLARE_DYNAMIC_DELEGATE_OneParam(FStartActionDelegate, FVector*, TargetLoc);
@@ -43,8 +44,12 @@ public:
 	FChangeViewTargetDelegate ChangeViewTargetDelegate;
 
 	FStartAttackDelegate StartAttackDelegate;
-//	FStartActionDelegate StartActionDelegate;
+
 	FStartTrajectoryDelegate StartTrajectoryDelegate;
+
+	FStartAmbushDelegate StartAmbushDelegate;
+
+	FStartVisilianceDelegate StartVisilianceDelegate;
 
 protected:
 
@@ -96,6 +101,11 @@ private:
 	UFUNCTION()
 	void GrenadeButtonClicked();
 
+	UFUNCTION()
+	void VisilianceButtonClicked();
+
+	UFUNCTION()
+	void AmbushButtonClicked();
 
 	void FillActionButtonList();
 

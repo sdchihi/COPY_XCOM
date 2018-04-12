@@ -205,8 +205,6 @@ void ATileManager2::ClearAllTiles(const bool bClearAll) {
 	TArray<AActor*> ChildTiles;
 	GetAttachedActors(ChildTiles);
 
-	
-
 	if (bClearAll) 
 	{
 		for (Path& path : PathArr) 

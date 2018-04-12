@@ -251,5 +251,16 @@ bool ACustomThirdPerson::CheckTargetEnemyCoverState(const TMap<EAimingFactor, fl
 
 void ACustomThirdPerson::StartTrajectory() 
 {
-	TrajectoryComponent->StartDraw();
+	if (TrajectoryComponent)
+	{
+		TrajectoryComponent->StartDraw();
+	}
+}
+
+void ACustomThirdPerson::FinishTrajectory()
+{
+	if (TrajectoryComponent) 
+	{
+		TrajectoryComponent->FinishDraw();
+	}
 }

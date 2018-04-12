@@ -128,6 +128,7 @@ public:
 	void AttackEnemy(const int32 TargetEnemyIndex);
 
 	void StartTrajectory();
+	void FinishTrajectory();
 
 
 protected:
