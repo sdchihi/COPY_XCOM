@@ -12,6 +12,7 @@
 #include "Classes/Engine/Texture2D.h"
 #include "CustomButton.h"
 #include "Components/HorizontalBoxSlot.h"
+#include "Components/CanvasPanel.h"
 
 void UCombatWidget::InitializeInBP() 
 {
@@ -20,6 +21,10 @@ void UCombatWidget::InitializeInBP()
 	CenterActionHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("ActionHBox")));
 	EnemyIconHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("EnemyListHBox")));
 	MainStartActionButton = Cast<UButton>(GetWidgetFromName(FName("MainActionButton")));
+
+	LeftFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("LeftContainer")));
+	RightFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("RightContainer")));
+	CenterFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("CenterContainer")));
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
@@ -40,6 +45,7 @@ void UCombatWidget::ClearContents(const bool bClearAll)
 
 void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper)
 {
+	ConstructWidgetMinimum();
 	ClearContents(true);
 
 	SelectedCharacterAimingInfo = AimingInfoArray;
@@ -123,6 +129,7 @@ void UCombatWidget::FillEnemyList()
 
 void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex) 
 {
+	ConstructWidgetRequiredForAttack();
 	ClearContents();
 
 	FString Explanation;
@@ -191,6 +198,7 @@ void UCombatWidget::FillActionButtonList()
 
 void UCombatWidget::AttackButtonClicked() 
 {
+	ConstructWidgetRequiredForAttack();
 	EnemyButtonClicked(0);
 
 	MainStartActionButton->OnClicked.Clear();
@@ -208,6 +216,7 @@ void UCombatWidget::AttackButtonClicked()
 
 void UCombatWidget::GrenadeButtonClicked()
 {
+	ConstructWidgetNormal();
 
 	MainStartActionButton->OnClicked.Clear();
 
@@ -252,4 +261,31 @@ void UCombatWidget::StartAmbushButtonClicked()
 void UCombatWidget::StartGrenadeButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, L"수류탄 조정 시작");
+}
+
+void UCombatWidget::ConstructWidgetMinimum()
+{
+	LeftFrame->SetVisibility(ESlateVisibility::Collapsed);
+	RightFrame->SetVisibility(ESlateVisibility::Collapsed);
+	CenterFrame->SetVisibility(ESlateVisibility::Collapsed);
+	EnemyIconHBox->SetVisibility(ESlateVisibility::Collapsed);
+	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCombatWidget::ConstructWidgetRequiredForAttack()
+{
+	LeftFrame->SetVisibility(ESlateVisibility::Visible);
+	RightFrame->SetVisibility(ESlateVisibility::Visible);
+	CenterFrame->SetVisibility(ESlateVisibility::Visible);
+	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
+	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCombatWidget::ConstructWidgetNormal()
+{
+	LeftFrame->SetVisibility(ESlateVisibility::Collapsed);
+	RightFrame->SetVisibility(ESlateVisibility::Collapsed);
+	CenterFrame->SetVisibility(ESlateVisibility::Visible);
+	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
+	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 }

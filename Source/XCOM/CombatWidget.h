@@ -19,6 +19,7 @@ DECLARE_DYNAMIC_DELEGATE(FStartTrajectoryDelegate);
 class UButton;
 class UVerticalBox;
 class UHorizontalBox;
+class UCanvasPanel;
 /**
  * 
  */
@@ -71,6 +72,15 @@ private:
 	UPROPERTY()
 	UButton* MainStartActionButton = nullptr;
 
+	UPROPERTY()
+	UCanvasPanel* LeftFrame = nullptr;
+
+	UPROPERTY()
+	UCanvasPanel* CenterFrame = nullptr;
+
+	UPROPERTY()
+	UCanvasPanel* RightFrame = nullptr;
+
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
 	
@@ -104,5 +114,10 @@ private:
 	UFUNCTION()
 	void StartGrenadeButtonClicked();
 
+	void ConstructWidgetMinimum();
 
+	void ConstructWidgetRequiredForAttack();
+	
+	void ConstructWidgetNormal();
+	
 };

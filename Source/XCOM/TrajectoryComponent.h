@@ -21,12 +21,19 @@ public:
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction) override;
 
+	UFUNCTION()
 	void StartDraw();
 
 	void FinishDraw();
 
 	UPROPERTY(EditDefaultsOnly)
 	float MaxThrowingPower = 800;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> ImpactRangeBP;
+
+	AActor* ImpactRangeActor = nullptr;
+
 
 private:
 
@@ -47,4 +54,19 @@ private:
 	void GetSegmentAtTime(const FVector StartLocation, const FVector InitialVelocity, const FVector Gravity, const float Time, const float Time2, OUT FVector& FirstPoint, OUT FVector& SecondPoint);
 
 	float CorrectPower(const float Power);
+
+	void DealActorInRange();
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	UFUNCTION()
+	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void ConfirmedExplosionArea(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
+
+
+	void SpawnImapactRangeActor();
+
 };

@@ -13,7 +13,6 @@ class USceneComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRotateUIDelegate, float, Direction);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FControlDistanceToUIDelegate, float, Value);
 
-
 UCLASS()
 class XCOM_API APlayerPawn : public APawn
 {
