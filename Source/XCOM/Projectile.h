@@ -31,9 +31,13 @@ public:
 
 	void SetProjCollisionChannel(FName NewPresetName);
 
+	void ApplyRealDamage() { bApplyRealDamage = true; };
+
 private: 
 	//UProjectileMovementComponent* ProjectileMovementComponent;
 	UStaticMeshComponent* Mesh = nullptr;
+
+	bool bApplyRealDamage = false;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);

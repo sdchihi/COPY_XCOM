@@ -37,13 +37,19 @@ void AGun::Fire()
 		
 		ProjectileRef->SetProjCollisionChannel(ProjectileCollisionPresetName);
 		ProjectileRef->SetLifeSpan(2);
+		if (FiringRotOrder == 0) 
+		{
+			ProjectileRef->ApplyRealDamage();
+		}
 	}
+
 	if (FiringRotOrder == 5)
 	{
 		FiringRotOrder = 0;
 	}
 	else
 	{
+		
 		FiringRotOrder++;
 	}
 }

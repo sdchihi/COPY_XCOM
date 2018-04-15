@@ -75,14 +75,16 @@ void AProjectile::ApplyToCharacter(AActor* DamagedActor)
 {
 	TSubclassOf<UDamageType> DamageType;
 	
-	UGameplayStatics::ApplyDamage(
-		DamagedActor,
-		Damage,
-		nullptr,
-		this,
-		DamageType
-	);
-	
+	if (bApplyRealDamage) 
+	{
+		UGameplayStatics::ApplyDamage(
+			DamagedActor,
+			Damage,
+			nullptr,
+			this,
+			DamageType
+		);
+	}
 
 	Destroy();
 }
