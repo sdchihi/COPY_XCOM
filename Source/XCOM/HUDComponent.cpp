@@ -52,3 +52,9 @@ void UHUDComponent::ControlSpringArmLength(const float Length)
 {
 	TargetArmLength = Length;
 }
+
+
+void UHUDComponent::SetWidgetVisibility(const bool bVisiblity) 
+{
+	HPBarWidget->SetVisibility(bVisiblity);
+}

@@ -23,7 +23,10 @@ public:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadOnly)
-	UWidgetComponent* HPBarWidget = nullptr;;
+	UWidgetComponent* HPBarWidget = nullptr;
+
+	void SetWidgetVisibility(const bool bVisiblity);
+
 
 private:
 

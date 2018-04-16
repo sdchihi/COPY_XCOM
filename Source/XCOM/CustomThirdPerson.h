@@ -13,9 +13,12 @@ class USpringArmComponent;
 class UCameraComponent;
 class UAimingComponent;
 class UTrajectoryComponent;
+class UHUDComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate , bool , bIsPlayerTeam);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
+
 
 UENUM(BlueprintType)
 enum class ECoverDirection : uint8
@@ -101,6 +104,8 @@ public:
 
 	FCheckTurnDelegate CheckTurnDelegate;
 
+	FDeadCamDelegate DeadCamDelegate;
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 RemainingActionPoint = 2;
 
@@ -130,13 +135,19 @@ public:
 	void StartTrajectory();
 	void FinishTrajectory();
 
+	void SetHealthBarVisibility(const bool bVisible);
+
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
 private:
+	UPROPERTY()
 	UAimingComponent* AimingComponent = nullptr;
 	
+	UPROPERTY()
+	UHUDComponent* HealthBar = nullptr;
+
 	UPROPERTY(EditDefaultsOnly)
 	UTrajectoryComponent* TrajectoryComponent = nullptr;
 

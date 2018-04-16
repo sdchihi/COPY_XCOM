@@ -96,6 +96,10 @@ void UTrajectoryComponent::StartDraw()
 
 void UTrajectoryComponent::FinishDraw() 
 {
+	if (!ImpactRangeActor) 
+	{
+		return;
+	}
 	ImpactRangeActor->Destroy();
 	ImpactRangeActor = nullptr;
 

@@ -33,6 +33,9 @@ void AXCOMGameMode::BeginPlay()
 			EnemyCharacters.Add(SingleCharacter);
 		}
 	}
+
+	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
+	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
 }
 
 void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
@@ -97,5 +100,19 @@ void AXCOMGameMode::RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characte
 	for (ACustomThirdPerson* SingleCharacter : Characters)
 	{
 		SingleCharacter->RestoreActionPoint();
+	}
+}
+
+void AXCOMGameMode::SetVisibleAllHealthBar(const bool bVisible)
+{
+	UE_LOG(LogTemp, Warning, L"비저블 실행");
+
+	for (ACustomThirdPerson* SinglePlayerChar : PlayerCharacters)
+	{
+		SinglePlayerChar->SetHealthBarVisibility(bVisible);
+	}
+	for (ACustomThirdPerson* SingleEnemyChar : EnemyCharacters)
+	{
+		SingleEnemyChar->SetHealthBarVisibility(bVisible);
 	}
 }

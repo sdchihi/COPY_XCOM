@@ -8,6 +8,7 @@
 #include "Classes/GameFramework/CharacterMovementComponent.h"
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "TrajectoryComponent.h"
+#include "HUDComponent.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -48,6 +49,10 @@ void ACustomThirdPerson::BeginPlay()
 	{
 		GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform,  FName(L"Gun"));
 	}
+
+	HealthBar = FindComponentByClass<UHUDComponent>();
+
+
 }
  
 void ACustomThirdPerson::Tick(float DeltaTime)
@@ -169,6 +174,10 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	if (CurrentHP <= 0) 
 	{
 		//TODO »ç¸Á Event
+		if (DeadCamDelegate.IsBound()) 
+		{
+			DeadCamDelegate.Execute(GetActorLocation());
+		}
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
 
@@ -262,5 +271,19 @@ void ACustomThirdPerson::FinishTrajectory()
 	if (TrajectoryComponent) 
 	{
 		TrajectoryComponent->FinishDraw();
+	}
+}
+
+void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible) 
+{
+	if (HealthBar) 
+	{
+		HealthBar->SetWidgetVisibility(bVisible);
+
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L" ¾øÀ½");
+
 	}
 }

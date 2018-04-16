@@ -49,3 +49,16 @@ void APlayerPawnInAiming::SetCameraPositionInAimingSituation(const FVector Aimin
 	SetActorLocation(NewPawnPosition);
 	SetActorRotation(NewPawnRotation);
 };
+
+
+void APlayerPawnInAiming::SetDeathCam(const FVector AimingCharLoc, const FVector MurderedCharLocation)
+{
+	FVector StraightLineDirection = (AimingCharLoc - MurderedCharLocation).GetSafeNormal();
+
+	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
+	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 100 ) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
+
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, MurderedCharLocation);
+	SetActorLocation(NewPawnPosition);
+	SetActorRotation(NewPawnRotation);
+};

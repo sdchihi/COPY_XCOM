@@ -12,6 +12,7 @@
 #include "PlayerPawn.h"
 #include "PlayerPawnInAiming.h"
 #include "CombatWidget.h"
+#include "XCOMGameMode.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -71,13 +72,14 @@ void AXCOMPlayerController::Initialize() {
 	{
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+		SingleThirdPerson->DeadCamDelegate.BindDynamic(this , &AXCOMPlayerController::ChangeToDeathCam);
 
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
 	}
-	SwitchCharacter(PlayerCharacters[0]);
+	//SwitchCharacter(PlayerCharacters[0]);
 
 	if (CombatWidgetBlueprint)
 	{
@@ -91,6 +93,9 @@ void AXCOMPlayerController::Initialize() {
 		}
 		bShowMouseCursor = true;
 	}
+
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	
 }
 
 void AXCOMPlayerController::OnClick()
@@ -358,7 +363,15 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 	return false;
 }
 
-void AXCOMPlayerController::ChangeToDefaultPawn() {
+void AXCOMPlayerController::ChangeToDefaultPawn() 
+{
+	if (HealthBarVisiblityDelegate.IsBound()) 
+	{
+		HealthBarVisiblityDelegate.Execute(true);
+		UE_LOG(LogTemp, Warning, L" tru 실행");
+
+	}
+
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
 };
 
@@ -372,6 +385,12 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 			AvailableCharacters.Add(SinglePlayerChar);
 		}
 	}
+
+	if (AvailableCharacters.Num() == 0) 
+	{
+		return FVector(0, 0, 0);
+	}
+
 	int32 NextIndex = CharacterSwitchIndex % AvailableCharacters.Num();
 	CharacterSwitchIndex++;
 	SwitchCharacter(AvailableCharacters[NextIndex]);	
@@ -387,19 +406,44 @@ void AXCOMPlayerController::ReleaseCharacter()
 
 void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocation)
 {
-	if(bCameraOrder)
+	if (HealthBarVisiblityDelegate.IsBound())
 	{
-		PawnInAimingSituation[0]->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
-		SetViewTargetWithBlend(PawnInAimingSituation[0], 0.5);
+		HealthBarVisiblityDelegate.Execute(false);
+		UE_LOG(LogTemp, Warning, L" false 실행");
+
 	}
-	else 
-	{
-		PawnInAimingSituation[1]->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
-		SetViewTargetWithBlend(PawnInAimingSituation[1], 0.5);
-	}
+
+	APlayerPawnInAiming* ActionCam = GetNextActionCam();
+	ActionCam->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+	SetViewTargetWithBlend(ActionCam, 0.5);
+
+	TileManager->ClearAllTiles(true);
+	bCameraOrder = !bCameraOrder;
+	OrderFinishTrajectory();
+}
+
+void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
+{
+	APlayerPawnInAiming* ActionCam = GetNextActionCam();
+	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedCharLocation);
+	SetViewTargetWithBlend(ActionCam, 0.5);
+
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;
 }
+
+APlayerPawnInAiming* AXCOMPlayerController::GetNextActionCam()
+{
+	if (bCameraOrder) 
+	{
+		return PawnInAimingSituation[0];
+	}
+	else 
+	{
+		return PawnInAimingSituation[1];
+	}
+}
+
 
 void AXCOMPlayerController::CancelWithESC() 
 {
@@ -418,13 +462,11 @@ void AXCOMPlayerController::OrderAttack(const int32 TargetEnemyIndex)
 void AXCOMPlayerController::OrderStartTrajectory()
 {
 	TileManager->ClearAllTiles(true);
+	ChangeToDefaultPawn();
 	SelectedCharacter->StartTrajectory();
 }
 
 void AXCOMPlayerController::OrderFinishTrajectory()
 {
-	//TileManager->ClearAllTiles(true);
-	//Todo - Tile들 보이게 만들어야 함.
 	SelectedCharacter->FinishTrajectory();
-	UE_LOG(LogTemp, Warning, L"Order Finish");
 }

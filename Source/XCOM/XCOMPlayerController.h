@@ -17,6 +17,8 @@ struct FPossibleActionWrapper
 };
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FDeleverInfoDelegate, const TArray<FAimingInfo>&, AiminigInfo, const FPossibleActionWrapper&, PossibleAction);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FHealthBarVisiblityDelegate,const bool, bVisible);
+
 
 class ATileManager2;
 class APlayerPawnInAiming;
@@ -45,6 +47,8 @@ public:
 
 	FDeleverInfoDelegate DeleverInfoDelegate;
 
+	FHealthBarVisiblityDelegate HealthBarVisiblityDelegate;
+
 	UPROPERTY(BlueprintReadOnly)
 	APlayerPawn* DefaultPlayerPawn = nullptr;
 
@@ -60,7 +64,7 @@ protected:
 
 private:
 	//º¯¼ö
-	int32 CharacterSwitchIndex = 0;
+	int32 CharacterSwitchIndex = 1;
 
 	UPROPERTY(VisibleAnywhere)
 	ATileManager2* TileManager = nullptr;
@@ -99,6 +103,11 @@ private:
 
 	UFUNCTION()
 	void ChangeViewTargetWithBlend(const FVector TargetLocation);
+
+	UFUNCTION()
+	void ChangeToDeathCam(const FVector TargetLocation);
+
+	APlayerPawnInAiming* GetNextActionCam();
 
 	bool bCameraOrder = false;
 

@@ -58,7 +58,6 @@ enum class ECoverDirection : uint8;
 enum class ECoverInfo : uint8;
 
 class ACustomThirdPerson;
-//struct FAimingInfo;
 
 UCLASS( ClassGroup=(XCOM), meta=(BlueprintSpawnableComponent) )
 class XCOM_API UAimingComponent : public UActorComponent
