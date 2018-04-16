@@ -71,7 +71,7 @@ void AXCOMPlayerController::Initialize() {
 	{
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
-
+		SingleThirdPerson->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetWithBlend);
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
 			PlayerCharacters.Add(SingleThirdPerson);
@@ -335,7 +335,7 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterInd
 		SelectedCharacter->CoverDirectionMap.Add(CoverDirection, TileManager->PathArr[CardinalIndex].CoverInfo);
 		SelectedCharacter->bIsCovering = true;
 	}
-}
+}	
 
 // 테스트를 위한 메소드
 // 이후에 삭제 또는 수정 필요
@@ -385,18 +385,28 @@ void AXCOMPlayerController::ReleaseCharacter()
 	//TODO UI OFF
 }
 
-void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocation)
+void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocation, const ESituation Situation)
 {
-	if(bCameraOrder)
+	switch (Situation) 
 	{
-		PawnInAimingSituation[0]->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
-		SetViewTargetWithBlend(PawnInAimingSituation[0], 0.5);
+	case ESituation::Aiming:
+		GetRightPawnInSituation()->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+		break;
+	case ESituation::Death:
+		GetRightPawnInSituation()->SetCameraPositionInDying(SelectedCharacter->GetActorLocation(), TargetLocation);
+		break;
+	case ESituation::Firing:
+		GetRightPawnInSituation()->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+		break;
+	case ESituation::Observation:
+		GetRightPawnInSituation()->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+		break;
+	case ESituation::Default:
+		GetRightPawnInSituation()->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+		break;
 	}
-	else 
-	{
-		PawnInAimingSituation[1]->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
-		SetViewTargetWithBlend(PawnInAimingSituation[1], 0.5);
-	}
+	SetViewTargetWithBlend(GetRightPawnInSituation(), 0.5);
+
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;
 }
@@ -427,4 +437,17 @@ void AXCOMPlayerController::OrderFinishTrajectory()
 	//Todo - Tile들 보이게 만들어야 함.
 	SelectedCharacter->FinishTrajectory();
 	UE_LOG(LogTemp, Warning, L"Order Finish");
+}
+
+
+APlayerPawnInAiming* AXCOMPlayerController::GetRightPawnInSituation() 
+{
+	if (bCameraOrder) 
+	{
+		return PawnInAimingSituation[0];
+	}
+	else
+	{
+		return PawnInAimingSituation[1];
+	}
 }

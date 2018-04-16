@@ -49,3 +49,18 @@ void APlayerPawnInAiming::SetCameraPositionInAimingSituation(const FVector Aimin
 	SetActorLocation(NewPawnPosition);
 	SetActorRotation(NewPawnRotation);
 };
+
+void APlayerPawnInAiming::SetCameraPositionInDying(const FVector AimingCharLoc, const FVector DyingCharacterLocation)
+{
+	FVector DirectionDyingCharToAimingChar = (AimingCharLoc - DyingCharacterLocation ).GetSafeNormal();
+	// Z축과 StraightLineDirection의 외적
+	FVector RightDirection = FVector::CrossProduct(DirectionDyingCharToAimingChar, FVector(0, 0, 1));
+	FVector NewPawnPosition = DyingCharacterLocation + (DirectionDyingCharToAimingChar * 100) + (RightDirection + RightDistance) +FVector(0, 0, UpwardDistance);
+		
+	float DistanceBtwChar = FVector::Distance(AimingCharLoc, DyingCharacterLocation);
+
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, DyingCharacterLocation);
+	SetActorLocation(NewPawnPosition);
+	SetActorRotation(NewPawnRotation);
+};
+

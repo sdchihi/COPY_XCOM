@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DestructibleWall.h"
 #include "AimingComponent.h"
+#include "XCOMPlayerController.h"
 #include "CustomThirdPerson.generated.h"
 
 class AGun;
@@ -14,8 +15,15 @@ class UCameraComponent;
 class UAimingComponent;
 class UTrajectoryComponent;
 
-DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate , bool , bIsPlayerTeam);
+UENUM(BlueprintType)
+enum class ESituation : uint8
+{
+	Aiming,
+	Death,
+	Firing,
+	Observation,
+	Default
+};
 
 UENUM(BlueprintType)
 enum class ECoverDirection : uint8
@@ -36,6 +44,11 @@ enum class EAction : uint8
 	Grenade,
 	None
 };
+
+DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate, bool, bIsPlayerTeam);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegate2, const FVector, TargetLoc, const ESituation, Situation);
+
 
 
 UCLASS()
@@ -98,6 +111,8 @@ public:
 	void RotateTowardWall();
 
 	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
+
+	FChangeViewTargetDelegate2 ChangeViewTargetDelegate;
 
 	FCheckTurnDelegate CheckTurnDelegate;
 

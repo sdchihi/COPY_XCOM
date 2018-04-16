@@ -33,6 +33,8 @@ public:
 
 	void SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc);
 
+	void SetCameraPositionInDying(const FVector AimingCharLoc, const FVector DyingCharacterLocation);
+
 	UPROPERTY(EditDefaultsOnly)
 	float BackWardDistance = 100;
 

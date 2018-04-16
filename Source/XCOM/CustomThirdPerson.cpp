@@ -169,6 +169,11 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	if (CurrentHP <= 0) 
 	{
 		//TODO »ç¸Á Event
+		if (ChangeViewTargetDelegate.IsBound()) 
+		{
+			ChangeViewTargetDelegate.Execute(GetActorLocation(), ESituation::Death);
+		}
+
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
 

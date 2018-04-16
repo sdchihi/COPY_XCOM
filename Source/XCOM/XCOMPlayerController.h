@@ -16,6 +16,8 @@ struct FPossibleActionWrapper
 	TMap<EAction, bool> PossibleAction;
 };
 
+
+
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FDeleverInfoDelegate, const TArray<FAimingInfo>&, AiminigInfo, const FPossibleActionWrapper&, PossibleAction);
 
 class ATileManager2;
@@ -98,7 +100,9 @@ private:
 	void ReleaseCharacter();
 
 	UFUNCTION()
-	void ChangeViewTargetWithBlend(const FVector TargetLocation);
+	void ChangeViewTargetWithBlend(const FVector TargetLocation, const ESituation Situation);
+
+	APlayerPawnInAiming* GetRightPawnInSituation();
 
 	bool bCameraOrder = false;
 
