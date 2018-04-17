@@ -4,6 +4,7 @@
 #include "Classes/Kismet/GameplayStatics.h"
 #include "CustomThirdPerson.h"
 #include "XCOMPlayerController.h"
+#include "FogOfWarManager.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -36,6 +37,8 @@ void AXCOMGameMode::BeginPlay()
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
+
+	SpawnFogOfWar();
 }
 
 void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
@@ -116,3 +119,20 @@ void AXCOMGameMode::SetVisibleAllHealthBar(const bool bVisible)
 		SingleEnemyChar->SetHealthBarVisibility(bVisible);
 	}
 }
+
+void AXCOMGameMode::SpawnFogOfWar() 
+{
+	if (!FogOfWarBP) { return; }
+
+	AFogOfWarManager* FogOfWar = GetWorld()->SpawnActor<AFogOfWarManager>(
+		FogOfWarBP,
+		FVector(0, 0, 0),
+		FRotator(0, 0, 0)
+		);
+
+	for (ACustomThirdPerson* SinglePlayerChar : PlayerCharacters)
+	{
+		FogOfWar->RegisterFowActor(SinglePlayerChar);
+	}
+}
+

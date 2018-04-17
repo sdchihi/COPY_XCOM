@@ -368,8 +368,6 @@ void AXCOMPlayerController::ChangeToDefaultPawn()
 	if (HealthBarVisiblityDelegate.IsBound()) 
 	{
 		HealthBarVisiblityDelegate.Execute(true);
-		UE_LOG(LogTemp, Warning, L" tru 실행");
-
 	}
 
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
@@ -401,7 +399,6 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 void AXCOMPlayerController::ReleaseCharacter() 
 {
 	TileManager->ClearAllTiles(true);
-	//TODO UI OFF
 }
 
 void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocation)
@@ -409,8 +406,6 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocati
 	if (HealthBarVisiblityDelegate.IsBound())
 	{
 		HealthBarVisiblityDelegate.Execute(false);
-		UE_LOG(LogTemp, Warning, L" false 실행");
-
 	}
 
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();

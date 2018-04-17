@@ -7,6 +7,7 @@
 #include "XCOMGameMode.generated.h"
 
 class ACustomThirdPerson;
+class AFogOfWarManager;
 /**
  * 
  */
@@ -28,6 +29,9 @@ public:
 
 	void CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Characters);
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AFogOfWarManager> FogOfWarBP;
+
 
 private:
 	TArray<ACustomThirdPerson*> PlayerCharacters;
@@ -38,6 +42,8 @@ private:
 
 	UFUNCTION()
 	void SetVisibleAllHealthBar(const bool bVisible);
+
+	void SpawnFogOfWar();
 
 
 };
