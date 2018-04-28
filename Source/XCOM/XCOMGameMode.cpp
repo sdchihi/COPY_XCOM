@@ -14,7 +14,6 @@ AXCOMGameMode::AXCOMGameMode()
 
 void AXCOMGameMode::BeginPlay()
 {
-
 	Super::BeginPlay();
 
 	TArray<AActor*> FoundActors;
@@ -23,7 +22,7 @@ void AXCOMGameMode::BeginPlay()
 	for (auto SingleActor : FoundActors)
 	{
 		ACustomThirdPerson* SingleCharacter = Cast<ACustomThirdPerson>(SingleActor);
-		SingleCharacter->CheckTurnDelegate.BindDynamic(this, &AXCOMGameMode::CheckTurnOver);
+		SingleCharacter->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMGameMode::CheckTurnOver);
 
 		if (SingleCharacter->GetTeamFlag()) 
 		{
@@ -34,7 +33,6 @@ void AXCOMGameMode::BeginPlay()
 			EnemyCharacters.Add(SingleCharacter);
 		}
 	}
-
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
 

@@ -16,8 +16,8 @@ class UTrajectoryComponent;
 class UHUDComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FCheckTurnDelegate , bool , bIsPlayerTeam);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
 
 
 UENUM(BlueprintType)
@@ -102,7 +102,7 @@ public:
 
 	FChangePlayerPawnDelegate ChangePlayerPawnDelegate;
 
-	FCheckTurnDelegate CheckTurnDelegate;
+	FAfterActionDelegate AfterActionDelegate;
 
 	FDeadCamDelegate DeadCamDelegate;
 
@@ -151,6 +151,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	UTrajectoryComponent* TrajectoryComponent = nullptr;
 
+	UPROPERTY()
+	USkeletalMeshComponent* SkeletalMesh = nullptr;
+
 	UPROPERTY(EditDefaultsOnly)
 	bool bTeam = true;
 
@@ -169,5 +172,10 @@ private:
 	TMap<EAction, bool> PossibleActionMap;
 
 	bool CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo);
+
+	void StartSlowMotion();
+
+	UFUNCTION()
+	void FinishSlowMotion();
 
 };

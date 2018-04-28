@@ -86,6 +86,9 @@ private:
 	UPROPERTY()
 	UCanvasPanel* RightFrame = nullptr;
 
+	UPROPERTY()
+	UUserWidget* SumAimingProbBox = nullptr;
+
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
 	

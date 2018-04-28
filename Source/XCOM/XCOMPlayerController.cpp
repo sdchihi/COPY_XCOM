@@ -23,7 +23,6 @@ void AXCOMPlayerController::BeginPlay()
 	Super::BeginPlay();
 	PrimaryActorTick.bCanEverTick = false;
 
-
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
@@ -76,6 +75,7 @@ void AXCOMPlayerController::Initialize() {
 
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
+			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
 	}
@@ -95,7 +95,6 @@ void AXCOMPlayerController::Initialize() {
 	}
 
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	
 }
 
 void AXCOMPlayerController::OnClick()
@@ -191,6 +190,8 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 		//행동 횟수 0 일때	
 	}
 }
+
+
 
 /**
 * 다른 캐릭터를 클릭해 전환됬을때 호출됩니다.
@@ -421,7 +422,8 @@ void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 {
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
 	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedCharLocation);
-	SetViewTargetWithBlend(ActionCam, 0.5);
+	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드
+	SetViewTarget(ActionCam);
 
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;

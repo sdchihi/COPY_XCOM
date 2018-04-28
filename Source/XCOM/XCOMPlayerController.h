@@ -34,7 +34,6 @@ class XCOM_API AXCOMPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 	
-	
 public:
 	AXCOMPlayerController();
 
@@ -58,6 +57,8 @@ public:
 	// Variable to hold the widget After Creating it.
 	UCombatWidget* CombatWidget;
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SwitchNextCharacter(bool bTeam);
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -75,6 +76,7 @@ private:
 
 	APlayerPawnInAiming* PawnInAimingSituation[2];
 
+	bool bCameraOrder = false;
 
 	//¸Þ¼Òµå
 	void Initialize();
@@ -109,7 +111,6 @@ private:
 
 	APlayerPawnInAiming* GetNextActionCam();
 
-	bool bCameraOrder = false;
 
 	void CancelWithESC();
 

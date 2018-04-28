@@ -21,6 +21,8 @@ void UCombatWidget::InitializeInBP()
 	CenterActionHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("ActionHBox")));
 	EnemyIconHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("EnemyListHBox")));
 	MainStartActionButton = Cast<UButton>(GetWidgetFromName(FName("MainActionButton")));
+	SumAimingProbBox = Cast<UUserWidget>(GetWidgetFromName(FName("SumAimingProb")));
+
 
 	LeftFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("LeftContainer")));
 	RightFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("RightContainer")));
@@ -65,6 +67,7 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 
 void UCombatWidget::ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT FString& Explanation, OUT float& Percentage) 
 {
+	float SumOfAimingPercentage = 0;
 	for (auto SingleFactor : AimingInfo.Factor) 
 	{
 		switch (SingleFactor.Key)
@@ -88,8 +91,13 @@ void UCombatWidget::ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT F
 			break;
 		}
 		Percentage = SingleFactor.Value * 100;
+		SumOfAimingPercentage += Percentage;
+
 		FillContnents(Explanation, Percentage);
 	}
+
+	UTextBlock* PercentageText = Cast<UTextBlock>(SumAimingProbBox->GetWidgetFromName(FName("PercentageValue")));
+	PercentageText->SetText(FText::AsNumber(SumOfAimingPercentage));	
 }
 
 void UCombatWidget::FillContnents(const FString& Explanation, const float Percentage)

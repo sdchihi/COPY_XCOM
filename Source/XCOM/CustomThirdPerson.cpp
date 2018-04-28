@@ -8,7 +8,9 @@
 #include "Classes/GameFramework/CharacterMovementComponent.h"
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "TrajectoryComponent.h"
+#include "Classes/Kismet/GameplayStatics.h"
 #include "HUDComponent.h"
+#include "Classes/Components/CapsuleComponent.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -17,7 +19,6 @@ ACustomThirdPerson::ACustomThirdPerson()
 
 	AimingComponent = CreateDefaultSubobject<UAimingComponent>(TEXT("AimingComponent"));
 	TrajectoryComponent = CreateDefaultSubobject<UTrajectoryComponent>(TEXT("TrajectoryComponent"));
-
 }
 
 void ACustomThirdPerson::BeginPlay()
@@ -51,6 +52,7 @@ void ACustomThirdPerson::BeginPlay()
 	}
 
 	HealthBar = FindComponentByClass<UHUDComponent>();
+	SkeletalMesh = FindComponentByClass<USkeletalMeshComponent>();
 
 
 }
@@ -160,9 +162,9 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 	if (RemainingActionPoint <=0) 
 	{
 		bCanAction = false;
-		if (CheckTurnDelegate.IsBound())
+		if (AfterActionDelegate.IsBound())
 		{
-			CheckTurnDelegate.Execute(bTeam);
+			AfterActionDelegate.Broadcast(bTeam);
 		}
 	}
 }
@@ -174,10 +176,18 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	if (CurrentHP <= 0) 
 	{
 		//TODO 사망 Event
+		UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
+		ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
 		if (DeadCamDelegate.IsBound()) 
 		{
 			DeadCamDelegate.Execute(GetActorLocation());
+			SkeletalMesh->SetSimulatePhysics(true);
+			SkeletalMesh->SetAllBodiesBelowSimulatePhysics(FName("pelvis"), true, true);
+
+			StartSlowMotion();
+
 		}
+		
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
 
@@ -286,4 +296,20 @@ void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible)
 		UE_LOG(LogTemp, Warning, L" 없음");
 
 	}
+}
+
+
+void ACustomThirdPerson::StartSlowMotion()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(),0.3);
+	FTimerHandle UnUsedHandle;
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::FinishSlowMotion);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.4, false);	// 0.4 Delay 고정
+}
+
+
+void ACustomThirdPerson::FinishSlowMotion()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
+
 }
