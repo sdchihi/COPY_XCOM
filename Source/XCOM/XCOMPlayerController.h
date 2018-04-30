@@ -122,4 +122,7 @@ private:
 
 	void OrderFinishTrajectory();
 
+	UFUNCTION()
+	void OrderStartVigilance();
+
 };

@@ -248,6 +248,12 @@ void UCombatWidget::GrenadeButtonClicked()
 void UCombatWidget::VisilianceButtonClicked()
 {
 	ConstructWidgetNormal();
+
+	MainStartActionButton->OnClicked.Clear();
+
+	TScriptDelegate<FWeakObjectPtr> delegateFunction;
+	delegateFunction.BindUFunction(this, "StartVigilanceButtonClicked");
+	MainStartActionButton->OnClicked.Add(delegateFunction);
 	UTextBlock* StartActionButtonText = Cast<UTextBlock>(MainStartActionButton->GetChildAt(0));
 	if (StartActionButtonText)
 	{
@@ -277,10 +283,12 @@ void UCombatWidget::StartAttackButtonClicked()
 void UCombatWidget::StartVigilanceButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, L"경계 시작");
-	//todo
+
 	if (StartVisilianceDelegate.IsBound())
 	{
 		StartVisilianceDelegate.Execute();
+		UE_LOG(LogTemp, Warning, L"경계 시작2");
+
 	}
 }
 

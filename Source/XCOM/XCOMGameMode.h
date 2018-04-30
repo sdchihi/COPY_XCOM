@@ -32,6 +32,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFogOfWarManager> FogOfWarBP;
 
+	TArray<ACustomThirdPerson*> GetTeamMemeber(const bool bTeam);
 
 private:
 	TArray<ACustomThirdPerson*> PlayerCharacters;
@@ -45,5 +46,5 @@ private:
 
 	void SpawnFogOfWar();
 
-
+	
 };

@@ -31,7 +31,7 @@ struct FAimingInfo
 
 	FAimingInfo()
 	{
-		StartLocation = FVector(0, 0, 0);
+		StartLocation = FVector(0, 0, 0);	
 		TargetLocation = FVector(0, 0, 0);
 		Probability = 0;
 	}
@@ -71,6 +71,8 @@ public:
 	void CheckAttackPotential(APawn* TargetPawn);
 
 	void GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover,const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
+
+	bool GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo);
 
 
 protected:

@@ -134,3 +134,15 @@ void AXCOMGameMode::SpawnFogOfWar()
 	}
 }
 
+
+TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
+{
+	if (bTeam) 
+	{
+		return PlayerCharacters;
+	}
+	else 
+	{
+		return EnemyCharacters;
+	}
+};

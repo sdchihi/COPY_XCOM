@@ -90,6 +90,7 @@ void AXCOMPlayerController::Initialize() {
 			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetWithBlend);
 			CombatWidget->StartAttackDelegate.BindDynamic(this, &AXCOMPlayerController::OrderAttack);
 			CombatWidget->StartTrajectoryDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartTrajectory);
+			CombatWidget->StartVisilianceDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartVigilance);
 		}
 		bShowMouseCursor = true;
 	}
@@ -248,6 +249,8 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay 고정
 	}
+	
+	SelectedCharacter->UnprotectedMovingDelegate.Broadcast(SelectedCharacter->GetActorLocation());
 }
 
 /**
@@ -453,7 +456,7 @@ void AXCOMPlayerController::CancelWithESC()
 
 void AXCOMPlayerController::OrderAttack(const int32 TargetEnemyIndex)
 {
-	SelectedCharacter->AttackEnemy(TargetEnemyIndex);
+	SelectedCharacter->AttackEnemyAccoringToIndex(TargetEnemyIndex);
 }
 
 void AXCOMPlayerController::OrderStartTrajectory()
@@ -466,4 +469,16 @@ void AXCOMPlayerController::OrderStartTrajectory()
 void AXCOMPlayerController::OrderFinishTrajectory()
 {
 	SelectedCharacter->FinishTrajectory();
+}
+
+void AXCOMPlayerController::OrderStartVigilance()
+{
+	APawnController* CharacterController = Cast<APawnController>(SelectedCharacter->GetController());
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	bool OppositeTeamFlag = !SelectedCharacter->GetTeamFlag();
+
+	
+	CharacterController->BindVigilanceEvent(GameMode->GetTeamMemeber(OppositeTeamFlag));
+	SelectedCharacter->UseActionPoint(2);
+	UE_LOG(LogTemp, Warning, L"경계 시작");
 }

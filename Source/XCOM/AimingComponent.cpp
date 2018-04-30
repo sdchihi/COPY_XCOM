@@ -330,3 +330,78 @@ void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCas
 	}
 }
 
+
+
+bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo)
+{
+	TArray<FHitResult> UnprotectdEnemyHitResultArray;
+
+	TArray<FHitResult> ResultRequireInspection;
+	if (bIsCover)
+	{
+		for (auto CoverDirection : CoverDirectionMap)
+		{
+			if (CoverDirection.Value != ECoverInfo::None)
+			{
+				FRotator Direction = FindCoverDirection(CoverDirection);
+
+				FVector RightVector = FVector::CrossProduct(FVector::UpVector, Direction.Vector());
+				FVector RightSide = GetOwner()->GetActorLocation() + RightVector * 100;
+				FVector LeftSide = GetOwner()->GetActorLocation() - RightVector * 100;
+
+				TArray<FHitResult> SurroundingAreaInfo;
+				GetAimingInfoFromSurroundingArea(RightSide, SurroundingAreaInfo);
+				GetAimingInfoFromSurroundingArea(LeftSide, SurroundingAreaInfo);
+
+				for (FHitResult SingleSurroundingAreaInfo : SurroundingAreaInfo)
+				{
+
+					FHitResult HitResult = LineTraceWhenAiming(SingleSurroundingAreaInfo.TraceEnd, TargetLocation);
+					ResultRequireInspection.Add(HitResult);
+				}
+
+			}
+		}
+	}
+	FHitResult HitResult = LineTraceWhenAiming(GetOwner()->GetActorLocation(), TargetLocation);
+	ResultRequireInspection.Add(HitResult);
+	for (FHitResult SingleHitResult : ResultRequireInspection)
+	{
+		ACustomThirdPerson* DetectedPawn = Cast<ACustomThirdPerson>(SingleHitResult.GetActor());
+		if (DetectedPawn)
+		{
+			UnprotectdEnemyHitResultArray.Add(SingleHitResult);
+		}
+	}
+	if (UnprotectdEnemyHitResultArray.Num() == 0)
+	{
+		return false;
+	}
+	//필터링 끝
+
+
+	TArray<FAimingInfo> AimingInfoInAllCase;
+	TArray<FVector> TargetLocationArr;
+	TArray<FAimingInfo> BestCaseArr;
+	for (FHitResult FilteredHitResult : UnprotectdEnemyHitResultArray)
+	{
+		APawn* DetectedPawn = Cast<APawn>(FilteredHitResult.GetActor());
+		if (DetectedPawn)
+		{
+			TMap<EAimingFactor, float> AimingFactor;
+			float Probability = CalculateAttackSuccessRatio(FilteredHitResult, AttackRadius, DetectedPawn, AimingFactor);
+			FVector StartLocation = FilteredHitResult.TraceStart;
+			FVector TargetLocation = DetectedPawn->GetActorLocation();
+			TargetLocationArr.AddUnique(TargetLocation);
+			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, AimingFactor));
+
+			//수정필요
+			DetectedPawn->CustomTimeDilation = 0.05;
+		}
+	}
+	FindBestCaseInAimingInfo(AimingInfoInAllCase, BestCaseArr, TargetLocationArr);
+	
+	AimingInfo = BestCaseArr[0];
+	
+	return true;
+};

@@ -208,12 +208,16 @@ void ACustomThirdPerson::ScanEnemy()
 
 };
  
-void ACustomThirdPerson::AttackEnemy(const int32 TargetEnemyIndex)
+void ACustomThirdPerson::AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex) 
 {
-	FAimingInfo SingleAimingInfo = AimingInfo[TargetEnemyIndex];
-	
-	FVector AimDirection = SingleAimingInfo.TargetLocation - GetActorLocation();
-	float AttackSuccessProbability = SingleAimingInfo.Probability;
+	FAimingInfo TargetEnemyAimingInfo = AimingInfo[TargetEnemyIndex];
+	AttackEnemy(TargetEnemyAimingInfo);
+}
+
+void ACustomThirdPerson::AttackEnemy(const FAimingInfo TargetAimingInfo)
+{
+	FVector AimDirection = TargetAimingInfo.TargetLocation - GetActorLocation();
+	float AttackSuccessProbability = TargetAimingInfo.Probability;
 	float RandomValue = FMath::FRandRange(0, 1);
 
 	//성공
@@ -226,7 +230,7 @@ void ACustomThirdPerson::AttackEnemy(const int32 TargetEnemyIndex)
 	}
 	else //실패
 	{
-		if (CheckTargetEnemyCoverState(SingleAimingInfo.Factor)) 
+		if (CheckTargetEnemyCoverState(TargetAimingInfo.Factor))
 		{
 			//은신중
 			RandomValue = FMath::FRandRange(0, 1);
@@ -312,4 +316,25 @@ void ACustomThirdPerson::FinishSlowMotion()
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 
+}
+
+
+
+void ACustomThirdPerson::StartVisiliance() 
+{
+	//AttackRadius;
+}
+
+
+
+// 경계중 적 발견
+void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
+{
+	FAimingInfo AimingInfoResult;
+	bool bDiscover = AimingComponent->GetVigilanceAimingInfo(AttackRadius, bIsCovering, CoverDirectionMap, TargetLocation, AimingInfoResult);
+
+	if (bDiscover) 
+	{
+		AttackEnemy(AimingInfoResult);
+	}
 }

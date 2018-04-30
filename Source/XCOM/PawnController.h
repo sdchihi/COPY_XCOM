@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "PawnController.generated.h"
 
+class ACustomThirdPerson;
 /**
  * 
  */
@@ -21,6 +22,10 @@ public:
 
 	void MoveToTargetLocation(FVector TargetLocation);
 
+	void BindVigilanceEvent(const TArray<ACustomThirdPerson*> OppositeTeamMember);
+
 private:
-	
+	UFUNCTION()
+	void WatchOut(const FVector TargetLocation);
+
 };

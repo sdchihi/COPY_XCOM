@@ -18,7 +18,7 @@ class UHUDComponent;
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
 
 UENUM(BlueprintType)
 enum class ECoverDirection : uint8
@@ -106,6 +106,8 @@ public:
 
 	FDeadCamDelegate DeadCamDelegate;
 
+	FUnprotectedMovingDelegate UnprotectedMovingDelegate;
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 RemainingActionPoint = 2;
 
@@ -130,12 +132,18 @@ public:
 
 	TMap<EAction, bool> GetPossibleAction() { return PossibleActionMap; };
 
-	void AttackEnemy(const int32 TargetEnemyIndex);
+	void AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex);
+
+
+	void AttackEnemy(const FAimingInfo TargetAimingInfo);
 
 	void StartTrajectory();
 	void FinishTrajectory();
 
 	void SetHealthBarVisibility(const bool bVisible);
+
+
+	void InVigilance(const FVector TargetLocation);
 
 
 protected:
@@ -177,5 +185,8 @@ private:
 
 	UFUNCTION()
 	void FinishSlowMotion();
+
+	void StartVisiliance();
+
 
 };
