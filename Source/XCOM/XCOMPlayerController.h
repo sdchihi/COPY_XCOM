@@ -85,7 +85,7 @@ private:
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 
-	void MovingStepByStep(const Path Target, const int32 CurrentIndex);
+	void MovingStepByStep(const Path Target, const int32 CurrentIndex, const int32 ActionPointToUse);
 
 	void CheckWallAround();
 
@@ -99,7 +99,7 @@ private:
 	UFUNCTION()
 	void SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility, const int32 MovableStepPerAct);
 
-	void MoveCharacterBasedOnState(int32 TargetTileIndex);
+	void MoveCharacterBasedOnState(const int32 TargetTileIndex, const int32 ActionPointToUse);
 
 	void ReleaseCharacter();
 
