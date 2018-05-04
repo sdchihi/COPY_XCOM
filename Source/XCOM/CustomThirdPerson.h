@@ -21,7 +21,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlaye
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
 
 UENUM(BlueprintType)
-enum class ECoverDirection : uint8
+enum class EDirection : uint8
 {
 	South,
 	North,
@@ -61,9 +61,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	ECoverDirection CoverDirection = ECoverDirection::None;
+	EDirection CoverDirection = EDirection::None;
 	
-	TMap<ECoverDirection, ECoverInfo> CoverDirectionMap;
+	UPROPERTY(BlueprintReadOnly)
+	EDirection MovingDirectionDuringCover = EDirection::None;
+
+	TMap<EDirection, ECoverInfo> CoverDirectionMap;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<AGun> GunBlueprint;
@@ -82,6 +85,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsAttack = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsReadyToAttack = false;
 
 	bool bCanAction = true;
 
@@ -130,12 +136,18 @@ public:
 
 	TArray<FAimingInfo>& GetAimingInfo() { return AimingInfo; };
 
+	UPROPERTY(BlueprintReadOnly)
+	FAimingInfo SelectedAimingInfo;
+
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	FVector GetShootingPlace() { return SelectedAimingInfo.StartLocation; };
+
 	TMap<EAction, bool> GetPossibleAction() { return PossibleActionMap; };
 
 	void AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex);
 
 
-	void AttackEnemy(const FAimingInfo TargetAimingInfo);
+	void AttackEnemyAccrodingToState(const FAimingInfo TargetAimingInfo);
 
 	void StartTrajectory();
 	void FinishTrajectory();
@@ -145,6 +157,11 @@ public:
 
 	void InVigilance(const FVector TargetLocation);
 
+	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
+	void CoverMoving(FVector TargetLocation);
+
+	UFUNCTION(BlueprintCallable)
+	void AttackAfterCoverMoving();
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -188,5 +205,11 @@ private:
 
 	void StartVisiliance();
 
+	void SetMovingDirectionDuringCover(const FVector TargetLocation);
+
+	void CoverUpAndAttack(const FAimingInfo TargetAimingInfo);
+
+	UFUNCTION(BlueprintCallable)
+	void Shoot();
 
 };

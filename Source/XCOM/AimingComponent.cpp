@@ -20,7 +20,7 @@ void UAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UAimingComponent::GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover, const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList)
+void UAimingComponent::GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList)
 {
 	TArray<ACustomThirdPerson*> EnemyInRange;
 	if (GetEnemyInRange(AttackRadius,EnemyInRange) == false)
@@ -162,19 +162,19 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 		{
 			switch (CoverDirectionState.Key)
 			{
-			case ECoverDirection::East:
+			case EDirection::East:
 				WallForwardVector = East;
 				DirectionString = "East";
 				break;
-			case ECoverDirection::West:
+			case EDirection::West:
 				WallForwardVector = West;
 				DirectionString = "West";
 				break;
-			case ECoverDirection::North:
+			case EDirection::North:
 				WallForwardVector = North;
 				DirectionString = "North";
 				break;
-			case ECoverDirection::South:
+			case EDirection::South:
 				WallForwardVector = South;
 				DirectionString = "South";
 				break;
@@ -200,7 +200,7 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 
 
 
-bool UAimingComponent::FilterAttackableEnemy(const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo)
+bool UAimingComponent::FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo)
 {
 	TArray<FHitResult> ResultRequireInspection;
 
@@ -287,21 +287,21 @@ void UAimingComponent::GetAimingInfoFromSurroundingArea(const FVector Surroundin
 	}
 }
 
-FRotator UAimingComponent::FindCoverDirection(TPair<ECoverDirection, ECoverInfo> DirectionAndInfoPair)
+FRotator UAimingComponent::FindCoverDirection(TPair<EDirection, ECoverInfo> DirectionAndInfoPair)
 {
 	FRotator Direction = FRotator(0, 0, 0);
 	switch (DirectionAndInfoPair.Key)
 	{
-	case ECoverDirection::East:
+	case EDirection::East:
 		Direction = FRotator(0, 0, 0);
 		break;
-	case ECoverDirection::West:
+	case EDirection::West:
 		Direction = FRotator(0, 180, 0);
 		break;
-	case ECoverDirection::North:
+	case EDirection::North:
 		Direction = FRotator(0, 90, 0);
 		break;
-	case ECoverDirection::South:
+	case EDirection::South:
 		Direction = FRotator(0, 270, 0);
 		break;
 	}
@@ -332,7 +332,7 @@ void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCas
 
 
 
-bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo)
+bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo)
 {
 	TArray<FHitResult> UnprotectdEnemyHitResultArray;
 

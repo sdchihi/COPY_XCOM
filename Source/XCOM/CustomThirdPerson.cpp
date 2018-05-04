@@ -27,10 +27,10 @@ void ACustomThirdPerson::BeginPlay()
 
 	CurrentMovableStep = Step;
 
-	CoverDirectionMap.Add(ECoverDirection::East, ECoverInfo::None);
-	CoverDirectionMap.Add(ECoverDirection::West, ECoverInfo::None);
-	CoverDirectionMap.Add(ECoverDirection::North, ECoverInfo::None);
-	CoverDirectionMap.Add(ECoverDirection::South, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::East, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::West, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::North, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::South, ECoverInfo::None);
 
 	//Todo - 이후 정리
 	PossibleActionMap.Add(EAction::Attack, true);
@@ -73,10 +73,10 @@ void ACustomThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void ACustomThirdPerson::ClearCoverDirectionInfo() 
 {
 	// Add 메소드가 중복된 Key값에대해선 갱신 역할을 함.
-	CoverDirectionMap.Add(ECoverDirection::East, ECoverInfo::None);
-	CoverDirectionMap.Add(ECoverDirection::West, ECoverInfo::None);
-	CoverDirectionMap.Add(ECoverDirection::North, ECoverInfo::None);
-	CoverDirectionMap.Add(ECoverDirection::South, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::East, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::West, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::North, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::South, ECoverInfo::None);
 
 	bIsCovering = false;
 }
@@ -95,16 +95,16 @@ void ACustomThirdPerson::RotateTowardWall() {
 			FRotator Direction;
 			switch (CoverDirection.Key)
 			{
-			case ECoverDirection::East:
+			case EDirection::East:
 				Direction = FRotator(0, 0, 0);
 				break;
-			case ECoverDirection::West:
+			case EDirection::West:
 				Direction = FRotator(0, 180, 0);
 				break;
-			case ECoverDirection::North:
+			case EDirection::North:
 				Direction = FRotator(0, 90, 0);
 				break;
-			case ECoverDirection::South:
+			case EDirection::South:
 				Direction = FRotator(0, 270, 0);
 				break;
 			}
@@ -146,6 +146,7 @@ void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha)
 
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
+	bIsReadyToAttack = false;
 	bIsAttack = true;
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
 	UseActionPoint(2);
@@ -210,14 +211,59 @@ void ACustomThirdPerson::ScanEnemy()
  
 void ACustomThirdPerson::AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex) 
 {
-	FAimingInfo TargetEnemyAimingInfo = AimingInfo[TargetEnemyIndex];
-	AttackEnemy(TargetEnemyAimingInfo);
+	FAimingInfo TargetAimingInfo = AimingInfo[TargetEnemyIndex];
+	AttackEnemyAccrodingToState(TargetAimingInfo);
 }
 
-void ACustomThirdPerson::AttackEnemy(const FAimingInfo TargetAimingInfo)
+void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAimingInfo)
 {
-	FVector AimDirection = TargetAimingInfo.TargetLocation - GetActorLocation();
-	float AttackSuccessProbability = TargetAimingInfo.Probability;
+	SelectedAimingInfo = TargetAimingInfo;
+	if (bIsCovering) 
+	{
+		CoverUpAndAttack(SelectedAimingInfo);
+	}
+	
+
+	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
+	float AttackSuccessProbability = SelectedAimingInfo.Probability;
+	float RandomValue = FMath::FRandRange(0, 1);
+
+	//shoot()
+}
+
+
+void ACustomThirdPerson::CoverUpAndAttack(const FAimingInfo TargetAimingInfo) 
+{
+	bIsReadyToAttack = true;
+	bool bHaveToMove = !TargetAimingInfo.StartLocation.Equals(GetActorLocation());
+	if (bHaveToMove)
+	{
+		UE_LOG(LogTemp, Warning, L"구현중 진입점 1")
+		FVector PrevLocation = GetActorLocation();
+		SetMovingDirectionDuringCover(TargetAimingInfo.StartLocation);
+		
+		//CoverMoving(TargetAimingInfo.StartLocation);
+	}
+	else 
+	{
+		MovingDirectionDuringCover = EDirection::None;
+	}
+}
+
+void ACustomThirdPerson::AttackAfterCoverMoving() 
+{
+	Shoot();
+
+	MovingDirectionDuringCover = EDirection::None;
+	bIsReadyToAttack = false;
+}
+
+
+void ACustomThirdPerson::Shoot() 
+{
+
+	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
+	float AttackSuccessProbability = SelectedAimingInfo.Probability;
 	float RandomValue = FMath::FRandRange(0, 1);
 
 	//성공
@@ -230,7 +276,7 @@ void ACustomThirdPerson::AttackEnemy(const FAimingInfo TargetAimingInfo)
 	}
 	else //실패
 	{
-		if (CheckTargetEnemyCoverState(TargetAimingInfo.Factor))
+		if (CheckTargetEnemyCoverState(SelectedAimingInfo.Factor))
 		{
 			//은신중
 			RandomValue = FMath::FRandRange(0, 1);
@@ -252,6 +298,7 @@ void ACustomThirdPerson::AttackEnemy(const FAimingInfo TargetAimingInfo)
 		}
 	}
 }
+
 
 bool ACustomThirdPerson::CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo)
 {
@@ -335,6 +382,23 @@ void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 
 	if (bDiscover) 
 	{
-		AttackEnemy(AimingInfoResult);
+		AttackEnemyAccrodingToState(AimingInfoResult);
 	}
 }
+
+void ACustomThirdPerson::SetMovingDirectionDuringCover(const FVector TargetLocation) 
+{
+	FVector ForwardVector = GetActorForwardVector().GetSafeNormal();
+	FVector LeftVector = FVector::CrossProduct(ForwardVector, FVector(0, 0, 1));
+	FVector DirectionToTarget = (TargetLocation - GetActorLocation()).GetSafeNormal();
+
+	if (LeftVector.Equals(DirectionToTarget))
+	{
+		MovingDirectionDuringCover = EDirection::West;
+	}
+	else 
+	{
+		MovingDirectionDuringCover = EDirection::East;
+	}
+}
+

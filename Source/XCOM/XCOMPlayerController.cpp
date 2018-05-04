@@ -252,6 +252,11 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay °íÁ¤
 		SelectedCharacter->UseActionPoint(ActionPointToUse);
+
+		FPossibleActionWrapper PossibleActionWrapper;
+		PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
+
+		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
 	}
 	
 	SelectedCharacter->UnprotectedMovingDelegate.Broadcast(SelectedCharacter->GetActorLocation());
@@ -317,26 +322,26 @@ void AXCOMPlayerController::CheckWallAround()
 void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex)
 {
 	int32 RowNumber = 0;
-	ECoverDirection CoverDirection = ECoverDirection::None;
+	EDirection CoverDirection = EDirection::None;
 	if (CardinalIndex == (CharacterIndex + TileManager->GetGridXLength())) 
 	{
-		CoverDirection = ECoverDirection::North; // ºÏ
+		CoverDirection = EDirection::North; // ºÏ
 		RowNumber = 1;
 	}
 	else if (CardinalIndex == (CharacterIndex - TileManager->GetGridXLength())) 
 	{
-		CoverDirection = ECoverDirection::South; // ³²
+		CoverDirection = EDirection::South; // ³²
 		RowNumber = -1;
 	}
 	else
 	{
 		if (CardinalIndex == CharacterIndex + 1)
 		{
-			CoverDirection = ECoverDirection::East; // µ¿
+			CoverDirection = EDirection::East; // µ¿
 		}
 		else 
 		{
-			CoverDirection = ECoverDirection::West;	// ¼­
+			CoverDirection = EDirection::West;	// ¼­
 		}
 		RowNumber = 0;
 	}

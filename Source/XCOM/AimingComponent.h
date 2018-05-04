@@ -54,7 +54,7 @@ struct FAimingInfo
 };
 
 
-enum class ECoverDirection : uint8;
+enum class EDirection : uint8;
 enum class ECoverInfo : uint8;
 
 class ACustomThirdPerson;
@@ -70,9 +70,9 @@ public:
 	
 	void CheckAttackPotential(APawn* TargetPawn);
 
-	void GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover,const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
+	void GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover,const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
 
-	bool GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo);
+	bool GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo);
 
 
 protected:
@@ -91,13 +91,13 @@ public:
 
 	bool GetEnemyInRange(const float AttackRadius, OUT TArray<ACustomThirdPerson*>& CharacterInRange);
 
-	bool FilterAttackableEnemy(const TMap<ECoverDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo);
+	bool FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo);
 
 	FHitResult LineTraceWhenAiming(const FVector StartLocation, const FVector TargetLocation);
 
 	void GetAimingInfoFromSurroundingArea(const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo);
 
-	FRotator FindCoverDirection(TPair<ECoverDirection, ECoverInfo> DirectionAndInfoPair);
+	FRotator FindCoverDirection(TPair<EDirection, ECoverInfo> DirectionAndInfoPair);
 
 	TArray<FAimingInfo> AimingInfoList;
 
