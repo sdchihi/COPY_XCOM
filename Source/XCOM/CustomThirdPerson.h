@@ -213,4 +213,5 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
 
+	FVector PrevLocation;
 };

@@ -118,6 +118,7 @@ void ACustomThirdPerson::RotateTowardWall() {
 */
 void ACustomThirdPerson::SetOffAttackState() {
 	bIsAttack = false;
+	SetActorLocation(PrevLocation, true);
 	if (bIsCovering) {
 		RotateTowardWall();
 	}
@@ -222,24 +223,21 @@ void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAim
 	{
 		CoverUpAndAttack(SelectedAimingInfo);
 	}
-	
-
-	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
-	float AttackSuccessProbability = SelectedAimingInfo.Probability;
-	float RandomValue = FMath::FRandRange(0, 1);
-
-	//shoot()
+	else 
+	{
+		Shoot();
+	}
 }
 
 
 void ACustomThirdPerson::CoverUpAndAttack(const FAimingInfo TargetAimingInfo) 
 {
 	bIsReadyToAttack = true;
+	PrevLocation = GetActorLocation();
 	bool bHaveToMove = !TargetAimingInfo.StartLocation.Equals(GetActorLocation());
 	if (bHaveToMove)
 	{
 		UE_LOG(LogTemp, Warning, L"구현중 진입점 1")
-		FVector PrevLocation = GetActorLocation();
 		SetMovingDirectionDuringCover(TargetAimingInfo.StartLocation);
 		
 		//CoverMoving(TargetAimingInfo.StartLocation);

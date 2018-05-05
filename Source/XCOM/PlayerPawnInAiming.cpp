@@ -31,6 +31,7 @@ void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 }
 
+// 왼쪽, 오른쪽, 캐릭터 정면 왼쪽 이렇게 세위치에서..
 /**
 * 조준하는 상황에서 사용될 Pawn의 카메라의 위치, 방향을 결정합니다.
 * @param AimingCharLoc - 조준하는 캐릭터의 위치
@@ -38,14 +39,73 @@ void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInput
 */
 void APlayerPawnInAiming::SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc)
 {
+	FVector PawnPosition;
 	FVector StraightLineDirection = (AimedCharLoc - AimingCharLoc).GetSafeNormal();
 	// Z축과 StraightLineDirection의 외적
 	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
-	FVector NewPawnPosition = AimingCharLoc - (StraightLineDirection * BackWardDistance) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
-	float DistanceBtwChar = FVector::Distance(AimingCharLoc, AimedCharLoc);
+	
+	FVector NeedCheckingLocationArray[2];
+	NeedCheckingLocationArray[0] = AimingCharLoc - (StraightLineDirection * BackWardDistance) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);	//Right shoulder
+	NeedCheckingLocationArray[1] = AimingCharLoc - (StraightLineDirection * BackWardDistance) - (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);	//Left shoulder
 
+	float DistanceBtwChar = FVector::Distance(AimingCharLoc, AimedCharLoc);
 	FVector TargetLocation = AimedCharLoc - (StraightLineDirection * (DistanceBtwChar / 2));
-	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetLocation);
+	
+	bool bFindStartLocation = false;
+	for (FVector  NeedCheckingLocation : NeedCheckingLocationArray)
+	{
+		if (CheckInView(NeedCheckingLocation, TargetLocation)) 
+		{
+			PawnPosition = NeedCheckingLocation;
+			bFindStartLocation = true;
+			bNeedToChangeLocation = false;
+			break;
+		};
+	}
+
+	if (!bFindStartLocation) 
+	{
+		PawnPosition = NeedCheckingLocationArray[0];
+		bNeedToChangeLocation = true;
+	}
+
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(PawnPosition, TargetLocation);
+	SetActorLocation(PawnPosition);
+	SetActorRotation(NewPawnRotation);
+};
+
+void APlayerPawnInAiming::SetShootingCam(const FVector AimingCharLoc, const FVector AimedCharLoc)
+{
+	if (!bNeedToChangeLocation) {return;}
+
+	FVector PawnPosition;
+
+	FVector StraightLineDirection = (AimedCharLoc - AimingCharLoc).GetSafeNormal();
+	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
+	float DistanceBtwChar = FVector::Distance(AimingCharLoc, AimedCharLoc);
+	FVector HalfwayPoint = AimedCharLoc - (StraightLineDirection * (DistanceBtwChar / 2));
+
+	FVector NeedCheckingLocationArray[2];
+	NeedCheckingLocationArray[0] = AimingCharLoc + (StraightLineDirection * BackWardDistance) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);	//정면
+	NeedCheckingLocationArray[1] = HalfwayPoint + FVector(0, DistanceBtwChar+200, DistanceBtwChar + 200);
+
+	FVector TargetLocation[2];
+	TargetLocation[0] = AimingCharLoc;
+	TargetLocation[1] = HalfwayPoint;
+
+	FVector NewPawnPosition;
+	FRotator NewPawnRotation;
+	if (CheckInView(NeedCheckingLocationArray[0], TargetLocation[0])) 
+	{
+		NewPawnPosition = NeedCheckingLocationArray[0];
+		NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetLocation[0]);
+	}
+	else 
+	{
+		NewPawnPosition = NeedCheckingLocationArray[1];
+		NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetLocation[1]);
+	}
+
 	SetActorLocation(NewPawnPosition);
 	SetActorRotation(NewPawnRotation);
 };
@@ -56,9 +116,38 @@ void APlayerPawnInAiming::SetDeathCam(const FVector AimingCharLoc, const FVector
 	FVector StraightLineDirection = (AimingCharLoc - MurderedCharLocation).GetSafeNormal();
 
 	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
-	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 100 ) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
+	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 200 ) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
 
 	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, MurderedCharLocation);
 	SetActorLocation(NewPawnPosition);
 	SetActorRotation(NewPawnRotation);
 };
+
+
+bool APlayerPawnInAiming::CheckInView(const FVector StartLocation, const FVector TargetLocation) 
+{
+	const FName TraceTag("MyTraceTag");
+	GetWorld()->DebugDrawTraceTag = TraceTag;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.TraceTag = TraceTag;
+	//CollisionParams.bFindInitialOverlaps = false;
+
+	FHitResult HitResult;
+	GetOwner()->GetActorLocation();
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartLocation,
+		TargetLocation,
+		ECollisionChannel::ECC_GameTraceChannel8,
+		CollisionParams
+	);
+
+	if (HitResult.GetActor()) 
+	{
+		return false;
+	}
+	else 
+	{
+		return true;
+	}
+}

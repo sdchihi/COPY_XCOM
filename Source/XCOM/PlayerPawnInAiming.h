@@ -33,6 +33,8 @@ public:
 
 	void SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc);
 
+	void SetShootingCam(const FVector AimingCharLoc, const FVector AimedCharLoc);
+
 	void SetDeathCam(const FVector AimingCharLoc, const FVector MurderedCharLocation);
 
 	UPROPERTY(EditDefaultsOnly)
@@ -43,4 +45,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	float UpwardDistance = 100;
+	
+private:
+	bool CheckInView(const FVector StartLocation, const FVector TargetLocation);
+
+	bool bNeedToChangeLocation = false;
 };

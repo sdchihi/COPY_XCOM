@@ -255,7 +255,6 @@ void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 Curr
 
 		FPossibleActionWrapper PossibleActionWrapper;
 		PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
-
 		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
 	}
 	
@@ -312,6 +311,9 @@ void AXCOMPlayerController::CheckWallAround()
 
 	//Todo
 	SelectedCharacter->ScanEnemy();
+	FPossibleActionWrapper PossibleActionWrapper;
+	PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
+	DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
 }
 
 /**
