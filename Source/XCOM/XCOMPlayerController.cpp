@@ -72,6 +72,7 @@ void AXCOMPlayerController::Initialize() {
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
 		SingleThirdPerson->DeadCamDelegate.BindDynamic(this , &AXCOMPlayerController::ChangeToDeathCam);
+		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
 
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
@@ -384,7 +385,7 @@ void AXCOMPlayerController::ChangeToDefaultPawn()
 	{
 		HealthBarVisiblityDelegate.Execute(true);
 	}
-
+	CombatWidget->SetVisibility(ESlateVisibility::Visible);
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
 };
 
@@ -394,13 +395,14 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 	for (auto SinglePlayerChar : PlayerCharacters)
 	{
 		if (SinglePlayerChar->bCanAction) 
-		{
+		{	
 			AvailableCharacters.Add(SinglePlayerChar);
 		}
 	}
 
 	if (AvailableCharacters.Num() == 0) 
 	{
+		//todo something
 		return FVector(0, 0, 0);
 	}
 
@@ -492,4 +494,9 @@ void AXCOMPlayerController::OrderStartVigilance()
 	CharacterController->BindVigilanceEvent(GameMode->GetTeamMemeber(OppositeTeamFlag));
 	SelectedCharacter->UseActionPoint(2);
 	UE_LOG(LogTemp, Warning, L"경계 시작");
+}
+
+void AXCOMPlayerController::SetInvisibleCombatWidget()
+{
+	CombatWidget->SetVisibility(ESlateVisibility::Collapsed);
 }

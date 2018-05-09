@@ -17,6 +17,7 @@ class UTrajectoryComponent;
 class UHUDComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
+DECLARE_DYNAMIC_DELEGATE(FStartActionDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
@@ -114,6 +115,8 @@ public:
 	FDeadCamDelegate DeadCamDelegate;
 
 	FUnprotectedMovingDelegate UnprotectedMovingDelegate;
+
+	FStartActionDelegate StartActionDelegate;
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 RemainingActionPoint = 2;

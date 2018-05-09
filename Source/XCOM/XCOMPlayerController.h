@@ -125,4 +125,7 @@ private:
 	UFUNCTION()
 	void OrderStartVigilance();
 
+	UFUNCTION()
+	void SetInvisibleCombatWidget();
+
 };

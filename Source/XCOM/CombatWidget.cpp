@@ -332,3 +332,4 @@ void UCombatWidget::ConstructWidgetNormal()
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 }
+

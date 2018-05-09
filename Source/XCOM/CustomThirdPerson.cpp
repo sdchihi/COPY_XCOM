@@ -119,11 +119,13 @@ void ACustomThirdPerson::RotateTowardWall() {
 void ACustomThirdPerson::SetOffAttackState() {
 	bIsAttack = false;
 	SetActorLocation(PrevLocation, true);
+	UseActionPoint(2);
 	if (bIsCovering) {
 		RotateTowardWall();
 	}
 	if (ChangePlayerPawnDelegate.IsBound()) 
 	{
+	
 		ChangePlayerPawnDelegate.Execute();
 	}
 	else 
@@ -150,11 +152,10 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 	bIsReadyToAttack = false;
 	bIsAttack = true;
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
-	UseActionPoint(2);
 
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
-	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.4 + 1.5, false);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 3, false);
 }
 
 void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
@@ -219,6 +220,11 @@ void ACustomThirdPerson::AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex
 void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAimingInfo)
 {
 	SelectedAimingInfo = TargetAimingInfo;
+	// 컨트롤러쪽에 .. StartAction
+	if (StartActionDelegate.IsBound()) 
+	{
+		StartActionDelegate.Execute();
+	}
 	if (bIsCovering) 
 	{
 		CoverUpAndAttack(SelectedAimingInfo);
@@ -228,7 +234,6 @@ void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAim
 		Shoot();
 	}
 }
-
 
 void ACustomThirdPerson::CoverUpAndAttack(const FAimingInfo TargetAimingInfo) 
 {
