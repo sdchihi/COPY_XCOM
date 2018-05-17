@@ -405,3 +405,24 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 	
 	return true;
 };
+
+
+
+FAimingInfo UAimingComponent::GetBestAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap)
+{
+	TArray<FAimingInfo> AimingInfoList;
+	GetAttackableEnemyInfo(AttackRadius, bIsCover, CoverDirectionMap, AimingInfoList);
+
+	float HighestProbability = 0;
+	FAimingInfo BestAimingInfo;
+	for (FAimingInfo AimingInfo : AimingInfoList) 
+	{
+		if (HighestProbability < AimingInfo.Probability)
+		{
+			HighestProbability = AimingInfo.Probability;
+			BestAimingInfo = AimingInfo;
+		}
+	}
+
+	return BestAimingInfo;
+};

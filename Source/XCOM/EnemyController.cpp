@@ -5,7 +5,7 @@
 #include "TileManager2.h"
 #include "CustomThirdPerson.h"
 #include "Tile.h"
-
+#include "AimingComponent.h"
 
 void AEnemyController::BeginPlay()
 {
@@ -34,53 +34,40 @@ void AEnemyController::SetNextAction()
 	TileManager->GetAvailableTiles(OverllapedTile, MovableStep, MovableStep, MovableTiles);
 
 	
-	int32 MaxPoint = 0;
-	for (auto SingleMovableTile : MovableTiles) 
-	{
-		
-	}
+	TMap<ATile*, int32> TileScoreBoard = GetScoreBoard(MovableTiles);
 }
 
 
-int32 AEnemyController::ScoringOnTile(ATile* AvailableTile)
+TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles)
 {
-	int32 Score = 0; 
+	TMap<ATile*, int32> TileScoreBoard;
+	TArray<ACustomThirdPerson*> PlayerCharacters = GetPlayerCharacters();
 
-	FVector TileLocation = AvailableTile->GetActorLocation();
-	TArray<FVector> CoverDirectionArr;
-	bool bWallAround = TileManager->CheckWallAround(TileLocation, CoverDirectionArr);
-
-	if (bWallAround) 
+	for (auto TargeTile : MovableTiles)
 	{
-		TArray<ACustomThirdPerson*> PlayerCharacters = GetPlayerCharacters();
-		for (ACustomThirdPerson* Unit : PlayerCharacters) 
+		int32 Score = 0;
+		FVector TileLocation = TargeTile->GetActorLocation();
+		TArray<FVector> CoverDirectionArr;
+		bool bWallAround = TileManager->CheckWallAround(TileLocation, CoverDirectionArr);
+		if (bWallAround)	//엄폐 가능.
 		{
-			FVector UnitLocation = Unit->GetActorLocation();
-			float Distance = FVector::Dist2D(UnitLocation, TileLocation);
-			if (Distance <= TileManager->GetTileSize() * 5) 
+			for (ACustomThirdPerson* Unit : PlayerCharacters)
 			{
-				continue;
-			}
-
-			FVector DirectionToTargetUnit = (UnitLocation - TileLocation).GetSafeNormal2D();
-			for (FVector CoverDirection : CoverDirectionArr)
-			{
-				float AngleBtwTargetAndWall = FMath::RadiansToDegrees(acosf(FVector::DotProduct(DirectionToTargetUnit, CoverDirection)));
-				AngleBtwTargetAndWall = FMath::Abs(AngleBtwTargetAndWall);
-				if (AngleBtwTargetAndWall < 90) 
+				FVector UnitLocation = Unit->GetActorLocation();
+				if ( !CheckMimiumInterval(TileLocation, UnitLocation))// 최소 간격 유지 실패시 Score - 50 패널티 
 				{
-					//  112233
-					
-					break;
+					Score -= 50;
+				}
+				if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr)) 
+				{
+					Score += 20;
 				}
 			}
-
+			TileScoreBoard.Add(TargeTile, Score);
 		}
-
-		
 	}
 
-	return Score;
+	return TileScoreBoard;
 }
 
 TArray<ACustomThirdPerson*> AEnemyController::GetPlayerCharacters()
@@ -102,3 +89,35 @@ TArray<ACustomThirdPerson*> AEnemyController::GetPlayerCharacters()
 }
 
 
+bool AEnemyController::CheckMimiumInterval(const FVector TileLocation, const FVector TargetActorLocation) 
+{
+	float Distance = FVector::Dist2D(TileLocation, TargetActorLocation);
+	if (Distance <= TileManager->GetTileSize() * 5)	
+	{
+		return false;
+	}
+	return true;
+}
+
+bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr) 
+{
+	FVector DirectionToTargetUnit = (TargetActorLocation - TileLocation).GetSafeNormal2D();
+	for (FVector CoverDirection : CoverDirectionArr)
+	{
+		float AngleBtwTargetAndWall = FMath::RadiansToDegrees(acosf(FVector::DotProduct(DirectionToTargetUnit, CoverDirection)));
+		AngleBtwTargetAndWall = FMath::Abs(AngleBtwTargetAndWall);
+		if (AngleBtwTargetAndWall < 90)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+
+int32 AEnemyController::ScoringByAimingInfo() 
+{
+
+}

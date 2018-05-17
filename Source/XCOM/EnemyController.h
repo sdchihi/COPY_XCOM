@@ -25,14 +25,19 @@ public:
 
 
 private:
+	struct FAimingInfo AimingInfo;
 
 	class ATileManager2* TileManager = nullptr;
 	
-	int32 ScoringOnTile(ATile* AvailableTile);
+	TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles);
 
 	EAction NextAction;
 
 	TArray<class ACustomThirdPerson*> GetPlayerCharacters();
+
+	bool CheckMimiumInterval(const FVector TileLocation, const FVector TargetActorLocation);
+
+	bool IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr)
 
 
 };

@@ -167,6 +167,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttackAfterCoverMoving();
 
+	// AI를 위한 메소드
+	UAimingComponent* GetAimingComponent() { return AimingComponent; };
+
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
