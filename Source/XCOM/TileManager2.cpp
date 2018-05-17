@@ -588,3 +588,64 @@ void ATileManager2::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), false);
 };
 
+
+ATile* ATileManager2::GetOverlappedTile(APawn* Pawn)
+{
+
+	TArray<AActor*> OverlappedTileArray;
+	Pawn->GetOverlappingActors(OverlappedTileArray);
+	if (OverlappedTileArray.Num() == 0) { return nullptr; }
+
+	ATile* Tile = Cast<ATile>(OverlappedTileArray[0]);
+	if (!Tile) { return nullptr; }
+
+	return Tile;
+}
+
+bool ATileManager2::CheckWallAround(const FVector TileLocation, TArray<FVector>& CoverDirectionArr) 
+{
+	int32 TileIndex = ConvertVectorToIndex(TileLocation);
+
+	int32 EastIndex = TileIndex + 1;
+	int32 WestIndex = TileIndex - 1;
+	int32 SouthIndex = TileIndex - GetGridXLength();
+	int32 NorthIndex = TileIndex + GetGridXLength();
+
+	bool bWallAround = false;
+	CheckWallAroundOneDirection(TileIndex, EastIndex, CoverDirectionArr);
+	CheckWallAroundOneDirection(TileIndex, SouthIndex, CoverDirectionArr);
+	CheckWallAroundOneDirection(TileIndex, NorthIndex, CoverDirectionArr);
+	CheckWallAroundOneDirection(TileIndex, WestIndex, CoverDirectionArr);
+	if (CoverDirectionArr.Num() != 0 ) 
+	{
+		bWallAround = true;
+	}
+
+	return bWallAround;
+}
+
+void ATileManager2::CheckWallAroundOneDirection(const int32 TileIndex, const int CardinalIndex, TArray<FVector>& CoverDirectionArr)
+{
+	int32 RowNumber = 0;
+	if (CardinalIndex == (TileIndex + GetGridXLength()))
+	{
+		RowNumber = 1;
+	}
+	else if (CardinalIndex == (TileIndex - GetGridXLength()))
+	{
+		RowNumber = -1;
+	}
+	else
+	{
+		RowNumber = 0;
+	}
+
+	if (CheckWithinBounds(CardinalIndex) && IsSameLine(TileIndex, RowNumber, CardinalIndex) &&
+		PathArr[CardinalIndex].bWall)
+	{
+		FVector TileLocation = ConvertIndexToVector(TileIndex);
+		FVector TargetTileLocation = ConvertIndexToVector(CardinalIndex);
+		FVector DirectionToTarget = (TargetTileLocation - TileLocation).GetSafeNormal2D();
+		CoverDirectionArr.Add(DirectionToTarget);
+	}
+}

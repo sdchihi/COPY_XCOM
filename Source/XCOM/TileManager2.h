@@ -53,6 +53,12 @@ public:
 	UFUNCTION()
 	void EndMouseOnTile(UPrimitiveComponent* OverlappedComponent);
 
+	ATile* GetOverlappedTile(APawn* Pawn);
+
+	bool CheckWallAround(const FVector TileLocation, TArray<FVector>& CoverDirectionArr);
+
+	int32 GetTileSize() { return TileSize; };
+
 private:
 	// º¯¼ö
 
@@ -101,6 +107,8 @@ private:
 	void UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 DiagonalPathIndex, const int32 TargetIndex);
 
 	int32 FindMinCostFIndex();
+
+	void CheckWallAroundOneDirection(const int32 TileIndex, const int CardinalIndex, TArray<FVector>& CoverDirectionArr);
 
 	
 };

@@ -26,9 +26,8 @@ void APlayerPawnInAiming::Tick(float DeltaTime)
 }
 
 void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
+{ 
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 // 왼쪽, 오른쪽, 캐릭터 정면 왼쪽 이렇게 세위치에서..
