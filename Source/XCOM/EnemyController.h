@@ -12,6 +12,16 @@ enum class EDirection : uint8;
 enum class ECoverInfo : uint8;
 
 
+USTRUCT()
+struct FAICommandInfo
+{
+	GENERATED_BODY()
+
+	int32 Score;
+
+	FAimingInfo AimingInfo;
+}
+
 /**
  * 
  */
@@ -32,7 +42,7 @@ private:
 
 	class ATileManager2* TileManager = nullptr;
 	
-	TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles);
+	TMap<ATile*, int32> GetScoreBoard(TArray<ATile*> MovableTiles);
 
 	EAction NextAction;
 
@@ -42,8 +52,12 @@ private:
 
 	bool IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr);
 
-	int32 ScoringByAimingInfo(TArray<FVector> CoverDirectionArr);
+
+	void ScoringByAimingInfo(TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo);
 
 	TMap<EDirection, ECoverInfo> MakeCoverDirectionMap(TArray<FVector> CoverDirectionArr);
+	
+	EAction DecideActionOnTile(int32 ActionScore);
+
 
 };

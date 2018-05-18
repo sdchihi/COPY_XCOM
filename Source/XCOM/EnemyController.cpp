@@ -54,14 +54,24 @@ TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles)
 			for (ACustomThirdPerson* Unit : PlayerCharacters)
 			{
 				FVector UnitLocation = Unit->GetActorLocation();
+				int32 GeographicalScore = 0;
+				int32 ActionScore = 0;
+
 				if ( !CheckMimiumInterval(TileLocation, UnitLocation))// 최소 간격 유지 실패시 Score - 50 패널티 
 				{
-					Score -= 50;
+					GeographicalScore -= 50;
 				}
 				if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr)) 
 				{
-					Score += 20;
+					GeographicalScore += 20;
 				}
+
+				FAimingInfo BestAimingInfo;
+				ScoringByAimingInfo(CoverDirectionArr, ActionScore, BestAimingInfo);
+				
+
+
+
 			}
 			TileScoreBoard.Add(TargeTile, Score);
 		}
@@ -117,19 +127,32 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 
 
 
-int32 AEnemyController::ScoringByAimingInfo(TArray<FVector> CoverDirectionArr)
+void AEnemyController::ScoringByAimingInfo(TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo)
 {
+
 	TMap<EDirection, ECoverInfo> CoverDirectionMap = MakeCoverDirectionMap(CoverDirectionArr);
 	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetControlledPawn());
-	if (!ControlledPawn) { return 0; }
+	if (!ControlledPawn) { return; }
 	UAimingComponent* AimingComp = ControlledPawn->GetAimingComponent();
 
-	FAimingInfo BestAimingInfo = AimingComp->GetBestAimingInfo(ControlledPawn->AttackRadius, ControlledPawn->bIsCovering, CoverDirectionMap);
-	if()
-	BestAimingInfo.Probability
+	BestAimingInfo = AimingComp->GetBestAimingInfo(ControlledPawn->AttackRadius, ControlledPawn->bIsCovering, CoverDirectionMap);
+	int32 BestProb = BestAimingInfo.Probability;
 
-
-	return  0;
+	int32 MinimumAimingProb = 35;
+	int32 MaximumAimingProb = 50;	
+	if (MaximumAimingProb < BestProb)
+	{
+		ActionScore = 40;
+	}
+	else if (BestProb < MinimumAimingProb)
+	{
+		ActionScore = 20;
+	}
+	else 
+	{
+		float LerpAlpha = (BestProb - MinimumAimingProb) / (MaximumAimingProb - MinimumAimingProb); //   x / 15
+		ActionScore = FMath::Lerp( 25, 40, LerpAlpha);
+	}
 }
 
 TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverDirectionMap(TArray<FVector> CoverDirectionArr) 
@@ -150,4 +173,16 @@ TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverDirectionMap(TArray<FVec
 		CoverDirectionMap.Add(Direction, ECoverInfo::None);
 	}
 	return CoverDirectionMap;
+}
+
+EAction AEnemyController::DecideActionOnTile(int32 ActionScore) 
+{
+	if (ActionScore == 20)
+	{
+		return EAction::Vigilance;
+	}
+	else 
+	{
+		return EAction::Attack;
+	}
 }
