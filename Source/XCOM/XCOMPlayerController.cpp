@@ -340,11 +340,11 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterInd
 	{
 		if (CardinalIndex == CharacterIndex + 1)
 		{
-			CoverDirection = EDirection::East; // 동
+			CoverDirection = EDirection::West; // 서
 		}
 		else 
 		{
-			CoverDirection = EDirection::West;	// 서
+			CoverDirection = EDirection::East;	// 동
 		}
 		RowNumber = 0;
 	}

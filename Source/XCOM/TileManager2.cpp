@@ -618,6 +618,8 @@ bool ATileManager2::CheckWallAround(const FVector TileLocation, TArray<FVector>&
 	CheckWallAroundOneDirection(TileIndex, WestIndex, CoverDirectionArr);
 	if (CoverDirectionArr.Num() != 0 ) 
 	{
+		
+
 		bWallAround = true;
 	}
 
@@ -646,6 +648,8 @@ void ATileManager2::CheckWallAroundOneDirection(const int32 TileIndex, const int
 		FVector TileLocation = ConvertIndexToVector(TileIndex);
 		FVector TargetTileLocation = ConvertIndexToVector(CardinalIndex);
 		FVector DirectionToTarget = (TargetTileLocation - TileLocation).GetSafeNormal2D();
+
+
 		CoverDirectionArr.Add(DirectionToTarget);
 	}
 }

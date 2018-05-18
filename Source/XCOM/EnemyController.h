@@ -8,6 +8,9 @@
 
 class ATile;
 enum class EAction : uint8;
+enum class EDirection : uint8;
+enum class ECoverInfo : uint8;
+
 
 /**
  * 
@@ -37,7 +40,10 @@ private:
 
 	bool CheckMimiumInterval(const FVector TileLocation, const FVector TargetActorLocation);
 
-	bool IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr)
+	bool IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr);
 
+	int32 ScoringByAimingInfo(TArray<FVector> CoverDirectionArr);
+
+	TMap<EDirection, ECoverInfo> MakeCoverDirectionMap(TArray<FVector> CoverDirectionArr);
 
 };

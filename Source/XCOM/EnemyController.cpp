@@ -117,7 +117,37 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 
 
 
-int32 AEnemyController::ScoringByAimingInfo() 
+int32 AEnemyController::ScoringByAimingInfo(TArray<FVector> CoverDirectionArr)
 {
+	TMap<EDirection, ECoverInfo> CoverDirectionMap = MakeCoverDirectionMap(CoverDirectionArr);
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetControlledPawn());
+	if (!ControlledPawn) { return 0; }
+	UAimingComponent* AimingComp = ControlledPawn->GetAimingComponent();
 
+	FAimingInfo BestAimingInfo = AimingComp->GetBestAimingInfo(ControlledPawn->AttackRadius, ControlledPawn->bIsCovering, CoverDirectionMap);
+	if()
+	BestAimingInfo.Probability
+
+
+	return  0;
+}
+
+TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverDirectionMap(TArray<FVector> CoverDirectionArr) 
+{
+	TMap<EDirection, ECoverInfo> CoverDirectionMap;
+	FVector East = FVector(-1, 0, 0);
+	FVector West = FVector(1, 0, 0);
+	FVector North = FVector(0, 1, 0);
+	FVector South = FVector(0, -1, 0);
+
+	EDirection Direction = EDirection::None;
+	for (FVector CoverDirection : CoverDirectionArr)
+	{
+		if (CoverDirection.Equals(East)) { Direction = EDirection::East; }
+		else if (CoverDirection.Equals(West)) { Direction = EDirection::West; }
+		else if (CoverDirection.Equals(North)) { Direction = EDirection::North; }
+		else  { Direction = EDirection::South; }
+		CoverDirectionMap.Add(Direction, ECoverInfo::None);
+	}
+	return CoverDirectionMap;
 }
