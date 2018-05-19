@@ -33,19 +33,40 @@ void AEnemyController::SetNextAction()
 	TArray<ATile*> MovableTiles;
 	TileManager->GetAvailableTiles(OverllapedTile, MovableStep, MovableStep, MovableTiles);
 
-	
-	TMap<ATile*, int32> TileScoreBoard = GetScoreBoard(MovableTiles);
+	/*for (auto temp : MovableTiles) 
+	{
+		int32 Index =TileManager->ConvertVectorToIndex(temp->GetActorLocation());
+		UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d", Index);
+	}*/
+
+
+
+
+	TMap<ATile*, FAICommandInfo> TileScoreBoard = GetScoreBoard(MovableTiles);
+	int32 size = 0;
+	for (auto& temp : TileScoreBoard)
+	{
+		int32 Index = TileManager->ConvertVectorToIndex(temp.Key->GetActorLocation());
+		int32 Score = temp.Value.Score;
+		UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: %d", Index, Score);
+	}
+	UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 수 : %d", size);
+
+
+	FindBestScoredAction(TileScoreBoard);
 }
 
 
-TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles)
+TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles)
 {
-	TMap<ATile*, int32> TileScoreBoard;
+	TMap<ATile*, FAICommandInfo> TileScoreBoard;
 	TArray<ACustomThirdPerson*> PlayerCharacters = GetPlayerCharacters();
 
 	for (auto TargeTile : MovableTiles)
 	{
-		int32 Score = 0;
+		int32 GeographicalScore = 0;
+		int32 ActionScore = 0;
+
 		FVector TileLocation = TargeTile->GetActorLocation();
 		TArray<FVector> CoverDirectionArr;
 		bool bWallAround = TileManager->CheckWallAround(TileLocation, CoverDirectionArr);
@@ -54,8 +75,7 @@ TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles)
 			for (ACustomThirdPerson* Unit : PlayerCharacters)
 			{
 				FVector UnitLocation = Unit->GetActorLocation();
-				int32 GeographicalScore = 0;
-				int32 ActionScore = 0;
+				
 
 				if ( !CheckMimiumInterval(TileLocation, UnitLocation))// 최소 간격 유지 실패시 Score - 50 패널티 
 				{
@@ -65,15 +85,19 @@ TMap<ATile*, int32> AEnemyController::GetScoreBoard(TArray<ATile*> MovableTiles)
 				{
 					GeographicalScore += 20;
 				}
-
-				FAimingInfo BestAimingInfo;
-				ScoringByAimingInfo(CoverDirectionArr, ActionScore, BestAimingInfo);
-				
-
-
-
 			}
-			TileScoreBoard.Add(TargeTile, Score);
+			FAimingInfo BestAimingInfo;
+			ScoringByAimingInfo(CoverDirectionArr, ActionScore, BestAimingInfo);
+			
+			EAction ActionOnTargetTile = DecideActionOnTile(ActionScore);
+
+			int32 TotalScore = ActionScore + GeographicalScore;
+			FAICommandInfo CommandInfo;// = FAICommandInfo(TotalScore, &BestAimingInfo, ActionOnTargetTile);
+			CommandInfo.Action = ActionOnTargetTile;
+			CommandInfo.AimingInfo = &BestAimingInfo;
+			CommandInfo.Score = TotalScore;
+
+			TileScoreBoard.Add(TargeTile, CommandInfo);
 		}
 	}
 
@@ -185,4 +209,22 @@ EAction AEnemyController::DecideActionOnTile(int32 ActionScore)
 	{
 		return EAction::Attack;
 	}
+}
+
+void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo> TileScoreBoard)
+{
+	int32 HighestScore = 0;
+	ATile* HighestScoredTile = nullptr;
+	for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
+	{
+		if (HighestScore < It.Value().Score) 
+		{
+			HighestScore = It.Value().Score;
+			HighestScoredTile = It.Key();
+		}
+	}
+	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
+	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
+	//블랙보드 세팅
+
 }
