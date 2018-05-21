@@ -207,7 +207,7 @@ void ACustomThirdPerson::RestoreActionPoint()
 void ACustomThirdPerson::ScanEnemy() 
 {
 	AimingInfo.Empty();
-	AimingComponent->GetAttackableEnemyInfo(AttackRadius, bIsCovering, CoverDirectionMap, AimingInfo);
+	AimingComponent->GetAttackableEnemyInfo(GetActorLocation(), AttackRadius, bIsCovering, CoverDirectionMap, AimingInfo);
 
 };
  

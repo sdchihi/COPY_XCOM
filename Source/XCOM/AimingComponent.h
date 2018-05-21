@@ -68,11 +68,11 @@ public:
 	// Sets default values for this component's properties
 	UAimingComponent();
 
-	void GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover,const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
+	void GetAttackableEnemyInfo(const FVector ActorLocation, const float AttackRadius, const bool bIsCover,const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
 
 	bool GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo);
 
-	FAimingInfo GetBestAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap);
+	FAimingInfo GetBestAimingInfo(const FVector ActorLocation, const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap);
 
 
 protected:
@@ -83,17 +83,17 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	float CalculateAttackSuccessRatio(const FHitResult HitResult, float AttackRadius, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor);
+	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor);
 
 	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo);
 
-	bool GetEnemyInRange(const float AttackRadius, OUT TArray<ACustomThirdPerson*>& CharacterInRange);
+	bool GetEnemyInRange(const FVector ActorLocation, const float AttackRadius, OUT TArray<ACustomThirdPerson*>& CharacterInRange);
 
-	bool FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo);
+	bool FilterAttackableEnemy(const FVector ActorLocation, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo);
 
 	FHitResult LineTraceWhenAiming(const FVector StartLocation, const FVector TargetLocation);
 
-	void GetAimingInfoFromSurroundingArea(const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo);
+	void GetAimingInfoFromSurroundingArea(const FVector ActorLocation, const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo);
 
 	FRotator FindCoverDirection(TPair<EDirection, ECoverInfo> DirectionAndInfoPair);
 
@@ -101,4 +101,6 @@ public:
 
 	void FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCaseInfo, TArray<FAimingInfo>& BestCase, const TArray<FVector> TargetLocArr);
 	
+	ECollisionChannel GetAimingChannel();
+
 };

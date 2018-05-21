@@ -13,6 +13,7 @@ enum class ECoverInfo : uint8
 {
 	FullCover,
 	HalfCover,
+	Unknown,
 	None
 };
 

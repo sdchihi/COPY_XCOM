@@ -6,6 +6,7 @@
 #include "CustomThirdPerson.h"
 #include "Tile.h"
 #include "AimingComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void AEnemyController::BeginPlay()
 {
@@ -43,14 +44,15 @@ void AEnemyController::SetNextAction()
 
 
 	TMap<ATile*, FAICommandInfo> TileScoreBoard = GetScoreBoard(MovableTiles);
-	int32 size = 0;
-	for (auto& temp : TileScoreBoard)
-	{
-		int32 Index = TileManager->ConvertVectorToIndex(temp.Key->GetActorLocation());
-		int32 Score = temp.Value.Score;
-		UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: %d", Index, Score);
-	}
-	UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 수 : %d", size);
+	//int32 size = 0;
+	//for (auto& temp : TileScoreBoard)
+	//{
+	//	int32 Index = TileManager->ConvertVectorToIndex(temp.Key->GetActorLocation());
+	//	int32 Score = temp.Value.Score;
+	//	UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: %d", Index, Score);
+	//	size++;
+	//}
+	//UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 수 : %d", size);
 
 
 	FindBestScoredAction(TileScoreBoard);
@@ -83,11 +85,24 @@ TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> Mova
 				}
 				if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr)) 
 				{
+					int32 TileIndex = TileManager->ConvertVectorToIndex(TileLocation);
+					if (TileIndex == 168) 
+					{
+						UE_LOG(LogTemp, Warning, L"보호됨")
+						UKismetSystemLibrary::DrawDebugPoint(
+							GetWorld(),
+							UnitLocation + FVector(0, 0, 100),
+							20,
+							FColor(255,255,0),
+							20
+						);
+					}
+
 					GeographicalScore += 20;
 				}
 			}
 			FAimingInfo BestAimingInfo;
-			ScoringByAimingInfo(CoverDirectionArr, ActionScore, BestAimingInfo);
+			ScoringByAimingInfo(TileLocation, CoverDirectionArr, ActionScore, BestAimingInfo);
 			
 			EAction ActionOnTargetTile = DecideActionOnTile(ActionScore);
 
@@ -98,6 +113,11 @@ TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> Mova
 			CommandInfo.Score = TotalScore;
 
 			TileScoreBoard.Add(TargeTile, CommandInfo);
+
+			int32 Index = TileManager->ConvertVectorToIndex(TargeTile->GetActorLocation());
+			UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: (지리 점수)%d + (액션 점수)%d = %d", Index, GeographicalScore, ActionScore, TotalScore);
+
+			DebugAimingInfo(TileLocation, TotalScore);
 		}
 	}
 
@@ -140,7 +160,7 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 	{
 		float AngleBtwTargetAndWall = FMath::RadiansToDegrees(acosf(FVector::DotProduct(DirectionToTargetUnit, CoverDirection)));
 		AngleBtwTargetAndWall = FMath::Abs(AngleBtwTargetAndWall);
-		if (AngleBtwTargetAndWall < 90)
+		if (AngleBtwTargetAndWall < 89)
 		{
 			return true;
 		}
@@ -151,19 +171,20 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 
 
 
-void AEnemyController::ScoringByAimingInfo(TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo)
+void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo)
 {
-
+	float PawnLocationZ = GetPawn()->GetTargetLocation().Z;
+	FVector ActorOnTileLocation = FVector(TileLocation.X, TileLocation.Y, PawnLocationZ);
 	TMap<EDirection, ECoverInfo> CoverDirectionMap = MakeCoverDirectionMap(CoverDirectionArr);
 	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetControlledPawn());
 	if (!ControlledPawn) { return; }
 	UAimingComponent* AimingComp = ControlledPawn->GetAimingComponent();
 
-	BestAimingInfo = AimingComp->GetBestAimingInfo(ControlledPawn->AttackRadius, ControlledPawn->bIsCovering, CoverDirectionMap);
-	int32 BestProb = BestAimingInfo.Probability;
+	BestAimingInfo = AimingComp->GetBestAimingInfo(ActorOnTileLocation, ControlledPawn->AttackRadius, true, CoverDirectionMap);
+	float BestProb = BestAimingInfo.Probability;
 
-	int32 MinimumAimingProb = 35;
-	int32 MaximumAimingProb = 50;	
+	float MinimumAimingProb = 0.35;
+	float MaximumAimingProb = 0.50;	
 	if (MaximumAimingProb < BestProb)
 	{
 		ActionScore = 40;
@@ -187,14 +208,40 @@ TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverDirectionMap(TArray<FVec
 	FVector North = FVector(0, 1, 0);
 	FVector South = FVector(0, -1, 0);
 
+	CoverDirectionMap.Add(EDirection::East, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::West, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::North, ECoverInfo::None);
+	CoverDirectionMap.Add(EDirection::South, ECoverInfo::None);
+
 	EDirection Direction = EDirection::None;
 	for (FVector CoverDirection : CoverDirectionArr)
 	{
-		if (CoverDirection.Equals(East)) { Direction = EDirection::East; }
-		else if (CoverDirection.Equals(West)) { Direction = EDirection::West; }
-		else if (CoverDirection.Equals(North)) { Direction = EDirection::North; }
-		else  { Direction = EDirection::South; }
-		CoverDirectionMap.Add(Direction, ECoverInfo::None);
+		if (CoverDirection.Equals(East)) 
+		{ 
+			Direction = EDirection::East; 
+			UE_LOG(LogTemp, Warning, L"동");
+
+		}
+		else if (CoverDirection.Equals(West)) 
+		{
+			Direction = EDirection::West;
+			UE_LOG(LogTemp, Warning, L"서");
+
+		}
+		else if (CoverDirection.Equals(North)) 
+		{
+			Direction = EDirection::North;
+			UE_LOG(LogTemp, Warning, L"북");
+
+		}
+		else  
+		{ 
+			Direction = EDirection::South;
+			UE_LOG(LogTemp, Warning, L"남");
+		}
+
+		CoverDirectionMap.Add(Direction, ECoverInfo::Unknown);
+
 	}
 	return CoverDirectionMap;
 }
@@ -227,4 +274,33 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo> T
 	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
 	//블랙보드 세팅
 
+}
+
+void AEnemyController::DebugAimingInfo(const FVector TileLocation, const int32 Score)
+{
+	FColor DebugPointColor = FColor(0, 0, 0);
+	if (Score >= 80)		//빨
+	{
+		DebugPointColor = FColor(255, 0, 0);
+	}
+	else if (Score >= 60)	//초
+	{
+		DebugPointColor = FColor(0, 255, 0);
+	}
+	else if (Score >= 40)	//파
+	{
+		DebugPointColor = FColor(0, 0, 255);
+	}
+	else	//분홍
+	{
+		DebugPointColor = FColor(255, 0, 255);
+	}
+
+	UKismetSystemLibrary::DrawDebugPoint(
+		GetWorld(),
+		TileLocation + FVector(0, 0, 100),
+		20,  					
+		DebugPointColor,  
+		20
+	);
 }

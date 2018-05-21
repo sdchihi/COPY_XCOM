@@ -65,13 +65,14 @@ private:
 
 	bool IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr);
 
-
-	void ScoringByAimingInfo(TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo);
+	void ScoringByAimingInfo(const FVector TileLocation, TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo);
 
 	TMap<EDirection, ECoverInfo> MakeCoverDirectionMap(TArray<FVector> CoverDirectionArr);
 	
 	EAction DecideActionOnTile(int32 ActionScore);
 
 	void FindBestScoredAction(const TMap<ATile*, FAICommandInfo> TileScoreBoard);
+
+	void DebugAimingInfo(const FVector TileLocation, const int32 Score);
 
 };

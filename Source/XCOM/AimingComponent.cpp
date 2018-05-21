@@ -20,16 +20,16 @@ void UAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UAimingComponent::GetAttackableEnemyInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList)
+void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList)
 {
 	TArray<ACustomThirdPerson*> EnemyInRange;
-	if (GetEnemyInRange(AttackRadius,EnemyInRange) == false)
+	if (GetEnemyInRange(ActorLocation, AttackRadius, EnemyInRange) == false)
 	{
 		return;
 	};
 
 	TArray<FHitResult> AttackableEnemysHitResult;
-	if (FilterAttackableEnemy(CoverDirectionMap,EnemyInRange, bIsCover, AttackableEnemysHitResult) == false)
+	if (FilterAttackableEnemy(ActorLocation, CoverDirectionMap , EnemyInRange, bIsCover, AttackableEnemysHitResult) == false)
 	{
 		return;
 	};
@@ -42,7 +42,7 @@ void UAimingComponent::GetAttackableEnemyInfo(const float AttackRadius, const bo
 		if (DetectedPawn)
 		{
 			TMap<EAimingFactor, float> AimingFactor;
-			float Probability = CalculateAttackSuccessRatio(FilteredHitResult, AttackRadius, DetectedPawn, AimingFactor);
+			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover, DetectedPawn, AimingFactor);
 			FVector StartLocation = FilteredHitResult.TraceStart;
 			FVector TargetLocation = DetectedPawn->GetActorLocation();
 			TargetLocationArr.AddUnique(TargetLocation);
@@ -61,11 +61,11 @@ void UAimingComponent::GetAttackableEnemyInfo(const float AttackRadius, const bo
 * @param TargetPawn - 공격 대상이 되는 Pawn입니다.
 * @return 공격 성공 확률을 반환합니다.
 */
-float UAimingComponent::CalculateAttackSuccessRatio(const FHitResult HitResult, float AttackRadius, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor)
+float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor)
 {
 	AimingFactor.Add(EAimingFactor::AimingAbility, 0.8);
 	float FailureRatio = 0;
-	FVector AimDirection = (GetOwner()->GetActorLocation() - HitResult.GetActor()->GetActorLocation()).GetSafeNormal();
+	FVector AimDirection = (ActorLocation - HitResult.GetActor()->GetActorLocation()).GetSafeNormal();
 	ACustomThirdPerson* TargetThirdPerson = Cast<ACustomThirdPerson>(TargetPawn);
 	// 클래스가 유연하지 않으므로 이후 수정
 	if (!TargetThirdPerson)
@@ -106,7 +106,7 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FHitResult HitResult, 
 	AimingFactor.Add(EAimingFactor::Disatnce, -FailureDueToDistance);
 
 	
-	UE_LOG(LogTemp, Warning, L"최종 실패 확률 : %f", 0.8f - FailureRatio);
+	UE_LOG(LogTemp, Warning, L"최종 공격 성공 확률 : %f", 0.8f - FailureRatio);
 
 	return 0.8f - FailureRatio;
 }
@@ -114,13 +114,13 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FHitResult HitResult, 
 
 
 
-bool UAimingComponent::GetEnemyInRange(const float AttackRadius, OUT TArray<ACustomThirdPerson*>& CharacterInRange)
+bool UAimingComponent::GetEnemyInRange(const FVector ActorLocation, const float AttackRadius, OUT TArray<ACustomThirdPerson*>& CharacterInRange)
 {
 	TArray<TEnumAsByte<EObjectTypeQuery>> UnUsedObjectType;
 	TArray<AActor*> ActorsToIgnore;
 	TArray<AActor*> ActorsInRange;
 
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetOwner()->GetActorLocation(), AttackRadius, UnUsedObjectType, ACustomThirdPerson::StaticClass(), ActorsToIgnore, ActorsInRange);
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), ActorLocation, AttackRadius, UnUsedObjectType, ACustomThirdPerson::StaticClass(), ActorsToIgnore, ActorsInRange);
 	if (ActorsInRange.Num() == 0) { return false; }
 
 	for (AActor* SingleActor : ActorsInRange)
@@ -151,32 +151,27 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 	FVector West = FVector(-1, 0, 0);
 	FVector East = FVector(1, 0, 0);
 
-	FString DirectionString;
-	FString resultString;
-
 	for (auto CoverDirectionState : TargetPawn->CoverDirectionMap)
 	{
+
 		FVector WallForwardVector;
 		float AngleBetweenAimAndWall = 0;
 		if (CoverDirectionState.Value != ECoverInfo::None)
 		{
+
 			switch (CoverDirectionState.Key)
 			{
 			case EDirection::East:
 				WallForwardVector = East;
-				DirectionString = "East";
 				break;
 			case EDirection::West:
 				WallForwardVector = West;
-				DirectionString = "West";
 				break;
 			case EDirection::North:
 				WallForwardVector = North;
-				DirectionString = "North";
 				break;
 			case EDirection::South:
 				WallForwardVector = South;
-				DirectionString = "South";
 				break;
 			default:
 				break;
@@ -187,11 +182,10 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 				CoverInfo = CoverDirectionState.Value;
 				//RelativeCoverLoc = WallForwardVector;
 				MinAngleBetweenAimAndWall = AngleBetweenAimAndWall;
-				resultString = DirectionString;
 			}
 		}
 	}
-	UE_LOG(LogTemp, Warning, L"Minimum Angle : %f , %s", MinAngleBetweenAimAndWall, *resultString);
+	UE_LOG(LogTemp, Warning, L"Minimum Angle : %d ", MinAngleBetweenAimAndWall);
 
 	//RelativeCoverLoc *= 100;
 
@@ -200,7 +194,7 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 
 
 
-bool UAimingComponent::FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo)
+bool UAimingComponent::FilterAttackableEnemy(const FVector ActorLocation, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const TArray<ACustomThirdPerson*>& EnemiesInRange, const bool bIsCovering, OUT TArray<FHitResult>& SensibleEnemyInfo)
 {
 	TArray<FHitResult> ResultRequireInspection;
 
@@ -214,16 +208,15 @@ bool UAimingComponent::FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>&
 				FRotator Direction = FindCoverDirection(CoverDirection);
 
 				FVector RightVector = FVector::CrossProduct(FVector::UpVector, Direction.Vector());
-				FVector RightSide = GetOwner()->GetActorLocation() + RightVector * 100;
-				FVector LeftSide = GetOwner()->GetActorLocation() - RightVector * 100;
+				FVector RightSide = ActorLocation + RightVector * 100;
+				FVector LeftSide = ActorLocation - RightVector * 100;
 
 				TArray<FHitResult> SurroundingAreaInfo;
-				GetAimingInfoFromSurroundingArea(RightSide, SurroundingAreaInfo);
-				GetAimingInfoFromSurroundingArea(LeftSide, SurroundingAreaInfo);
+				GetAimingInfoFromSurroundingArea(ActorLocation, RightSide, SurroundingAreaInfo);
+				GetAimingInfoFromSurroundingArea(ActorLocation, LeftSide, SurroundingAreaInfo);
 
 				for (FHitResult SingleSurroundingAreaInfo : SurroundingAreaInfo)
 				{
-
 					for (ACustomThirdPerson* SingleTargetEnemy : EnemiesInRange)
 					{
 						FHitResult HitResult = LineTraceWhenAiming(SingleSurroundingAreaInfo.TraceEnd, SingleTargetEnemy->GetActorLocation());
@@ -238,7 +231,7 @@ bool UAimingComponent::FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>&
 	// 엄폐아닌 위치에서 확인
 	for (ACustomThirdPerson* SingleTargetEnemy : EnemiesInRange)
 	{
-		FHitResult HitResult = LineTraceWhenAiming(GetOwner()->GetActorLocation() , SingleTargetEnemy->GetActorLocation());
+		FHitResult HitResult = LineTraceWhenAiming(ActorLocation, SingleTargetEnemy->GetActorLocation());
 		ResultRequireInspection.Add(HitResult);
 	}
 
@@ -254,6 +247,7 @@ bool UAimingComponent::FilterAttackableEnemy(const TMap<EDirection, ECoverInfo>&
 	{
 		return false;
 	}
+
 	return true;
 }
 
@@ -265,22 +259,21 @@ FHitResult UAimingComponent::LineTraceWhenAiming(const FVector StartLocation, co
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.TraceTag = TraceTag;
 	CollisionParams.bFindInitialOverlaps = false;
-
+	
 	FHitResult HitResult;
-	GetOwner()->GetActorLocation();
 	GetWorld()->LineTraceSingleByChannel(
 		HitResult,
 		StartLocation,
 		TargetLocation,
-		ECollisionChannel::ECC_GameTraceChannel8,
+		GetAimingChannel(),
 		CollisionParams
 	);
 	return HitResult;
 }
 
-void UAimingComponent::GetAimingInfoFromSurroundingArea(const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo)
+void UAimingComponent::GetAimingInfoFromSurroundingArea(const FVector ActorLocation, const FVector SurroundingArea, TArray<FHitResult>&  AimingInfo)
 {
-	FHitResult HitResultFromCharToSurroundingArea = LineTraceWhenAiming(GetOwner()->GetActorLocation(), SurroundingArea);
+	FHitResult HitResultFromCharToSurroundingArea = LineTraceWhenAiming(ActorLocation, SurroundingArea);
 	if (!HitResultFromCharToSurroundingArea.GetActor())
 	{
 		AimingInfo.Add(HitResultFromCharToSurroundingArea);
@@ -335,6 +328,7 @@ void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCas
 bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo)
 {
 	TArray<FHitResult> UnprotectdEnemyHitResultArray;
+	FVector ActorLocation = GetOwner()->GetActorLocation();
 
 	TArray<FHitResult> ResultRequireInspection;
 	if (bIsCover)
@@ -349,9 +343,11 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 				FVector RightSide = GetOwner()->GetActorLocation() + RightVector * 100;
 				FVector LeftSide = GetOwner()->GetActorLocation() - RightVector * 100;
 
+
+
 				TArray<FHitResult> SurroundingAreaInfo;
-				GetAimingInfoFromSurroundingArea(RightSide, SurroundingAreaInfo);
-				GetAimingInfoFromSurroundingArea(LeftSide, SurroundingAreaInfo);
+				GetAimingInfoFromSurroundingArea(ActorLocation, RightSide, SurroundingAreaInfo);
+				GetAimingInfoFromSurroundingArea(ActorLocation, LeftSide, SurroundingAreaInfo);
 
 				for (FHitResult SingleSurroundingAreaInfo : SurroundingAreaInfo)
 				{
@@ -389,7 +385,7 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 		if (DetectedPawn)
 		{
 			TMap<EAimingFactor, float> AimingFactor;
-			float Probability = CalculateAttackSuccessRatio(FilteredHitResult, AttackRadius, DetectedPawn, AimingFactor);
+			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover,DetectedPawn, AimingFactor);
 			FVector StartLocation = FilteredHitResult.TraceStart;
 			FVector TargetLocation = DetectedPawn->GetActorLocation();
 			TargetLocationArr.AddUnique(TargetLocation);
@@ -408,10 +404,11 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 
 
 
-FAimingInfo UAimingComponent::GetBestAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap)
+FAimingInfo UAimingComponent::GetBestAimingInfo(const FVector ActorLocation, const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap)
 {
 	TArray<FAimingInfo> AimingInfoList;
-	GetAttackableEnemyInfo(AttackRadius, bIsCover, CoverDirectionMap, AimingInfoList);
+
+	GetAttackableEnemyInfo(ActorLocation, AttackRadius, bIsCover, CoverDirectionMap, AimingInfoList);
 
 	float HighestProbability = 0;
 	FAimingInfo BestAimingInfo;
@@ -426,3 +423,17 @@ FAimingInfo UAimingComponent::GetBestAimingInfo(const float AttackRadius, const 
 
 	return BestAimingInfo;
 };
+
+
+ECollisionChannel UAimingComponent::GetAimingChannel() 
+{
+	ACustomThirdPerson* OwnCharacter = Cast<ACustomThirdPerson>(GetOwner());
+	if (OwnCharacter->GetTeamFlag()) 
+	{
+		return ECollisionChannel::ECC_GameTraceChannel8;
+	}
+	else 
+	{
+		return ECollisionChannel::ECC_GameTraceChannel10;
+	}
+}
