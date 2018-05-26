@@ -1,0 +1,60 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+class ACustomThirdPerson;
+struct FAimingInfo;
+
+struct FOrderlyAimingInfo
+{
+	ACustomThirdPerson* AimingActor;
+
+	FAimingInfo* AimingInfo;
+
+	FOrderlyAimingInfo(ACustomThirdPerson* AimingActor_, FAimingInfo* AimingInfo_)
+	{
+		AimingActor = AimingActor_; 
+		AimingInfo = AimingInfo_;
+	}
+
+};
+
+/**
+ * 
+ */
+class XCOM_API FAimingQueue
+{
+public:
+	static FAimingQueue& Instance();
+
+	static void Update();
+
+	static void NextTask();
+
+	static void StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* AimingInfo);
+
+	static FAimingQueue* pInstance;
+	static int32 Temp;
+
+	static int32 Head;
+	static int32 Tail;
+
+	static const int32 MaxPending = 10;
+
+	UPROPERTY()
+	static FOrderlyAimingInfo* Pending[MaxPending];
+
+	bool bStart;
+
+	static FOrderlyAimingInfo* GetPending() { return *Pending; };
+
+private:	
+
+
+	FAimingQueue();
+	~FAimingQueue();
+	static bool IsPrevTask();
+
+};

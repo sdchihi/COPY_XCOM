@@ -89,6 +89,10 @@ public:
 	bool bIsAttack = false;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bInVisilance = true;
+
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bIsReadyToAttack = false;
 
 	bool bCanAction = true;
@@ -170,6 +174,11 @@ public:
 	// AI를 위한 메소드
 	UAimingComponent* GetAimingComponent() { return AimingComponent; };
 
+	UFUNCTION(BlueprintCallable)
+	void AfterShooting();
+
+	void SetOffAttackState(const bool bExecuteDelegate);
+
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
@@ -192,7 +201,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 Step = 10;
 
-	void SetOffAttackState();
 
 	FVector RelativeCoverLoc = FVector(0,0,0);
 
@@ -220,4 +228,7 @@ private:
 	void Shoot();
 
 	FVector PrevLocation;
+
+	void UnderGuard();
+
 };

@@ -175,14 +175,16 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 			EnableInput(this);
 			return;
 		}
-		FTimerHandle UnUsedHandle;
-		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), SelectedCharacter->CurrentMovableStep, SelectedCharacter->GetMovableStepPerActionPoint());
-		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);
+	
 
 		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
 		SelectedCharacter = TargetCharacter;
 		SelectedCharacter->ScanEnemy();
-
+/*
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::SetTilesToUseSelectedChararacter, Cast<ATile>(OverlappedTile[0]), SelectedCharacter->CurrentMovableStep, SelectedCharacter->GetMovableStepPerActionPoint());
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5f, false);*/
+		SetTilesToUseSelectedChararacter(Cast<ATile>(OverlappedTile[0]), SelectedCharacter->CurrentMovableStep, SelectedCharacter->GetMovableStepPerActionPoint());
 
 		FPossibleActionWrapper PossibleActionWrapper;
 		PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();

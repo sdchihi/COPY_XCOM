@@ -11,6 +11,7 @@
 #include "Classes/Kismet/GameplayStatics.h"
 #include "HUDComponent.h"
 #include "Classes/Components/CapsuleComponent.h"
+#include "FAimingQueue.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -116,21 +117,24 @@ void ACustomThirdPerson::RotateTowardWall() {
 /**
 * 공격이 끝난 후 델리게이트 실행, Flag 변환
 */
-void ACustomThirdPerson::SetOffAttackState() {
+void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	bIsAttack = false;
 	SetActorLocation(PrevLocation, true);
 	UseActionPoint(2);
 	if (bIsCovering) {
 		RotateTowardWall();
 	}
-	if (ChangePlayerPawnDelegate.IsBound()) 
+
+	if (bExecuteDelegate) 
 	{
-	
-		ChangePlayerPawnDelegate.Execute();
-	}
-	else 
-	{
-		UE_LOG(LogTemp, Warning, L"Unbound");
+		if (ChangePlayerPawnDelegate.IsBound())
+		{
+			ChangePlayerPawnDelegate.Execute();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, L"Unbound");
+		}
 	}
 }
 
@@ -153,9 +157,7 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 	bIsAttack = true;
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
 
-	FTimerHandle UnUsedHandle;
-	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState);
-	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 3, false);
+	
 }
 
 void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
@@ -176,23 +178,23 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 {
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	CurrentHP -= ActualDamage;
-	if (CurrentHP <= 0) 
-	{
-		//TODO 사망 Event
-		UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
-		ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
-		if (DeadCamDelegate.IsBound()) 
-		{
-			DeadCamDelegate.Execute(GetActorLocation());
-			SkeletalMesh->SetSimulatePhysics(true);
-			SkeletalMesh->SetAllBodiesBelowSimulatePhysics(FName("pelvis"), true, true);
+	//if (CurrentHP <= 0) 
+	//{
+	//	//TODO 사망 Event
+	//	UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
+	//	ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
+	//	if (DeadCamDelegate.IsBound()) 
+	//	{
+	//		DeadCamDelegate.Execute(GetActorLocation());
+	//		SkeletalMesh->SetSimulatePhysics(true);
+	//		SkeletalMesh->SetAllBodiesBelowSimulatePhysics(FName("pelvis"), true, true);
+	 
+	//		StartSlowMotion();
 
-			StartSlowMotion();
-
-		}
-		
-		UE_LOG(LogTemp, Warning, L"Dead");
-	}
+	//	}
+	//	
+	//	UE_LOG(LogTemp, Warning, L"Dead");
+	//}
 
 	return ActualDamage;
 }
@@ -348,7 +350,6 @@ void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible)
 	else 
 	{
 		UE_LOG(LogTemp, Warning, L" 없음");
-
 	}
 }
 
@@ -375,17 +376,47 @@ void ACustomThirdPerson::StartVisiliance()
 	//AttackRadius;
 }
 
+void ACustomThirdPerson::AfterShooting() 
+{
+	if (this->bInVisilance) 
+	{
+		UE_LOG(LogTemp, Warning, L"VV OO")
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"VV XX")
+	}
+	if (bInVisilance == true)
+	{
+		UE_LOG(LogTemp, Warning, L"VV AfterShooting")
+		FOrderlyAimingInfo* TempP = FAimingQueue::GetPending();
+		FAimingQueue& Temp2 = FAimingQueue::Instance();
+		FAimingQueue::Instance().NextTask();
+		SetOffAttackState(false);
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"VV AfterShooting XXXX")
+
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState, true);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 3, false);
+	}
+}
+
 
 
 // 경계중 적 발견
 void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 {
-	FAimingInfo AimingInfoResult;
-	bool bDiscover = AimingComponent->GetVigilanceAimingInfo(AttackRadius, bIsCovering, CoverDirectionMap, TargetLocation, AimingInfoResult);
+	FAimingInfo* AimingInfoResult = new FAimingInfo();
+	bool bDiscover = AimingComponent->GetVigilanceAimingInfo(AttackRadius, bIsCovering, CoverDirectionMap, TargetLocation, *AimingInfoResult);
 
 	if (bDiscover) 
 	{
-		AttackEnemyAccrodingToState(AimingInfoResult);
+		UE_LOG(LogTemp, Warning, L"VV  %s Watching Enemy!  -       Start Aiming", *GetName());
+		FAimingQueue::Instance().StartAiming(this, AimingInfoResult);
+		//AttackEnemyAccrodingToState(AimingInfoResult);
 	}
 }
 
@@ -405,3 +436,7 @@ void ACustomThirdPerson::SetMovingDirectionDuringCover(const FVector TargetLocat
 	}
 }
 
+void ACustomThirdPerson::UnderGuard() 
+{
+	this->CustomTimeDilation = 0;
+}

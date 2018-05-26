@@ -25,7 +25,7 @@ public:
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(EditDefaultsOnly)
-	float Damage = 10;
+	float Damage = 1;
 
 	float GetDamage() { return Damage; }
 

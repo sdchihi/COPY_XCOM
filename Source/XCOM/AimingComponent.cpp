@@ -46,7 +46,7 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 			FVector StartLocation = FilteredHitResult.TraceStart;
 			FVector TargetLocation = DetectedPawn->GetActorLocation();
 			TargetLocationArr.AddUnique(TargetLocation);
-			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, AimingFactor));
+			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, DetectedPawn, AimingFactor));
 		}
 	}
 
@@ -183,6 +183,7 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 				//RelativeCoverLoc = WallForwardVector;
 				MinAngleBetweenAimAndWall = AngleBetweenAimAndWall;
 			}
+
 		}
 	}
 	UE_LOG(LogTemp, Warning, L"Minimum Angle : %d ", MinAngleBetweenAimAndWall);
@@ -389,10 +390,10 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 			FVector StartLocation = FilteredHitResult.TraceStart;
 			FVector TargetLocation = DetectedPawn->GetActorLocation();
 			TargetLocationArr.AddUnique(TargetLocation);
-			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, AimingFactor));
+			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, DetectedPawn, AimingFactor));
 
 			//수정필요
-			DetectedPawn->CustomTimeDilation = 0.05;
+			//DetectedPawn->CustomTimeDilation = 0.05;
 		}
 	}
 	FindBestCaseInAimingInfo(AimingInfoInAllCase, BestCaseArr, TargetLocationArr);

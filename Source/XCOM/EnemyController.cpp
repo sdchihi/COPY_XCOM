@@ -13,11 +13,9 @@ void AEnemyController::BeginPlay()
 	Super::BeginPlay();
 	PrimaryActorTick.bCanEverTick = false;
 
-
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager2>(FoundActors[0]);
-
 }
 
 
@@ -27,34 +25,13 @@ void AEnemyController::SetNextAction()
 	if (!ControlledPawn) { return; }
 	int32 MovableStep = ControlledPawn->GetMovableStepPerActionPoint();
 
-
 	ATile* OverllapedTile = TileManager->GetOverlappedTile(ControlledPawn);
 	if (!OverllapedTile) { return; }
 
 	TArray<ATile*> MovableTiles;
 	TileManager->GetAvailableTiles(OverllapedTile, MovableStep, MovableStep, MovableTiles);
 
-	/*for (auto temp : MovableTiles) 
-	{
-		int32 Index =TileManager->ConvertVectorToIndex(temp->GetActorLocation());
-		UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d", Index);
-	}*/
-
-
-
-
 	TMap<ATile*, FAICommandInfo> TileScoreBoard = GetScoreBoard(MovableTiles);
-	//int32 size = 0;
-	//for (auto& temp : TileScoreBoard)
-	//{
-	//	int32 Index = TileManager->ConvertVectorToIndex(temp.Key->GetActorLocation());
-	//	int32 Score = temp.Value.Score;
-	//	UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: %d", Index, Score);
-	//	size++;
-	//}
-	//UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 수 : %d", size);
-
-
 	FindBestScoredAction(TileScoreBoard);
 }
 
@@ -77,27 +54,15 @@ TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> Mova
 			for (ACustomThirdPerson* Unit : PlayerCharacters)
 			{
 				FVector UnitLocation = Unit->GetActorLocation();
-				
+				bool bGoodAngle;
 
 				if ( !CheckMimiumInterval(TileLocation, UnitLocation))// 최소 간격 유지 실패시 Score - 50 패널티 
 				{
 					GeographicalScore -= 50;
 				}
-				if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr)) 
+				if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr, bGoodAngle))
 				{
-					int32 TileIndex = TileManager->ConvertVectorToIndex(TileLocation);
-					if (TileIndex == 168) 
-					{
-						UE_LOG(LogTemp, Warning, L"보호됨")
-						UKismetSystemLibrary::DrawDebugPoint(
-							GetWorld(),
-							UnitLocation + FVector(0, 0, 100),
-							20,
-							FColor(255,255,0),
-							20
-						);
-					}
-
+					if (bGoodAngle) { GeographicalScore += 6; }
 					GeographicalScore += 20;
 				}
 			}
@@ -153,7 +118,7 @@ bool AEnemyController::CheckMimiumInterval(const FVector TileLocation, const FVe
 	return true;
 }
 
-bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr) 
+bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVector TargetActorLocation, const TArray<FVector> CoverDirectionArr, OUT bool& bGoodAngle) 
 {
 	FVector DirectionToTargetUnit = (TargetActorLocation - TileLocation).GetSafeNormal2D();
 	for (FVector CoverDirection : CoverDirectionArr)
@@ -162,6 +127,14 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 		AngleBtwTargetAndWall = FMath::Abs(AngleBtwTargetAndWall);
 		if (AngleBtwTargetAndWall < 89)
 		{
+			if (AngleBtwTargetAndWall < 45) 
+			{
+				bGoodAngle = true;
+			}
+			else 
+			{
+				bGoodAngle = false;
+			}
 			return true;
 		}
 	}
@@ -272,8 +245,6 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo> T
 	}
 	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
 	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
-	//블랙보드 세팅
-
 }
 
 void AEnemyController::DebugAimingInfo(const FVector TileLocation, const int32 Score)

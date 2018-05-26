@@ -27,6 +27,8 @@ struct FAimingInfo
 
 	float Probability;
 
+	AActor* TargetActor;
+
 	TMap<EAimingFactor, float> Factor;
 
 	FAimingInfo()
@@ -36,12 +38,13 @@ struct FAimingInfo
 		Probability = 0;
 	}
 
-	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, TMap<EAimingFactor, float>& AimingFactor)
+	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target,TMap<EAimingFactor, float>& AimingFactor)
 	{
 		StartLocation = StartLoc;
 		TargetLocation = TargetLoc;
 		Probability = SucessProbability;
 		Factor = AimingFactor;
+		TargetActor = Target;
 	}
 
 	void Clear() 
@@ -50,6 +53,7 @@ struct FAimingInfo
 		TargetLocation = FVector(0, 0, 0);
 		Probability = 0;
 		Factor.Empty();
+		TargetActor = nullptr;
 	}
 };
 
