@@ -21,6 +21,8 @@ DECLARE_DYNAMIC_DELEGATE(FStartActionDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegateFromChar,const FVector, StartLoc, const FVector, TargetLoc);
+
 
 UENUM(BlueprintType)
 enum class EDirection : uint8
@@ -121,6 +123,11 @@ public:
 	FUnprotectedMovingDelegate UnprotectedMovingDelegate;
 
 	FStartActionDelegate StartActionDelegate;
+
+	FChangeViewTargetDelegateFromChar ChangeViewTargetDelegate;
+
+	void InformVisilanceSuccess(const FVector StartLocation, const FVector TargetLocation);
+
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 RemainingActionPoint = 2;

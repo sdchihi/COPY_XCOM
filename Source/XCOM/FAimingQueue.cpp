@@ -69,7 +69,9 @@ void FAimingQueue::Update()
 		return;
 	}
 
+	AimingCharacter->InformVisilanceSuccess(AimingCharacter->GetActorLocation(), CurrentAimingInfo->TargetLocation);
 	AimingCharacter->AttackEnemyAccrodingToState(*CurrentAimingInfo);
+	
 }
 
 

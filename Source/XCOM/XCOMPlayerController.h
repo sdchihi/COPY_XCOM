@@ -103,8 +103,14 @@ private:
 
 	void ReleaseCharacter();
 
+	void ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation);
+
 	UFUNCTION()
-	void ChangeViewTargetWithBlend(const FVector TargetLocation);
+	void ChangeViewTargetByCombatWidget(const FVector TargetLocation);
+
+	UFUNCTION()
+	void ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation);
+
 
 	UFUNCTION()
 	void ChangeToDeathCam(const FVector TargetLocation);

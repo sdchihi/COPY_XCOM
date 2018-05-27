@@ -137,7 +137,7 @@ bool APlayerPawnInAiming::CheckInView(const FVector StartLocation, const FVector
 		HitResult,
 		StartLocation,
 		TargetLocation,
-		ECollisionChannel::ECC_GameTraceChannel8,
+		ECollisionChannel::ECC_GameTraceChannel11,
 		CollisionParams
 	);
 

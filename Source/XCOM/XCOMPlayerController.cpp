@@ -71,6 +71,7 @@ void AXCOMPlayerController::Initialize() {
 	{
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+		SingleThirdPerson->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCharacter);
 		SingleThirdPerson->DeadCamDelegate.BindDynamic(this , &AXCOMPlayerController::ChangeToDeathCam);
 		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
 
@@ -88,7 +89,7 @@ void AXCOMPlayerController::Initialize() {
 		if (CombatWidget)
 		{
 			CombatWidget->AddToViewport();	
-			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetWithBlend);
+			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget);
 			CombatWidget->StartAttackDelegate.BindDynamic(this, &AXCOMPlayerController::OrderAttack);
 			CombatWidget->StartTrajectoryDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartTrajectory);
 			CombatWidget->StartVisilianceDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartVigilance);
@@ -420,7 +421,7 @@ void AXCOMPlayerController::ReleaseCharacter()
 	TileManager->ClearAllTiles(true);
 }
 
-void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocation)
+void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation)
 {
 	if (HealthBarVisiblityDelegate.IsBound())
 	{
@@ -428,13 +429,25 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector TargetLocati
 	}
 
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
-	ActionCam->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetLocation);
+	ActionCam->SetCameraPositionInAimingSituation(StartLocation, TargetLocation);
 	SetViewTargetWithBlend(ActionCam, 0.5);
 
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;
 	OrderFinishTrajectory();
 }
+
+
+void AXCOMPlayerController::ChangeViewTargetByCombatWidget(const FVector TargetLocation)
+{
+	ChangeViewTargetWithBlend(SelectedCharacter->GetActorLocation(), TargetLocation);
+}
+
+void AXCOMPlayerController::ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation)
+{
+	ChangeViewTargetWithBlend(CharacterLocation, TargetLocation);
+}
+
 
 void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 {

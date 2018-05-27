@@ -416,7 +416,6 @@ void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 	{
 		UE_LOG(LogTemp, Warning, L"VV  %s Watching Enemy!  -       Start Aiming", *GetName());
 		FAimingQueue::Instance().StartAiming(this, AimingInfoResult);
-		//AttackEnemyAccrodingToState(AimingInfoResult);
 	}
 }
 
@@ -439,4 +438,12 @@ void ACustomThirdPerson::SetMovingDirectionDuringCover(const FVector TargetLocat
 void ACustomThirdPerson::UnderGuard() 
 {
 	this->CustomTimeDilation = 0;
+}
+
+void ACustomThirdPerson::InformVisilanceSuccess(const FVector StartLocation, const FVector TargetLocation)
+{
+	if (ChangeViewTargetDelegate.IsBound()) 
+	{
+		ChangeViewTargetDelegate.Execute(StartLocation, TargetLocation);
+	}
 }
