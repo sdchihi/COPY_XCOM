@@ -17,8 +17,6 @@ struct FAICommandInfo
 {
 	GENERATED_BODY()
 
-	int32 eee;
-
 	int32 Score;
 
 	FAimingInfo* AimingInfo;

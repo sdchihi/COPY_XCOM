@@ -12,6 +12,8 @@
 #include "HUDComponent.h"
 #include "Classes/Components/CapsuleComponent.h"
 #include "FAimingQueue.h"
+#include "PawnController.h"
+#include "XCOMGameMode.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -378,21 +380,12 @@ void ACustomThirdPerson::StartVisiliance()
 
 void ACustomThirdPerson::AfterShooting() 
 {
-	if (this->bInVisilance) 
-	{
-		UE_LOG(LogTemp, Warning, L"VV OO")
-	}
-	else 
-	{
-		UE_LOG(LogTemp, Warning, L"VV XX")
-	}
 	if (bInVisilance == true)
 	{
 		UE_LOG(LogTemp, Warning, L"VV AfterShooting")
-		FOrderlyAimingInfo* TempP = FAimingQueue::GetPending();
-		FAimingQueue& Temp2 = FAimingQueue::Instance();
 		FAimingQueue::Instance().NextTask();
 		SetOffAttackState(false);
+		bInVisilance = false;
 	}
 	else 
 	{
@@ -445,5 +438,31 @@ void ACustomThirdPerson::InformVisilanceSuccess(const FVector StartLocation, con
 	if (ChangeViewTargetDelegate.IsBound()) 
 	{
 		ChangeViewTargetDelegate.Execute(StartLocation, TargetLocation);
+	}
+}
+
+
+void ACustomThirdPerson::BindVigilanceEvent(const TArray<ACustomThirdPerson*> OppositeTeamMember)
+{
+	for (ACustomThirdPerson* SingleEnemyCharacter : OppositeTeamMember)
+	{
+		SingleEnemyCharacter->UnprotectedMovingDelegate.AddUniqueDynamic(this, &ACustomThirdPerson::WatchOut);
+	}
+}
+
+
+void ACustomThirdPerson::WatchOut(const FVector TargetLocation)
+{
+	InVigilance(TargetLocation);
+}
+
+void ACustomThirdPerson::StopVisilance()
+{
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	
+	const TArray<ACustomThirdPerson*> OppositeTeamMember = GameMode->GetTeamMemeber(!bTeam);
+	for (ACustomThirdPerson* SingleEnemyCharacter : OppositeTeamMember)
+	{
+		SingleEnemyCharacter->UnprotectedMovingDelegate.RemoveDynamic(this, &ACustomThirdPerson::WatchOut);
 	}
 }

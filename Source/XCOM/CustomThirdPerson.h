@@ -91,8 +91,7 @@ public:
 	bool bIsAttack = false;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bInVisilance = true;
-
+	bool bInVisilance = false;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsReadyToAttack = false;
@@ -186,6 +185,18 @@ public:
 
 	void SetOffAttackState(const bool bExecuteDelegate);
 
+	void StopVisilance();
+
+	void BindVigilanceEvent(const TArray<ACustomThirdPerson*> OppositeTeamMember);
+
+	UFUNCTION()
+	void WatchOut(const FVector TargetLocation);
+
+
+	// 순수  AI Code - > 차후 분리 필요
+	
+
+
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
@@ -237,5 +248,10 @@ private:
 	FVector PrevLocation;
 
 	void UnderGuard();
+
+
+
+	// 순수  AI Code - > 차후 분리 필요
+
 
 };

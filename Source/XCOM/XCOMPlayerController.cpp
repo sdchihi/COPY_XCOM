@@ -505,9 +505,9 @@ void AXCOMPlayerController::OrderStartVigilance()
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	bool OppositeTeamFlag = !SelectedCharacter->GetTeamFlag();
 
-	
-	CharacterController->BindVigilanceEvent(GameMode->GetTeamMemeber(OppositeTeamFlag));
+	SelectedCharacter->BindVigilanceEvent(GameMode->GetTeamMemeber(OppositeTeamFlag));
 	SelectedCharacter->UseActionPoint(2);
+	SelectedCharacter->bInVisilance = true;
 	UE_LOG(LogTemp, Warning, L"경계 시작");
 }
 

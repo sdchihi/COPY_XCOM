@@ -69,9 +69,16 @@ void FAimingQueue::Update()
 		return;
 	}
 
-	AimingCharacter->InformVisilanceSuccess(AimingCharacter->GetActorLocation(), CurrentAimingInfo->TargetLocation);
-	AimingCharacter->AttackEnemyAccrodingToState(*CurrentAimingInfo);
-	
+	if (AimingCharacter->bInVisilance) 
+	{
+		AimingCharacter->InformVisilanceSuccess(AimingCharacter->GetActorLocation(), CurrentAimingInfo->TargetLocation);
+		AimingCharacter->AttackEnemyAccrodingToState(*CurrentAimingInfo);
+		AimingCharacter->StopVisilance();
+	}
+	else 
+	{
+		FAimingQueue::Update();
+	}
 }
 
 
