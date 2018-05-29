@@ -10,6 +10,7 @@ int32 FAimingQueue::Head;
 int32 FAimingQueue::Tail;
 int32 FAimingQueue::Temp;
 FOrderlyAimingInfo* FAimingQueue::Pending[MaxPending];
+ACustomThirdPerson* FAimingQueue::LastShootingActor;
 
 
 FAimingQueue::FAimingQueue()
@@ -71,13 +72,16 @@ void FAimingQueue::Update()
 
 	if (AimingCharacter->bInVisilance) 
 	{
+		LastShootingActor = AimingCharacter;
 		AimingCharacter->InformVisilanceSuccess(AimingCharacter->GetActorLocation(), CurrentAimingInfo->TargetLocation);
 		AimingCharacter->AttackEnemyAccrodingToState(*CurrentAimingInfo);
 		AimingCharacter->StopVisilance();
 	}
-	else 
+	else //큐에 들어왔지만 이미 사격한 경우 -> 다음 인덱스로 넘어가야함 
 	{
-		FAimingQueue::Update();
+		UE_LOG(LogTemp, Warning, L"VV %s 는 이미 사격을 끝냈네요", *AimingCharacter->GetName())
+		FAimingQueue::NextTask();
+
 	}
 }
 
@@ -110,7 +114,13 @@ void FAimingQueue::NextTask()
 
 	if (IsPrevTask()) // Finish Task
 	{
-		FAimingQueue::Pending[FAimingQueue::Head]->AimingActor->SetOffAttackState(true);
+		LastShootingActor->SetOffAttackState(true);	//수정필요해요 - > 사격안했는데도 SetOff될 수 있네.
+		AActor* AimedCharcater = FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor;
+		if (IsValid(AimedCharcater)) 
+		{
+			AimedCharcater->CustomTimeDilation = 1;
+		}
+		
 		UE_LOG(LogTemp, Warning, L"VV Finished")
 		FAimingQueue::Head = (FAimingQueue::Head + 1) % MaxPending;
 	}

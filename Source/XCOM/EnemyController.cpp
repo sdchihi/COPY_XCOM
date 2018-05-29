@@ -142,8 +142,6 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 }
 
 
-
-
 void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo)
 {
 	float PawnLocationZ = GetPawn()->GetTargetLocation().Z;

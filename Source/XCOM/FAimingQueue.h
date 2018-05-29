@@ -43,12 +43,13 @@ public:
 
 	static const int32 MaxPending = 10;
 
-	UPROPERTY()
 	static FOrderlyAimingInfo* Pending[MaxPending];
 
 	bool bStart;
 
 	static FOrderlyAimingInfo* GetPending() { return *Pending; };
+
+	static ACustomThirdPerson* LastShootingActor;
 
 private:	
 
@@ -56,5 +57,5 @@ private:
 	FAimingQueue();
 	~FAimingQueue();
 	static bool IsPrevTask();
-
+	
 };

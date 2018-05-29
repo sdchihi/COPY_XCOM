@@ -383,9 +383,10 @@ void ACustomThirdPerson::AfterShooting()
 	if (bInVisilance == true)
 	{
 		UE_LOG(LogTemp, Warning, L"VV AfterShooting")
-		FAimingQueue::Instance().NextTask();
 		SetOffAttackState(false);
 		bInVisilance = false;
+		FAimingQueue::Instance().NextTask();
+		
 	}
 	else 
 	{
@@ -460,7 +461,7 @@ void ACustomThirdPerson::StopVisilance()
 {
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	
-	const TArray<ACustomThirdPerson*> OppositeTeamMember = GameMode->GetTeamMemeber(!bTeam);
+	const TArray<ACustomThirdPerson*> OppositeTeamMember = GameMode->GetTeamMemeber(!GetTeamFlag());
 	for (ACustomThirdPerson* SingleEnemyCharacter : OppositeTeamMember)
 	{
 		SingleEnemyCharacter->UnprotectedMovingDelegate.RemoveDynamic(this, &ACustomThirdPerson::WatchOut);
