@@ -7,6 +7,14 @@
 #include "Tile.h"
 #include "AimingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Path.h"
+#include "Classes/BehaviorTree/BehaviorTreeComponent.h"
+#include "Classes/BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Enum.h"
+
 
 void AEnemyController::BeginPlay()
 {
@@ -16,12 +24,16 @@ void AEnemyController::BeginPlay()
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager2>(FoundActors[0]);
+
+	NextLocationKeyID = BlackboardComp->GetKeyID("NextLocation");
+	ActionKeyID = BlackboardComp->GetKeyID("NextAction");
+	RemainingMovementKeyID = BlackboardComp->GetKeyID("RemainingMovement");
 }
 
 
 void AEnemyController::SetNextAction()
 {
-	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetControlledPawn());
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
 	if (!ControlledPawn) { return; }
 	int32 MovableStep = ControlledPawn->GetMovableStepPerActionPoint();
 
@@ -147,7 +159,7 @@ void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FV
 	float PawnLocationZ = GetPawn()->GetTargetLocation().Z;
 	FVector ActorOnTileLocation = FVector(TileLocation.X, TileLocation.Y, PawnLocationZ);
 	TMap<EDirection, ECoverInfo> CoverDirectionMap = MakeCoverDirectionMap(CoverDirectionArr);
-	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetControlledPawn());
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
 	if (!ControlledPawn) { return; }
 	UAimingComponent* AimingComp = ControlledPawn->GetAimingComponent();
 
@@ -242,8 +254,44 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo> T
 		}
 	}
 	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
+
+	AimingInfo = TileScoreBoard[HighestScoredTile].AimingInfo;
+	BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, true);
+	BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(TileScoreBoard[HighestScoredTile].Action));
+	PathToTarget = TileManager->GetPathToTile(TileIndex).OnTheWay;
+
 	UE_LOG(LogTemp, Warning, L"AIÅ½»ö °á°ú -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
 }
+
+void AEnemyController::RenewNextLocation() 
+{
+	int32 PathLength = PathToTarget.Num();
+	if (MovementIndex < PathLength) 
+	{
+		FVector NextLoc = TileManager->ConvertIndexToVector(PathToTarget[MovementIndex]);
+		BlackboardComp->SetValue<UBlackboardKeyType_Vector>(NextLocationKeyID, NextLoc);
+		MovementIndex++;
+	}
+	else 
+	{
+		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, false);
+		MovementIndex = 0;
+	}
+}
+
+void AEnemyController::ShootToPlayerUnit() 
+{
+	//AShooterWeapon* MyWeapon = MyBot ? MyBot->GetWeapon() : NULL;
+
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
+	UAimingComponent* AimingComp = ControlledPawn ? ControlledPawn->GetAimingComponent() : nullptr;
+	if (AimingComp == nullptr && AimingInfo == nullptr) 
+	{
+		return;
+	}
+	ControlledPawn->AttackEnemyAccrodingToState(*AimingInfo);
+}
+
 
 void AEnemyController::DebugAimingInfo(const FVector TileLocation, const int32 Score)
 {

@@ -18,7 +18,7 @@ void APawnController::MoveToTargetLocation(FVector TargetLocation) {
 
 void APawnController::BindVigilanceEvent(const TArray<ACustomThirdPerson*> OppositeTeamMember)
 {
-	ACustomThirdPerson* ControlledPawn =Cast<ACustomThirdPerson>(GetControlledPawn());
+	ACustomThirdPerson* ControlledPawn =Cast<ACustomThirdPerson>(GetPawn());
 
 	if (ControlledPawn) 
 	{
@@ -34,7 +34,7 @@ void APawnController::BindVigilanceEvent(const TArray<ACustomThirdPerson*> Oppos
 void APawnController::WatchOut(const FVector TargetLocation) 
 {
 
-	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetControlledPawn());
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
 	if (ControlledPawn)
 	{
 		ControlledPawn->InVigilance(TargetLocation);

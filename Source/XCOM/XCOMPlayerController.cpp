@@ -77,6 +77,7 @@ void AXCOMPlayerController::Initialize() {
 
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
+			SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
@@ -151,7 +152,17 @@ void AXCOMPlayerController::OnClick()
 				ActionPointToUse = 2;
 			}
 			int32 TargetTileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
-			MoveCharacterBasedOnState(TargetTileIndex, ActionPointToUse);
+//
+			TArray<FVector> Tempor;
+			for (int32 PathIndex : TileManager->PathArr[TargetTileIndex].OnTheWay) 
+			{
+				FVector PathLocation = TileManager->ConvertIndexToVector(PathIndex);
+				PathLocation += FVector(-50, -50, 0);
+				Tempor.Add(PathLocation);
+			}
+			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
+
+			//MoveCharacterBasedOnState(TargetTileIndex, ActionPointToUse);
 		}
 		else
 		{
@@ -226,6 +237,20 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 		}
 		TileMesh->SetVisibility(true);
 	}
+}
+
+void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingCharacter) 
+{
+	EnableInput(this);
+	TileManager->ClearAllTiles(true);
+
+	FTimerHandle UnUsedHandle;
+	CheckWallAround2(MovingCharacter);
+	//SelectedCharacter->UseActionPoint(ActionPointToUse);
+
+	FPossibleActionWrapper PossibleActionWrapper;
+	PossibleActionWrapper.PossibleAction = MovingCharacter->GetPossibleAction();
+	DeleverInfoDelegate.Execute(MovingCharacter->GetAimingInfo(), PossibleActionWrapper);
 }
 
 /**
@@ -319,6 +344,38 @@ void AXCOMPlayerController::CheckWallAround()
 	PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
 	DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
 }
+
+
+void AXCOMPlayerController::CheckWallAround2(ACustomThirdPerson* TargetCharacter)
+{
+	if (!TargetCharacter) { return; }
+
+	FVector CharacterPos = TargetCharacter->GetActorLocation();
+	int32 CharacterTileIndex = TileManager->ConvertVectorToIndex(CharacterPos);
+	UE_LOG(LogTemp, Warning, L"Move To : %d", CharacterTileIndex)
+
+	int32 EastIndex = CharacterTileIndex + 1;
+	int32 WestIndex = CharacterTileIndex - 1;
+	int32 SouthIndex = CharacterTileIndex - TileManager->GetGridXLength();
+	int32 NorthIndex = CharacterTileIndex + TileManager->GetGridXLength();
+
+	CheckWallAroundOneDirection(CharacterTileIndex, EastIndex);
+	CheckWallAroundOneDirection(CharacterTileIndex, SouthIndex);
+	CheckWallAroundOneDirection(CharacterTileIndex, NorthIndex);
+	CheckWallAroundOneDirection(CharacterTileIndex, WestIndex);
+
+	if (TargetCharacter->bIsCovering)
+	{
+		TargetCharacter->RotateTowardWall();
+	}
+
+	//Todo
+	TargetCharacter->ScanEnemy();
+	FPossibleActionWrapper PossibleActionWrapper;
+	PossibleActionWrapper.PossibleAction = TargetCharacter->GetPossibleAction();
+	DeleverInfoDelegate.Execute(TargetCharacter->GetAimingInfo(), PossibleActionWrapper);
+}
+
 
 /**
 * Cadinal 방향에 대해서 벽이 있는지 확인합니다.

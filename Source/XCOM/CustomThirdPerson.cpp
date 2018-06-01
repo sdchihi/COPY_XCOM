@@ -14,6 +14,9 @@
 #include "FAimingQueue.h"
 #include "PawnController.h"
 #include "XCOMGameMode.h"
+#include "Public/UObject/ConstructorHelpers.h"
+#include "Components/TimelineComponent.h"
+#include "Classes/Curves/CurveFloat.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -56,10 +59,11 @@ void ACustomThirdPerson::BeginPlay()
 
 	HealthBar = FindComponentByClass<UHUDComponent>();
 	SkeletalMesh = FindComponentByClass<USkeletalMeshComponent>();
-
-
+	InitializeTimeline();
 }
- 
+
+
+
 void ACustomThirdPerson::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -382,16 +386,12 @@ void ACustomThirdPerson::AfterShooting()
 {
 	if (bInVisilance == true)
 	{
-		UE_LOG(LogTemp, Warning, L"VV AfterShooting")
 		SetOffAttackState(false);
 		bInVisilance = false;
 		FAimingQueue::Instance().NextTask();
-		
 	}
 	else 
 	{
-		UE_LOG(LogTemp, Warning, L"VV AfterShooting XXXX")
-
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::SetOffAttackState, true);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 3, false);
@@ -408,7 +408,6 @@ void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 
 	if (bDiscover) 
 	{
-		UE_LOG(LogTemp, Warning, L"VV  %s Watching Enemy!  -       Start Aiming", *GetName());
 		FAimingQueue::Instance().StartAiming(this, AimingInfoResult);
 	}
 }
@@ -466,4 +465,103 @@ void ACustomThirdPerson::StopVisilance()
 	{
 		SingleEnemyCharacter->UnprotectedMovingDelegate.RemoveDynamic(this, &ACustomThirdPerson::WatchOut);
 	}
+}
+
+void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32 ActionPointToUse) 
+{
+	PathToTargetTile = *OnTheWay;
+	MovementIndex = PathToTargetTile.Num() - 1;
+
+	MovingStepByStep(MovementIndex);
+	UseActionPoint(ActionPointToUse);
+	SetSpeed(400);
+}
+
+
+void ACustomThirdPerson::MovingStepByStep(const int32 Progress = 0) 
+{ 
+	NextLocation = PathToTargetTile[Progress];	//조금 위험함
+	PrevLocation = GetActorLocation();
+	NextLocation.Z = PrevLocation.Z;
+
+	RotateToNextTile(NextLocation);
+	MovingTimeline->PlayFromStart();
+}
+
+void ACustomThirdPerson::RotateToNextTile(const FVector NextTileLocation) 
+{
+	FVector Direction = (NextTileLocation - GetActorLocation());
+	Direction.Z = 0;
+
+	SetActorRotation(Direction.Rotation());
+}
+
+void ACustomThirdPerson::MoveToNextTarget(const float LerpAlpha) 
+{
+	FVector CurrentLocation = FMath::Lerp(PrevLocation, NextLocation, LerpAlpha);
+	SetActorLocation(CurrentLocation);
+}
+
+void ACustomThirdPerson::ArriveNextTile()
+{
+	int32 PathLength = PathToTargetTile.Num();
+	if (MovementIndex != 0)
+	{
+		MovementIndex--;
+		MovingStepByStep(MovementIndex);
+	}
+	else 
+	{
+		FinishMoving();
+	}
+	UnprotectedMovingDelegate.Broadcast(GetActorLocation());
+
+}
+
+void ACustomThirdPerson::InitializeTimeline()
+{
+	//ConstructorHelpers::FObjectFinder<UCurveFloat> Curve(TEXT("/Game/Curve/MovingCurve.MovingCurve.MovingCurve"));
+	FString ImagePath = "/Game/Curve/MovingCurve.MovingCurve.MovingCurve";
+	UCurveFloat* Curve = Cast<UCurveFloat>(StaticLoadObject(UCurveFloat::StaticClass(), NULL, *(ImagePath)));
+
+	if (!Curve) 
+	{
+		return;
+	}
+	else 
+	{
+		FloatCurve = Curve;
+	}
+	
+	FOnTimelineFloat onTimelineCallback;
+	FOnTimelineEventStatic onTimelineFinishedCallback;
+	if (FloatCurve != NULL)
+	{
+		MovingTimeline = NewObject<UTimelineComponent>(this, FName("TimelineAnimation"));
+		MovingTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript; // Indicate it comes from a blueprint so it gets cleared when we rerun construction scripts
+		this->BlueprintCreatedComponents.Add(MovingTimeline); // Add to array so it gets saved
+
+		MovingTimeline->SetPropertySetObject(this); // Set which object the timeline should drive properties on
+
+		MovingTimeline->SetLooping(false);
+		MovingTimeline->SetTimelineLength(0.25f);
+		MovingTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+
+		MovingTimeline->SetPlaybackPosition(0.0f, false);
+
+		onTimelineCallback.BindUFunction(this, FName{ TEXT("MoveToNextTarget") });
+		onTimelineFinishedCallback.BindUFunction(this, FName{ TEXT("ArriveNextTile") });
+		MovingTimeline->AddInterpFloat(FloatCurve, onTimelineCallback);
+		MovingTimeline->SetTimelineFinishedFunc(onTimelineFinishedCallback);
+		MovingTimeline->RegisterComponent();
+	}
+}
+
+void ACustomThirdPerson::FinishMoving() 
+{
+	if (RemainingActionPoint == 1) 
+	{
+		AfterMovingDelegate.Execute(this);
+	}
+	SetSpeed(0);
 }

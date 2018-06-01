@@ -59,6 +59,8 @@ public:
 
 	int32 GetTileSize() { return TileSize; };
 
+	Path& GetPathToTile(const int32 TileIndex) { return PathArr[TileIndex]; };
+
 private:
 	// º¯¼ö
 

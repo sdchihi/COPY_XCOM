@@ -89,6 +89,9 @@ private:
 
 	void CheckWallAround();
 
+	void CheckWallAround2(ACustomThirdPerson* TargetCharacter);
+
+
 	void CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex);
 
 	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
@@ -133,5 +136,8 @@ private:
 
 	UFUNCTION()
 	void SetInvisibleCombatWidget();
+
+	UFUNCTION()
+	void AfterCharacterMoving(ACustomThirdPerson* MovingCharacter);
 
 };

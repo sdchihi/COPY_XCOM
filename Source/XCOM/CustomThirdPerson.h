@@ -20,6 +20,7 @@ DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartActionDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FAfterMovingDelegate, ACustomThirdPerson*, MovingCharacter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegateFromChar,const FVector, StartLoc, const FVector, TargetLoc);
 
@@ -125,6 +126,8 @@ public:
 
 	FChangeViewTargetDelegateFromChar ChangeViewTargetDelegate;
 
+	FAfterMovingDelegate AfterMovingDelegate;
+
 	void InformVisilanceSuccess(const FVector StartLocation, const FVector TargetLocation);
 
 
@@ -193,9 +196,27 @@ public:
 	void WatchOut(const FVector TargetLocation);
 
 
+	//이동 메소드
+	
+	void MovingStepByStep(const int32 Progress);
+
+	void RotateToNextTile(const FVector NextTileLocation);
+
+	UFUNCTION()
+	void MoveToNextTarget(const float LerpAlpha);
+
+	UFUNCTION()
+	void ArriveNextTile();
+
+	void MoveToTargetTile(TArray<FVector>* OnTheWay , const int32 ActionPointToUse);
+
+
 	// 순수  AI Code - > 차후 분리 필요
 	
+	void SetSpeed(float Speed) { this->Speed = Speed; };
 
+	UFUNCTION(BlueprintCallable)
+	float GetSpeed() { return Speed; }
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -219,6 +240,16 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 Step = 10;
 
+	void InitializeTimeline();
+
+	//
+	UPROPERTY()
+	class UTimelineComponent* MovingTimeline;
+
+	UPROPERTY()
+	UCurveFloat* FloatCurve;
+
+	void FinishMoving();
 
 	FVector RelativeCoverLoc = FVector(0,0,0);
 
@@ -245,13 +276,17 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
 
-	FVector PrevLocation;
-
 	void UnderGuard();
 
+	FVector PrevLocation;
 
+	FVector NextLocation;
 
 	// 순수  AI Code - > 차후 분리 필요
 
+	TArray<FVector> PathToTargetTile;
 
+	int32 MovementIndex = 0;
+
+	float Speed = 0;
 };

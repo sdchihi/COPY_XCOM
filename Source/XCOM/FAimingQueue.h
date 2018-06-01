@@ -36,9 +36,9 @@ public:
 	static void StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* AimingInfo);
 
 	static FAimingQueue* pInstance;
-	static int32 Temp;
 
 	static int32 Head;
+
 	static int32 Tail;
 
 	static const int32 MaxPending = 10;

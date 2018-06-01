@@ -46,7 +46,7 @@ void UTrajectoryComponent::DrawProjectileTrajectory()
 	
 	*/
 	
-	int32 PointCount= FMath::Floor(PathLifeTime / TimeInterval);
+	int32 PointCount= FMath::FloorToInt(PathLifeTime / TimeInterval);
 	
 	FVector GravityVector = FVector(0, 0, -980.0);
 	for (int i = 0; i < PointCount; i++) 
