@@ -85,14 +85,13 @@ private:
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 
-	void MovingStepByStep(const Path Target, const int32 CurrentIndex, const int32 ActionPointToUse);
+	//void MovingStepByStep(const Path Target, const int32 CurrentIndex, const int32 ActionPointToUse);
 
-	void CheckWallAround();
+	void CheckWallAround(ACustomThirdPerson* TargetCharacter);
 
-	void CheckWallAround2(ACustomThirdPerson* TargetCharacter);
+	ATile* GetOverlappedTile(ACustomThirdPerson* TargetCharacter);
 
-
-	void CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex);
+	void CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex, ACustomThirdPerson* TargetCharacter);
 
 	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
 

@@ -18,10 +18,13 @@ void ATile::BeginPlay()
 };
 
 
+
+
 void ATile::SetDecalVisibility(const bool Visibility) 
 {
 	DecalComponent->SetVisibility(Visibility);
 }
+
 
 
 void ATile::SetDecalRotationYaw(const float Yaw) 

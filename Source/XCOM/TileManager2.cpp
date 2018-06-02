@@ -47,6 +47,7 @@ void ATileManager2::BeginPlay()
 
 		// Delegate 지정
 		ActorMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ATileManager2::OnOverlapBegin);
+		ActorMeshComponent->OnComponentEndOverlap.AddDynamic(this, &ATileManager2::EndTileOverlap);
 		ActorMeshComponent->OnBeginCursorOver.AddDynamic(this, &ATileManager2::MouseOnTile);
 		ActorMeshComponent->OnEndCursorOver.AddDynamic(this,& ATileManager2::EndMouseOnTile);
 
@@ -67,9 +68,32 @@ void ATileManager2::Tick(float DeltaTime)
 
 void ATileManager2::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	int32 OverlappedTileIndex = ConvertVectorToIndex(SweepResult.Actor->GetActorLocation());
-	//Todo 
-	//PathArr[OverlappedTileIndex].bWall = false;
+	FVector TileLocation = OverlappedComp->GetOwner()->GetActorLocation();
+	int32 OverlappedTileIndex = ConvertVectorToIndex(TileLocation);  
+	APawn* OverlappedPawn = Cast<APawn>(OtherActor);
+	if (OverlappedPawn) 
+	{
+		PathArr[OverlappedTileIndex].bPawn = true;
+	}
+	else 
+	{
+		PathArr[OverlappedTileIndex].bWall = true;
+	}
+}
+
+void ATileManager2::EndTileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) 
+{
+	FVector TileLocation = OverlappedComponent->GetOwner()->GetActorLocation();
+	int32 OverlappedTileIndex = ConvertVectorToIndex(TileLocation);
+	APawn* OverlappedPawn = Cast<APawn>(OtherActor);
+	if (OverlappedPawn)
+	{
+		PathArr[OverlappedTileIndex].bPawn = false;
+	}
+	else
+	{
+		PathArr[OverlappedTileIndex].bWall = false;
+	}
 }
 
 /**
@@ -151,12 +175,10 @@ void ATileManager2::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbi
 	
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
-	ChildActors[OverlappedTileIndex];
 
-	int CurrentStep = MovingAbility;
 	for (int32 i = MovingAbility; i >= -MovingAbility; i--) 
 	{
-		int32 CurrentStep = MovingAbility - FMath::Abs(i);
+		int32 CurrentStep = MovingAbility - FMath::Abs(i);	//오류 추정
 		int32 TargetIndex;
 
 		for (int32 j = CurrentStep; j >= -CurrentStep; j--) 
@@ -174,12 +196,13 @@ void ATileManager2::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbi
 			{	
 				continue;
 			}
-			else if (PathArr[TargetIndex].bWall == true) 
+			else if (PathArr[TargetIndex].bWall == true || PathArr[TargetIndex].bPawn == true)
 			{
 				continue;
 			}
 			ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]);
 			TileIndexInRange.Add(TargetIndex);
+			UE_LOG(LogTemp, Warning , L"범위 내 타일들 %d", TargetIndex)
 		}	
 	}
 	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, MovableStepsPerAct, TileIndexInRange);
@@ -492,7 +515,7 @@ void ATileManager2::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 
 	// 5번 조건 : 타일이 ClosedList 에 있지 않은지 확인
 
 	if (CheckWithinBounds(DiagonalPathIndex) && IsSameLine(CurrentIndex, FromCurrentToDiagonal, DiagonalPathIndex) && TileIndexInRange.Contains(DiagonalPathIndex + RowDifference) &&
-		TileIndexInRange.Contains(DiagonalPathIndex + CollumDifference) && !ClosedList.Contains(DiagonalPathIndex) && !PathArr[DiagonalPathIndex].bWall)
+		TileIndexInRange.Contains(DiagonalPathIndex + CollumDifference) && !ClosedList.Contains(DiagonalPathIndex) && !PathArr[DiagonalPathIndex].bWall && !PathArr[DiagonalPathIndex].bPawn)
 	{
 
 		//이미 OpenList 에 존재하는 Tile일경우 갱신 여부

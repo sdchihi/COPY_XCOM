@@ -286,6 +286,8 @@ private:
 
 	TArray<FVector> PathToTargetTile;
 
+	int32 ActionPointForMoving;
+
 	int32 MovementIndex = 0;
 
 	float Speed = 0;

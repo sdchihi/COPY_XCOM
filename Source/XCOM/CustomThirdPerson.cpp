@@ -472,8 +472,9 @@ void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32
 	PathToTargetTile = *OnTheWay;
 	MovementIndex = PathToTargetTile.Num() - 1;
 
+
 	MovingStepByStep(MovementIndex);
-	UseActionPoint(ActionPointToUse);
+	ActionPointForMoving = ActionPointToUse;
 	SetSpeed(400);
 }
 
@@ -485,7 +486,9 @@ void ACustomThirdPerson::MovingStepByStep(const int32 Progress = 0)
 	NextLocation.Z = PrevLocation.Z;
 
 	RotateToNextTile(NextLocation);
+	MovingTimeline->Stop();
 	MovingTimeline->PlayFromStart();
+
 }
 
 void ACustomThirdPerson::RotateToNextTile(const FVector NextTileLocation) 
@@ -541,8 +544,6 @@ void ACustomThirdPerson::InitializeTimeline()
 		MovingTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript; // Indicate it comes from a blueprint so it gets cleared when we rerun construction scripts
 		this->BlueprintCreatedComponents.Add(MovingTimeline); // Add to array so it gets saved
 
-		MovingTimeline->SetPropertySetObject(this); // Set which object the timeline should drive properties on
-
 		MovingTimeline->SetLooping(false);
 		MovingTimeline->SetTimelineLength(0.25f);
 		MovingTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
@@ -559,9 +560,7 @@ void ACustomThirdPerson::InitializeTimeline()
 
 void ACustomThirdPerson::FinishMoving() 
 {
-	if (RemainingActionPoint == 1) 
-	{
-		AfterMovingDelegate.Execute(this);
-	}
+	UseActionPoint(ActionPointForMoving);
+	AfterMovingDelegate.Execute(this);
 	SetSpeed(0);
 }
