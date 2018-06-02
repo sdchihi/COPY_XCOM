@@ -84,7 +84,7 @@ void ACustomThirdPerson::ClearCoverDirectionInfo()
 	CoverDirectionMap.Add(EDirection::West, ECoverInfo::None);
 	CoverDirectionMap.Add(EDirection::North, ECoverInfo::None);
 	CoverDirectionMap.Add(EDirection::South, ECoverInfo::None);
-
+	MovingDirectionDuringCover = EDirection::None;
 	bIsCovering = false;
 }
 
@@ -471,11 +471,19 @@ void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32
 {
 	PathToTargetTile = *OnTheWay;
 	MovementIndex = PathToTargetTile.Num() - 1;
-
-
-	MovingStepByStep(MovementIndex);
 	ActionPointForMoving = ActionPointToUse;
 	SetSpeed(400);
+	if (bIsCovering)
+	{
+		ClearCoverDirectionInfo();
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::MovingStepByStep, MovementIndex);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.2, false);	// 0.5 Delay ∞Ì¡§
+	}
+	else
+	{
+		MovingStepByStep(MovementIndex);
+	}
 }
 
 

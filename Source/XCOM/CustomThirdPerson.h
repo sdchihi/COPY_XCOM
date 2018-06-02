@@ -197,7 +197,7 @@ public:
 
 
 	//이동 메소드
-	
+	UFUNCTION()
 	void MovingStepByStep(const int32 Progress);
 
 	void RotateToNextTile(const FVector NextTileLocation);

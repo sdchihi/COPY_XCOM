@@ -162,7 +162,6 @@ void AXCOMPlayerController::OnClick()
 			}
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
 
-			//MoveCharacterBasedOnState(TargetTileIndex, ActionPointToUse);
 		}
 		else
 		{
@@ -268,63 +267,6 @@ void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingChara
 	}
 }
 
-/**
-* 목표 타일로 이동할때 단계별로 이동하게 합니다
-* @param Target - 목표 이동 지점
-* @param CurrentIndex - 현재 위치한 타일의 인덱스
-*/
-//void AXCOMPlayerController::MovingStepByStep(const Path Target, const int32 CurrentIndex, const int32 ActionPointToUse)
-//{
-//
-//	FVector TargetLocation = TileManager->ConvertIndexToVector(Target.OnTheWay[CurrentIndex]);
-//	APawnController* PawnController = Cast<APawnController>(SelectedCharacter->GetController());
-//	PawnController->MoveToLocation(TargetLocation + FVector(-50,-50,0), 0, false, false, false);	// 일부 보정
-//
-//	if (CurrentIndex != 0) 
-//	{
-//		// Delegate
-//		FTimerHandle UnUsedHandle;
-//		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::MovingStepByStep, Target, CurrentIndex-1, ActionPointToUse);
-//		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.2, false);
-//	}
-//	else if (CurrentIndex == 0) 
-//	{
-//		EnableInput(this);
-//		TileManager->ClearAllTiles(true);
-//
-//		FTimerHandle UnUsedHandle;
-//		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::CheckWallAround);
-//		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.5, false);	// 0.5 Delay 고정
-//		SelectedCharacter->UseActionPoint(ActionPointToUse);
-//
-//		FPossibleActionWrapper PossibleActionWrapper;
-//		PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
-//		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
-//	}
-//	
-//	SelectedCharacter->UnprotectedMovingDelegate.Broadcast(SelectedCharacter->GetActorLocation());
-//}
-
-/**
-* 목표로 하는 타일로 캐릭터의 엄폐 상태에 따라 캐릭터가 다르게 움직입니다.
-* @param TargetTileIndex - 이동할 타일의 인덱스
-*/
-void AXCOMPlayerController::MoveCharacterBasedOnState(const int32 TargetTileIndex,const int32 ActionPointToUse)
-{
-	DisableInput(this);
-	
-	if (SelectedCharacter->bIsCovering)
-	{
-		//SelectedCharacter->ClearCoverDirectionInfo();
-		//FTimerHandle UnUsedHandle;
-		//FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMPlayerController::MovingStepByStep, TileManager->PathArr[TargetTileIndex], TileManager->PathArr[TargetTileIndex].OnTheWay.Num() - 1, ActionPointToUse);
-		//GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1.2, false);	// 0.5 Delay 고정
-	}
-	else
-	{
-		//MovingStepByStep(TileManager->PathArr[TargetTileIndex], TileManager->PathArr[TargetTileIndex].OnTheWay.Num() - 1, ActionPointToUse);
-	}
-}
 
 
 void AXCOMPlayerController::CheckWallAround(ACustomThirdPerson* TargetCharacter)
@@ -385,11 +327,11 @@ void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterInd
 	{
 		if (CardinalIndex == CharacterIndex + 1)
 		{
-			CoverDirection = EDirection::West; // 서
+			CoverDirection = EDirection::East; // 동
 		}
 		else 
 		{
-			CoverDirection = EDirection::East;	// 동
+			CoverDirection = EDirection::West;	// 서
 		}
 		RowNumber = 0;
 	}
