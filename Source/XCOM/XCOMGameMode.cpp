@@ -5,6 +5,7 @@
 #include "CustomThirdPerson.h"
 #include "XCOMPlayerController.h"
 #include "FogOfWarManager.h"
+#include "EnemyController.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -39,6 +40,10 @@ void AXCOMGameMode::BeginPlay()
 	SpawnFogOfWar();
 }
 
+/**
+* 팀의 턴의 끝났는지 확인합니다.
+* @param bIsPlayerTeam - 확인할 팀의 플래그
+*/
 void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 {
 	bool bIsEnd = true;
@@ -49,8 +54,7 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 		{
 			if (SingleCharacter->bCanAction) 
 			{
-				bIsEnd = false;
-				
+				bIsEnd = false;				
 				break;
 			};
 		}
@@ -62,6 +66,7 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			if (SingleEnemyCharacter->bCanAction)
 			{
 				bIsEnd = false;
+				StartBotActivity();
 				break;
 			};
 		}
@@ -77,12 +82,14 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			DisableInput(PlayerController);
 			UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버");
 			RestoreTeamActionPoint(EnemyCharacters);
+			StartBotActivity();
 		}
 		else 
 		{
 			EnableInput(PlayerController);
 			UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
 			RestoreTeamActionPoint(PlayerCharacters);
+			EnemyTurnOrder = 0;
 		}
 		//Todo  AI를 활성시키던지 Player쪽을 활성화하던지 둘중 하나를 수행
 	}
@@ -96,6 +103,10 @@ void AXCOMGameMode::CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Charact
 	}
 }
 
+/**
+* 캐릭터들의 Action point를 회복시킵니다.
+* @param Characters - 회복시킬 캐릭터들
+*/
 void AXCOMGameMode::RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characters) 
 {
 	for (ACustomThirdPerson* SingleCharacter : Characters)
@@ -104,10 +115,12 @@ void AXCOMGameMode::RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characte
 	}
 }
 
+/**
+* 캐릭터들의 Health bar의 가시성을 변경합니다.
+* @param bVisible 
+*/
 void AXCOMGameMode::SetVisibleAllHealthBar(const bool bVisible)
 {
-	UE_LOG(LogTemp, Warning, L"비저블 실행");
-
 	for (ACustomThirdPerson* SinglePlayerChar : PlayerCharacters)
 	{
 		SinglePlayerChar->SetHealthBarVisibility(bVisible);
@@ -146,3 +159,20 @@ TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 		return EnemyCharacters;
 	}
 };
+
+
+void AXCOMGameMode::StartBotActivity() 
+{
+	ACustomThirdPerson* EnemyChar = EnemyCharacters[EnemyTurnOrder];
+	AEnemyController* EnemyController = EnemyChar ? Cast<AEnemyController>(EnemyChar->GetController()) : nullptr;
+	if (!EnemyController) 
+	{
+		EnemyTurnOrder++;
+		StartBotActivity();
+	}
+	else 
+	{
+		EnemyController->StartBehaviorTree();
+		EnemyTurnOrder++;
+	}
+}

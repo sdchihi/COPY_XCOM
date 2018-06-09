@@ -38,6 +38,14 @@ struct FAimingInfo
 		Probability = 0;
 	}
 
+	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target)
+	{
+		StartLocation = StartLoc;
+		TargetLocation = TargetLoc;
+		Probability = SucessProbability;
+		TargetActor = Target;
+	}
+
 	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target,TMap<EAimingFactor, float>& AimingFactor)
 	{
 		StartLocation = StartLoc;

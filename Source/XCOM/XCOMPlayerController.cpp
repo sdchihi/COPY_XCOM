@@ -34,7 +34,6 @@ void AXCOMPlayerController::BeginPlay()
 	Initialize();
 };
 
-//아직 사용 안함
 void AXCOMPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -46,9 +45,6 @@ void AXCOMPlayerController::SetupInputComponent() {
 	this->InputComponent->BindAction(L"Click", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::OnClick);
 	this->InputComponent->BindAction(L"Cancel", EInputEvent::IE_Pressed, this, &AXCOMPlayerController::CancelWithESC);
 }
-
-
-
 
 void AXCOMPlayerController::Initialize() {
 	TArray<AActor*> FoundActors;
@@ -74,15 +70,14 @@ void AXCOMPlayerController::Initialize() {
 		SingleThirdPerson->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCharacter);
 		SingleThirdPerson->DeadCamDelegate.BindDynamic(this , &AXCOMPlayerController::ChangeToDeathCam);
 		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
+		SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 		if (SingleThirdPerson->GetTeamFlag()) 
 		{
-			SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
 	}
-	//SwitchCharacter(PlayerCharacters[0]);
 
 	if (CombatWidgetBlueprint)
 	{
@@ -119,11 +114,8 @@ void AXCOMPlayerController::OnClick()
 				SwitchCharacter(TargetCharacter);
 			}
 			else
-			{	//적 클릭시			(테스트용 코드- 이후에 옮길것이라서 함수화 하지 않는다.)
-				/*PawnInAimingSituation->SetCameraPositionInAimingSituation(SelectedCharacter->GetActorLocation(), TargetCharacter->GetActorLocation());
-				TileManager->ClearAllTiles(true);
-				SetViewTargetWithBlend(PawnInAimingSituation, 0.5);*/
-				//SelectedCharacter->CheckAttackPotential(TargetCharacter);
+			{	
+				//적클릭시
 			}
 		}
 		else if (TargetTile)
@@ -140,7 +132,6 @@ void AXCOMPlayerController::OnClick()
 				return;
 			}
 			
-			//행동력 소비
 			int32 ActionPointToUse = 0;
 			if(TargetTile->bCanMoveWithOneAct) 
 			{
@@ -170,6 +161,11 @@ void AXCOMPlayerController::OnClick()
 	}
 }
 
+/**
+* 캐릭터가 위치한 타일을 얻어올때 호출합니다.
+* @param TargetCharacter
+* @return 해당 타일의 포인터
+*/
 ATile* AXCOMPlayerController::GetOverlappedTile(ACustomThirdPerson* TargetCharacter) 
 {
 	TArray<AActor*> OverlappedTileArray;
@@ -219,11 +215,11 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 }
 
 
-
 /**
-* 다른 캐릭터를 클릭해 전환됬을때 호출됩니다.
+* 캐릭터가 타일을 이동할 수 있도록 알고리즘 수행과 타일의 Visibility를 세팅합니다.
 * @param OverlappedTile - 선택된 캐릭터가 올라가있는 타일
 * @param MovingAbility - 이동 가능한 칸 수
+* @param MovableStepPerAct - 1 Action point로 이동가능한 칸 수 
 */
 void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility,const int32 MovableStepPerAct)
 {
@@ -248,6 +244,10 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 	}
 }
 
+/**
+* 캐릭터가 이동을 끝낸후 엄폐 확인, 이동 가능 타일등을 갱신합니다.
+* @param MovingCharacter - 이동하는 캐릭터
+*/
 void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingCharacter) 
 {
 	CheckWallAround(MovingCharacter);
@@ -255,20 +255,22 @@ void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingChara
 	{
 		EnableInput(this);
 		TileManager->ClearAllTiles(true);
-
-		ATile* OverlappedTile = GetOverlappedTile(MovingCharacter);
-		if (OverlappedTile == nullptr)		
+		if (MovingCharacter->GetTeamFlag()) 
 		{
-			EnableInput(this);
-			return;
+			ATile* OverlappedTile = GetOverlappedTile(MovingCharacter);
+			if (OverlappedTile == nullptr)
+			{
+				return;
+			}
+			SetTilesToUseSelectedChararacter(OverlappedTile, MovingCharacter->CurrentMovableStep, MovingCharacter->GetMovableStepPerActionPoint());
 		}
-		SetTilesToUseSelectedChararacter(OverlappedTile, MovingCharacter->CurrentMovableStep, MovingCharacter->GetMovableStepPerActionPoint());
-
 	}
 }
 
-
-
+/**
+* 캐릭터를 기준으로 4방향으로 주변에 벽이 있는지 확인합니다.
+* @param MovingCharacter - 엄폐확인을 할 캐릭터
+*/
 void AXCOMPlayerController::CheckWallAround(ACustomThirdPerson* TargetCharacter)
 {
 	if (!TargetCharacter) { return; }
@@ -292,15 +294,13 @@ void AXCOMPlayerController::CheckWallAround(ACustomThirdPerson* TargetCharacter)
 		TargetCharacter->RotateTowardWall();
 	}
 
-	//Todo
-	if (TargetCharacter->bCanAction)
+	if (TargetCharacter->bCanAction &&  TargetCharacter->GetTeamFlag())
 	{
 		TargetCharacter->ScanEnemy();
 		FPossibleActionWrapper PossibleActionWrapper;
 		PossibleActionWrapper.PossibleAction = TargetCharacter->GetPossibleAction();
 		DeleverInfoDelegate.Execute(TargetCharacter->GetAimingInfo(), PossibleActionWrapper);
 	}
-	
 }
 
 
@@ -366,6 +366,9 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 	return false;
 }
 
+/**
+* 기본 RTS 시점으로 돌아갈때 호출합니다.
+*/
 void AXCOMPlayerController::ChangeToDefaultPawn() 
 {
 	if (HealthBarVisiblityDelegate.IsBound()) 
@@ -376,6 +379,9 @@ void AXCOMPlayerController::ChangeToDefaultPawn()
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
 };
 
+/**
+* 캐릭터가 Action point를 소모 후 RTS 캠을 이동시킬때 호출됩니다.
+*/
 FVector AXCOMPlayerController::GetNextAvailableCharLocation() 
 {
 	TArray<ACustomThirdPerson*> AvailableCharacters;
@@ -400,11 +406,17 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 	return AvailableCharacters[NextIndex]->GetActorLocation();;
 }
 
+
 void AXCOMPlayerController::ReleaseCharacter() 
 {
 	TileManager->ClearAllTiles(true);
 }
 
+/**
+* Action Cam 시점으로 부드럽게 이동합니다.
+* @param StartLocation 
+* @param TargetLocation
+*/
 void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation)
 {
 	if (HealthBarVisiblityDelegate.IsBound())
@@ -421,18 +433,33 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocatio
 	OrderFinishTrajectory();
 }
 
-
+/**
+* Combat Widget에 의해 Action Cam 시점으로 부드럽게 이동합니다.
+* @param TargetLocation
+*/
 void AXCOMPlayerController::ChangeViewTargetByCombatWidget(const FVector TargetLocation)
 {
+	FVector2D ScreenLocation;
+	ProjectWorldLocationToScreen(TargetLocation, ScreenLocation);
+
+	CombatWidget->SetAimWidgetLocation(ScreenLocation);
+
 	ChangeViewTargetWithBlend(SelectedCharacter->GetActorLocation(), TargetLocation);
 }
 
+/**
+* 캐릭터에 의해 Action Cam 시점으로 부드럽게 이동합니다. ( 사격 후 )
+* @param TargetLocation
+*/
 void AXCOMPlayerController::ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation)
 {
 	ChangeViewTargetWithBlend(CharacterLocation, TargetLocation);
 }
 
-
+/**
+* 캐릭터가 죽을때의 모습을 비출 Action Cam 으로 시점을 바꿉니다.
+* @param MurderedCharLocation
+*/
 void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 {
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
@@ -444,6 +471,10 @@ void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 	bCameraOrder = !bCameraOrder;
 }
 
+/**
+* 사용될 Action Cam  Actor를 가져옵니다.
+* @return APlayerPawnInAiming
+*/
 APlayerPawnInAiming* AXCOMPlayerController::GetNextActionCam()
 {
 	if (bCameraOrder) 
@@ -456,7 +487,9 @@ APlayerPawnInAiming* AXCOMPlayerController::GetNextActionCam()
 	}
 }
 
-
+/**
+* Cancel 시킬때 호출됩니다.
+*/
 void AXCOMPlayerController::CancelWithESC() 
 {
 	OrderFinishTrajectory();
@@ -466,11 +499,18 @@ void AXCOMPlayerController::CancelWithESC()
 	ChangeToDefaultPawn();
 }
 
+/**
+* 캐릭터에게 공격을 명령합니다.
+* @param TargetEnemyIndex - 공격할 대상의 인덱스
+*/
 void AXCOMPlayerController::OrderAttack(const int32 TargetEnemyIndex)
 {
 	SelectedCharacter->AttackEnemyAccoringToIndex(TargetEnemyIndex);
 }
 
+/**
+* 캐릭터에게 수류탄 궤도 추적을 명령합니다.
+*/
 void AXCOMPlayerController::OrderStartTrajectory()
 {
 	TileManager->ClearAllTiles(true);
@@ -478,11 +518,17 @@ void AXCOMPlayerController::OrderStartTrajectory()
 	SelectedCharacter->StartTrajectory();
 }
 
+/**
+* 수류탄 궤도 추적을 멈춥니다.
+*/
 void AXCOMPlayerController::OrderFinishTrajectory()
 {
 	SelectedCharacter->FinishTrajectory();
 }
 
+/**
+* 경계 명령을 내립니다.
+*/
 void AXCOMPlayerController::OrderStartVigilance()
 {
 	APawnController* CharacterController = Cast<APawnController>(SelectedCharacter->GetController());
@@ -495,6 +541,9 @@ void AXCOMPlayerController::OrderStartVigilance()
 	UE_LOG(LogTemp, Warning, L"경계 시작");
 }
 
+/**
+* Cambat Widget 을 감춥니다.
+*/
 void AXCOMPlayerController::SetInvisibleCombatWidget()
 {
 	CombatWidget->SetVisibility(ESlateVisibility::Collapsed);

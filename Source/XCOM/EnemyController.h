@@ -35,13 +35,26 @@ class XCOM_API AEnemyController : public AAIController
 
 
 public:
+
+	AEnemyController(const class FObjectInitializer& ObjectInitializer);
+
 	virtual void BeginPlay() override;
+
+	virtual void Possess(class APawn* InPawn) override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetNextAction();
 
-	void RenewNextLocation();
+	UPROPERTY(EditAnywhere, Category = Behavior)
+	class UBehaviorTree* EnemyBehavior;
 
+	void FollowThePath();
+
+	void ShootToPlayerUnit();
+
+	void StopBehaviorTree();
+
+	void StartBehaviorTree();
 
 private:
 
@@ -61,7 +74,7 @@ private:
 
 	FAimingInfo* AimingInfo;
 
-	TArray<int32> PathToTarget;
+	TArray<FVector> PathToTarget;
 
 	class ATileManager2* TileManager = nullptr;
 
@@ -81,11 +94,8 @@ private:
 
 	EAction DecideActionOnTile(int32 ActionScore);
 
-	void FindBestScoredAction(const TMap<ATile*, FAICommandInfo> TileScoreBoard);
+	void FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& TileScoreBoard);
 
 	void DebugAimingInfo(const FVector TileLocation, const int32 Score);
-
-
-	void ShootToPlayerUnit();
 
 };

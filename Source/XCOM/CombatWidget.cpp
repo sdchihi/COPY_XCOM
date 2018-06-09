@@ -13,6 +13,9 @@
 #include "CustomButton.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/CanvasPanel.h"
+#include "Components/Image.h"
+#include "WidgetLayoutLibrary.h"
+#include "CanvasPanelSlot.h"
 
 void UCombatWidget::InitializeInBP() 
 {
@@ -23,10 +26,12 @@ void UCombatWidget::InitializeInBP()
 	MainStartActionButton = Cast<UButton>(GetWidgetFromName(FName("MainActionButton")));
 	SumAimingProbBox = Cast<UUserWidget>(GetWidgetFromName(FName("SumAimingProb")));
 
-
 	LeftFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("LeftContainer")));
 	RightFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("RightContainer")));
 	CenterFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("CenterContainer")));
+
+	Aim = Cast<UImage>(GetWidgetFromName(FName("AimImage")));
+
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
@@ -331,5 +336,14 @@ void UCombatWidget::ConstructWidgetNormal()
 	CenterFrame->SetVisibility(ESlateVisibility::Visible);
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCombatWidget::SetAimWidgetLocation(FVector2D AimLocation)
+{
+	Aim->SetVisibility(ESlateVisibility::Visible);
+	UCanvasPanelSlot* AimPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Aim);
+	AimPanelSlot->SetPosition(AimLocation);
+	//Aim->
+	UE_LOG(LogTemp, Warning, L"%s ·Î Aim À§Ä¡", *AimLocation.ToString())
 }
 

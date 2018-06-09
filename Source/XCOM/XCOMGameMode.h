@@ -46,5 +46,8 @@ private:
 
 	void SpawnFogOfWar();
 
-	
+	void StartBotActivity();
+
+
+	int32 EnemyTurnOrder = 0;
 };

@@ -14,6 +14,16 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Enum.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
+
+
+AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackBoardComp"));
+	BrainComponent = BehaviorTreeComp = ObjectInitializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
+	bWantsPlayerState = true;
+}
 
 
 void AEnemyController::BeginPlay()
@@ -25,10 +35,28 @@ void AEnemyController::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager2>(FoundActors[0]);
 
-	NextLocationKeyID = BlackboardComp->GetKeyID("NextLocation");
-	ActionKeyID = BlackboardComp->GetKeyID("NextAction");
-	RemainingMovementKeyID = BlackboardComp->GetKeyID("RemainingMovement");
 }
+
+void AEnemyController::Possess(APawn* InPawn) 
+{
+	Super::Possess(InPawn);
+
+	if (EnemyBehavior)
+	{
+		if (EnemyBehavior->BlackboardAsset)
+		{
+			BlackboardComp->InitializeBlackboard(*EnemyBehavior->BlackboardAsset);
+		}
+
+		NextLocationKeyID = BlackboardComp->GetKeyID("NextLocation");
+		ActionKeyID = BlackboardComp->GetKeyID("NextAction");
+		RemainingMovementKeyID = BlackboardComp->GetKeyID("RemainingMovement");
+
+		/*BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
+
+		BehaviorTreeComp->StartTree(*EnemyBehavior);*/
+	}
+};
 
 
 void AEnemyController::SetNextAction()
@@ -86,7 +114,7 @@ TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> Mova
 			int32 TotalScore = ActionScore + GeographicalScore;
 			FAICommandInfo CommandInfo;// = FAICommandInfo(TotalScore, &BestAimingInfo, ActionOnTargetTile);
 			CommandInfo.Action = ActionOnTargetTile;
-			CommandInfo.AimingInfo = &BestAimingInfo;
+			CommandInfo.AimingInfo = new FAimingInfo(BestAimingInfo);
 			CommandInfo.Score = TotalScore;
 
 			TileScoreBoard.Add(TargeTile, CommandInfo);
@@ -241,7 +269,7 @@ EAction AEnemyController::DecideActionOnTile(int32 ActionScore)
 	}
 }
 
-void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo> TileScoreBoard)
+void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& TileScoreBoard)
 {
 	int32 HighestScore = 0;
 	ATile* HighestScoredTile = nullptr;
@@ -253,43 +281,58 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo> T
 			HighestScoredTile = It.Key();
 		}
 	}
+
 	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
 
-	AimingInfo = TileScoreBoard[HighestScoredTile].AimingInfo;
+	if (AimingInfo) 
+	{
+		delete AimingInfo;
+	}
+
+	AimingInfo = new FAimingInfo(*TileScoreBoard[HighestScoredTile].AimingInfo);
 	BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, true);
 	BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(TileScoreBoard[HighestScoredTile].Action));
-	PathToTarget = TileManager->GetPathToTile(TileIndex).OnTheWay;
+	
+
+	TArray<FVector> Tempor;
+	for (int32 PathIndex : TileManager->GetPathToTile(TileIndex).OnTheWay)
+	{
+		FVector PathLocation = TileManager->ConvertIndexToVector(PathIndex);
+		PathLocation += FVector(-50, -50, 0);
+		Tempor.Add(PathLocation);
+	}
+	PathToTarget = Tempor;
+
+	for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
+	{
+		if (HighestScore < It.Value().Score)
+		{
+			delete It.Value().AimingInfo;
+		}
+	}
 
 	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
 }
 
-void AEnemyController::RenewNextLocation() 
+void AEnemyController::FollowThePath() 
 {
-	int32 PathLength = PathToTarget.Num();
-	if (MovementIndex < PathLength) 
-	{
-		FVector NextLoc = TileManager->ConvertIndexToVector(PathToTarget[MovementIndex]);
-		BlackboardComp->SetValue<UBlackboardKeyType_Vector>(NextLocationKeyID, NextLoc);
-		MovementIndex++;
-	}
-	else 
-	{
-		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, false);
-		MovementIndex = 0;
-	}
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
+	if (!ControlledPawn) { return; }
+	ControlledPawn->MoveToTargetTile(&PathToTarget, 1);
 }
+
+
 
 void AEnemyController::ShootToPlayerUnit() 
 {
-	//AShooterWeapon* MyWeapon = MyBot ? MyBot->GetWeapon() : NULL;
-
 	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
 	UAimingComponent* AimingComp = ControlledPawn ? ControlledPawn->GetAimingComponent() : nullptr;
-	if (AimingComp == nullptr && AimingInfo == nullptr) 
+	if (AimingComp == nullptr || AimingInfo == nullptr) 
 	{
 		return;
 	}
 	ControlledPawn->AttackEnemyAccrodingToState(*AimingInfo);
+	UE_LOG(LogTemp, Warning, L"%s 에서 적이 사격시작", *AimingInfo->StartLocation.ToString())
 }
 
 
@@ -321,3 +364,19 @@ void AEnemyController::DebugAimingInfo(const FVector TileLocation, const int32 S
 		20
 	);
 }
+
+
+void AEnemyController::StopBehaviorTree() 
+{
+	BehaviorTreeComp->StopTree();
+};
+
+void AEnemyController::StartBehaviorTree() 
+{
+	if (EnemyBehavior)
+	{
+		BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
+		BehaviorTreeComp->StartTree(*EnemyBehavior);
+		UE_LOG(LogTemp, Warning, L"시작! ");
+	}
+};

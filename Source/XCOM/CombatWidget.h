@@ -17,6 +17,7 @@ DECLARE_DYNAMIC_DELEGATE(FStartVisilianceDelegate);
 
 
 //DECLARE_DYNAMIC_DELEGATE_OneParam(FStartActionDelegate, FVector*, TargetLoc);
+class UImage;
 class UButton;
 class UVerticalBox;
 class UHorizontalBox;
@@ -37,6 +38,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> SideContentBoxBlueprint;
 
+
 	UFUNCTION(BlueprintCallable)
 	void InitializeInBP();
 
@@ -50,6 +52,8 @@ public:
 	FStartAmbushDelegate StartAmbushDelegate;
 
 	FStartVisilianceDelegate StartVisilianceDelegate;
+
+	void SetAimWidgetLocation(FVector2D AimLocation);
 
 protected:
 
@@ -88,6 +92,10 @@ private:
 
 	UPROPERTY()
 	UUserWidget* SumAimingProbBox = nullptr;
+
+
+	UPROPERTY()
+	UImage* Aim = nullptr;
 
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
@@ -133,4 +141,5 @@ private:
 	
 	void ConstructWidgetNormal();
 	
+
 };

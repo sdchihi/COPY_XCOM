@@ -250,7 +250,6 @@ void ACustomThirdPerson::CoverUpAndAttack(const FAimingInfo TargetAimingInfo)
 	bool bHaveToMove = !TargetAimingInfo.StartLocation.Equals(GetActorLocation());
 	if (bHaveToMove)
 	{
-		UE_LOG(LogTemp, Warning, L"구현중 진입점 1")
 		SetMovingDirectionDuringCover(TargetAimingInfo.StartLocation);
 		
 		//CoverMoving(TargetAimingInfo.StartLocation);
@@ -569,6 +568,10 @@ void ACustomThirdPerson::InitializeTimeline()
 void ACustomThirdPerson::FinishMoving() 
 {
 	UseActionPoint(ActionPointForMoving);
-	AfterMovingDelegate.Execute(this);
+	if (AfterMovingDelegate.IsBound()) 
+	{
+		AfterMovingDelegate.Execute(this);
+	}
 	SetSpeed(0);
 }
+

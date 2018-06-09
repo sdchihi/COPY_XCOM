@@ -213,6 +213,8 @@ public:
 
 	// 순수  AI Code - > 차후 분리 필요
 	
+	void StopBehaviorTree();
+
 	void SetSpeed(float Speed) { this->Speed = Speed; };
 
 	UFUNCTION(BlueprintCallable)
