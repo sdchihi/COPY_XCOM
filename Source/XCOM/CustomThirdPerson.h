@@ -167,6 +167,7 @@ public:
 	void AttackEnemyAccrodingToState(const FAimingInfo TargetAimingInfo);
 
 	void StartTrajectory();
+
 	void FinishTrajectory();
 
 	void SetHealthBarVisibility(const bool bVisible);
@@ -213,12 +214,13 @@ public:
 
 	// 순수  AI Code - > 차후 분리 필요
 	
-	void StopBehaviorTree();
-
 	void SetSpeed(float Speed) { this->Speed = Speed; };
 
 	UFUNCTION(BlueprintCallable)
 	float GetSpeed() { return Speed; }
+
+	void ExecuteChangePawnDelegate();
+
 
 protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;

@@ -82,7 +82,7 @@ void FAimingQueue::NextTask()
 {
 	if (IsPrevTask()) // Finish Task
 	{
-		LastShootingActor->SetOffAttackState(true);	//수정필요해요 - > 사격안했는데도 SetOff될 수 있네.
+		LastShootingActor->ExecuteChangePawnDelegate();//
 		AActor* AimedCharcater = FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor;
 		if (IsValid(AimedCharcater)) 
 		{
@@ -93,7 +93,6 @@ void FAimingQueue::NextTask()
 	else 
 	{
 		FAimingQueue::Head = (FAimingQueue::Head + 1) % MaxPending;
-		ACustomThirdPerson* tempee=   FAimingQueue::Pending[Head]->AimingActor;
 		FAimingQueue::Update();
 	}
 }

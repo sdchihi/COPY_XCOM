@@ -57,6 +57,7 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	ConstructWidgetMinimum();
 	ClearContents(true);
 
+	
 	SelectedCharacterAimingInfo = AimingInfoArray;
 	PossibleActionMap = PossibleActionMapWrapper.PossibleAction;
 
@@ -64,7 +65,10 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	float Percentage; 
 	
 	//Fill Side Contents 
-	ConvertToSuitableFormat(SelectedCharacterAimingInfo[0], Explanation, Percentage); 
+	if (SelectedCharacterAimingInfo.Num() != 0) 
+	{
+		ConvertToSuitableFormat(SelectedCharacterAimingInfo[0], Explanation, Percentage); 
+	}
 	// 상단 Enemy Icon
 	FillEnemyList();
 	FillActionButtonList();
@@ -169,6 +173,10 @@ void UCombatWidget::FillActionButtonList()
 			switch (SinglePossibleAction.Key)
 			{
 			case EAction::Attack:
+				if (SelectedCharacterAimingInfo.Num() == 0) // 공격 상대 없을경우 버튼생성 생성 건너뜀
+				{
+					continue;
+				}
 				ButtonImagePath = "/Game/Texture/NormalAttack.NormalAttack";
 				ButtonClickFunctionName = L"AttackButtonClicked";
 				break;
@@ -189,6 +197,7 @@ void UCombatWidget::FillActionButtonList()
 				ButtonClickFunctionName = L"AttackButtonClicked";
 				break;
 			}
+			
 			TScriptDelegate<FWeakObjectPtr> delegateFunction;
 			delegateFunction.BindUFunction(this, ButtonClickFunctionName);
 			ButtonForMarkingEnemy->OnClicked.Add(delegateFunction);
@@ -208,6 +217,7 @@ void UCombatWidget::FillActionButtonList()
 		}
 	}
 }
+
 
 
 void UCombatWidget::AttackButtonClicked() 

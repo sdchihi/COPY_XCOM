@@ -126,21 +126,34 @@ void ACustomThirdPerson::RotateTowardWall() {
 void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	bIsAttack = false;
 	SetActorLocation(PrevLocation, true);
-	UseActionPoint(2);
+	if (!bInVisilance) 
+	{
+		UseActionPoint(2);
+	}
+	else 
+	{
+		bInVisilance = false;
+	}
+
 	if (bIsCovering) {
 		RotateTowardWall();
 	}
 
 	if (bExecuteDelegate) 
 	{
-		if (ChangePlayerPawnDelegate.IsBound())
-		{
-			ChangePlayerPawnDelegate.Execute();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, L"Unbound");
-		}
+		ExecuteChangePawnDelegate();
+	}
+}
+
+void ACustomThirdPerson::ExecuteChangePawnDelegate()
+{
+	if (ChangePlayerPawnDelegate.IsBound())
+	{
+		ChangePlayerPawnDelegate.Execute();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, L"Unbound");
 	}
 }
 
@@ -170,7 +183,7 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 {
 	RemainingActionPoint -= PointToUse;
 	UE_LOG(LogTemp, Warning, L"Use %d Action Point  --  Remaining : %d", PointToUse, RemainingActionPoint);
-	if (RemainingActionPoint <=0) 
+	if (RemainingActionPoint <=0) //TODO
 	{
 		bCanAction = false;
 		if (AfterActionDelegate.IsBound())
@@ -386,7 +399,6 @@ void ACustomThirdPerson::AfterShooting()
 	if (bInVisilance == true)
 	{
 		SetOffAttackState(false);
-		bInVisilance = false;
 		FAimingQueue::Instance().NextTask();
 	}
 	else 
@@ -408,6 +420,10 @@ void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 	if (bDiscover) 
 	{
 		FAimingQueue::Instance().StartAiming(this, AimingInfoResult);
+	}
+	else 
+	{
+		delete AimingInfoResult;
 	}
 }
 
