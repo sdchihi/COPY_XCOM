@@ -583,11 +583,12 @@ void ACustomThirdPerson::InitializeTimeline()
 
 void ACustomThirdPerson::FinishMoving() 
 {
+	SetSpeed(0);
+
 	UseActionPoint(ActionPointForMoving);
 	if (AfterMovingDelegate.IsBound()) 
 	{
 		AfterMovingDelegate.Execute(this);
 	}
-	SetSpeed(0);
 }
 

@@ -3,7 +3,9 @@
 #include "FAimingQueue.h"
 #include "CustomThirdPerson.h"
 #include "AimingComponent.h"
+#include "EnemyController.h"
 #include "Engine.h"
+
 
 FAimingQueue* FAimingQueue::pInstance;
 int32 FAimingQueue::Head;
@@ -38,15 +40,19 @@ void FAimingQueue::Update()
 {
 	ACustomThirdPerson* AimingCharacter = FAimingQueue::Pending[FAimingQueue::Head]->AimingActor;
 	FAimingInfo* CurrentAimingInfo = FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo;
-	AActor* AimedCharcater = CurrentAimingInfo->TargetActor;
-
-
+	ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(CurrentAimingInfo->TargetActor);
 	if (!IsValid(AimedCharcater))
 	{
 		return;
 	}
+	AEnemyController* EnemyController = Cast<AEnemyController>(AimedCharcater->GetController());
+
 	AimedCharcater->CustomTimeDilation = 0;
-	
+	if (EnemyController) 
+	{
+		//EnemyController->StopBehaviorTree();
+	}
+
 	if (AimingCharacter->bInVisilance) 
 	{
 		LastShootingActor = AimingCharacter;
@@ -83,10 +89,15 @@ void FAimingQueue::NextTask()
 	if (IsPrevTask()) // Finish Task
 	{
 		LastShootingActor->ExecuteChangePawnDelegate();//
-		AActor* AimedCharcater = FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor;
+		ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor);
 		if (IsValid(AimedCharcater)) 
 		{
 			AimedCharcater->CustomTimeDilation = 1;
+			AEnemyController* EnemyController = Cast<AEnemyController>(AimedCharcater->GetInstigatorController());
+			if (EnemyController) 
+			{
+				//EnemyController->StartBehaviorTree();
+			}
 		}
 		FAimingQueue::Head = (FAimingQueue::Head + 1) % MaxPending;
 	}

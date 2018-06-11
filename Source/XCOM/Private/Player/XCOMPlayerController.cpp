@@ -4,7 +4,7 @@
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "Classes/Components/StaticMeshComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
-#include "TileManager2.h"
+#include "TileManager.h"
 #include "Tile.h"
 #include "PawnController.h"
 #include "Path.h"
@@ -28,8 +28,8 @@ void AXCOMPlayerController::BeginPlay()
 	bEnableMouseOverEvents = true;
 
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
-	TileManager = Cast<ATileManager2>(FoundActors[0]);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager::StaticClass(), FoundActors);
+	TileManager = Cast<ATileManager>(FoundActors[0]);
 
 	Initialize();
 };
@@ -48,8 +48,8 @@ void AXCOMPlayerController::SetupInputComponent() {
 
 void AXCOMPlayerController::Initialize() {
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
-	TileManager = Cast<ATileManager2>(FoundActors[0]);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager::StaticClass(), FoundActors);
+	TileManager = Cast<ATileManager>(FoundActors[0]);
 
 	FoundActors.Empty();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerPawnInAiming::StaticClass(), FoundActors);

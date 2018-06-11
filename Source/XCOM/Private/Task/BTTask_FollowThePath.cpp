@@ -8,6 +8,12 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyAllTypes.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 
+UBTTask_FollowThePath::UBTTask_FollowThePath()
+{
+	NodeName = "FollowThePath";
+	bNotifyTick = true;
+}
+
 EBTNodeResult::Type UBTTask_FollowThePath::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AEnemyController* BotController = Cast<AEnemyController>(OwnerComp.GetAIOwner());
@@ -16,17 +22,20 @@ EBTNodeResult::Type UBTTask_FollowThePath::ExecuteTask(UBehaviorTreeComponent& O
 	{
 		return EBTNodeResult::Failed;
 	}
+	BotController->FollowThePath();
+	return EBTNodeResult::InProgress;
+}
 
-	if (ControlledUnit->GetSpeed() > 0) 
+
+
+void UBTTask_FollowThePath::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	AEnemyController* BotController = Cast<AEnemyController>(OwnerComp.GetAIOwner());
+	ACustomThirdPerson* ControlledUnit = BotController ? Cast<ACustomThirdPerson>(BotController->GetPawn()) : nullptr;
+	if (ControlledUnit->GetSpeed() == 0) 
 	{
-		return EBTNodeResult::InProgress;
-	}
-	else 
-	{
-		BotController->FollowThePath();
 		FBlackboard::FKey BlackboardKey = OwnerComp.GetBlackboardComponent()->GetKeyID("RemainingMovement");
 		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(BlackboardKey, false);
-		return EBTNodeResult::Succeeded;
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
-	
 }

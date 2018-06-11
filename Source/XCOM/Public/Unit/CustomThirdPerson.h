@@ -99,6 +99,7 @@ public:
 
 	bool bCanAction = true;
 
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int MaxHP = 5;
 

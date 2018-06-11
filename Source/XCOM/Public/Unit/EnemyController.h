@@ -56,6 +56,8 @@ public:
 
 	void StartBehaviorTree();
 
+	void StartBehaviorTreeFromDefault();
+
 private:
 
 	UPROPERTY(transient)
@@ -76,7 +78,7 @@ private:
 
 	TArray<FVector> PathToTarget;
 
-	class ATileManager2* TileManager = nullptr;
+	class ATileManager* TileManager = nullptr;
 
 	TMap<ATile*, FAICommandInfo> GetScoreBoard(TArray<ATile*> MovableTiles);
 

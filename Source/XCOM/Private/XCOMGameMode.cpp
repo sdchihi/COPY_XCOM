@@ -172,7 +172,7 @@ void AXCOMGameMode::StartBotActivity()
 	}
 	else 
 	{
-		EnemyController->StartBehaviorTree();
+		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;
 	}
 }

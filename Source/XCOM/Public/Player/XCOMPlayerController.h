@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FDeleverInfoDelegate, const TArray<FAimingInf
 DECLARE_DYNAMIC_DELEGATE_OneParam(FHealthBarVisiblityDelegate,const bool, bVisible);
 
 
-class ATileManager2;
+class ATileManager;
 class APlayerPawnInAiming;
 class Path;
 class APlayerPawn;
@@ -68,7 +68,7 @@ private:
 	int32 CharacterSwitchIndex = 1;
 
 	UPROPERTY(VisibleAnywhere)
-	ATileManager2* TileManager = nullptr;
+	ATileManager* TileManager = nullptr;
 
 	TArray<ACustomThirdPerson*> PlayerCharacters;
 

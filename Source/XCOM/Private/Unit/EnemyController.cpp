@@ -2,7 +2,7 @@
 
 #include "EnemyController.h"
 #include "Classes/Kismet/GameplayStatics.h"
-#include "TileManager2.h"
+#include "TileManager.h"
 #include "CustomThirdPerson.h"
 #include "Tile.h"
 #include "AimingComponent.h"
@@ -32,8 +32,8 @@ void AEnemyController::BeginPlay()
 	PrimaryActorTick.bCanEverTick = false;
 
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager2::StaticClass(), FoundActors);
-	TileManager = Cast<ATileManager2>(FoundActors[0]);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager::StaticClass(), FoundActors);
+	TileManager = Cast<ATileManager>(FoundActors[0]);
 
 }
 
@@ -368,11 +368,21 @@ void AEnemyController::DebugAimingInfo(const FVector TileLocation, const int32 S
 
 void AEnemyController::StopBehaviorTree() 
 {
+	UE_LOG(LogTemp, Warning, L"½÷ֵי ~");
 	BehaviorTreeComp->StopTree();
 };
 
 void AEnemyController::StartBehaviorTree() 
 {
+	if (EnemyBehavior)
+	{
+		BehaviorTreeComp->StartTree(*EnemyBehavior);
+	}
+};
+
+void AEnemyController::StartBehaviorTreeFromDefault()
+{
+	
 	if (EnemyBehavior)
 	{
 		BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
