@@ -2,23 +2,49 @@
 
 #include "CoveringChecker.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Classes/Materials/MaterialInstanceDynamic.h"
+#include "Classes/Engine/StaticMesh.h"
+#include "DestructibleWall.h"
+
+//Instanced Mesh compompont는 내가 배웠던 게임프로그래밍 패턴에서 그 원리를 알 수 있다. 공통적인 데이터들을 가지고 참조하기때문에 필요한 데이터(Transform)만 입력해
+//인스턴스를 생성하는 그런 방식.. 그러므로 Material을 다 다르게 적용시키는것은 불가능.
+
 
 ACoveringChecker::ACoveringChecker()
 {
 	//PrimaryActorTick.bCanEverTick = true;
-	InstancedStaticMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("InstancedStaticMesh"));
-	InstancedStaticMesh->RegisterComponent();
-	InstancedStaticMesh->SetFlags(RF_Transactional);
-	this->AddInstanceComponent(InstancedStaticMesh);
+	FullCoverInstancedMeshComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("FullCoverInstancedMesh"));
+	FullCoverInstancedMeshComp->RegisterComponent();
+	FullCoverInstancedMeshComp->SetFlags(RF_Transactional);
+	this->AddInstanceComponent(FullCoverInstancedMeshComp);
+
+	HalfCoverInstancedMeshComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("HalfCoverInstancedMesh"));
+	HalfCoverInstancedMeshComp->RegisterComponent();
+	HalfCoverInstancedMeshComp->SetFlags(RF_Transactional);
+	this->AddInstanceComponent(HalfCoverInstancedMeshComp);
 
 }
 
 void ACoveringChecker::BeginPlay()
 {
 	Super::BeginPlay();
-	if (MeshToRegister) 
+	if (CoverMesh && FullCoverMaterial && HalfCoverMaterial)
 	{
-		InstancedStaticMesh->SetStaticMesh(MeshToRegister);
+		FullCoverMaterialDynamic = UMaterialInstanceDynamic::Create(FullCoverMaterial, this);
+		HalfCoverMaterialDynamic = UMaterialInstanceDynamic::Create(HalfCoverMaterial, this);
+
+		FullCoverInstancedMeshComp->SetStaticMesh(CoverMesh);
+		FullCoverInstancedMeshComp->SetMaterial(0, FullCoverMaterialDynamic);
+		FullCoverInstancedMeshComp->SetMaterial(1, FullCoverMaterialDynamic);
+
+		HalfCoverInstancedMeshComp->SetStaticMesh(CoverMesh);
+		HalfCoverInstancedMeshComp->SetMaterial(0, HalfCoverMaterialDynamic);
+		HalfCoverInstancedMeshComp->SetMaterial(1, HalfCoverMaterialDynamic);
+
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"메쉬 등록 필요")
 	}
 }
 
@@ -27,25 +53,23 @@ void ACoveringChecker::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) const
+void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) 
 {
+	if (!CoverMesh || !FullCoverMaterial || !HalfCoverMaterial) { return; }
+	TArray<FTransform> FullCoverNoticeTF;
+	TArray<FTransform> HalfCoverNoticeTF;
 
-	TArray<FTransform> CoverNoticeTF;
 	for (FVector TileLocation : TileLocationArray) 
 	{
-		TArray<FTransform> CoverNoticeSegment;
-		CoverNoticeSegment = RayCastToCardinalDirection(TileLocation, Spacing);
-		CoverNoticeTF.Append(CoverNoticeSegment);
+		RayCastToCardinalDirection(TileLocation, Spacing, HalfCoverNoticeTF, FullCoverNoticeTF);
 	}
-	UE_LOG(LogTemp, Warning, L"%d개 위치 생성", CoverNoticeTF.Num());
 
-
-	AddInstances(CoverNoticeTF);
+	AddFullCoverInstances(FullCoverNoticeTF);
+	AddHalfCoverInstances(HalfCoverNoticeTF);
 }
 
-TArray<FTransform> ACoveringChecker::RayCastToCardinalDirection(FVector OriginLocation, float Spacing) const 
+void ACoveringChecker::RayCastToCardinalDirection(FVector OriginLocation, float Spacing, OUT TArray<FTransform>& HalfCoverNoticeTF, OUT TArray<FTransform>& FullCoverNoticeTF)
 {
-	TArray<FTransform> ShieldTransformArray;
 	FVector CardinalLocation[4] = { 
 		OriginLocation + FVector(Spacing, 0, 0),
 		OriginLocation + FVector(-Spacing, 0, 0),
@@ -53,10 +77,7 @@ TArray<FTransform> ACoveringChecker::RayCastToCardinalDirection(FVector OriginLo
 		OriginLocation + FVector(0, -Spacing, 0)
 		};
 
-	const FName TraceTag("MyTraceTag");
-	GetWorld()->DebugDrawTraceTag = TraceTag;
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.TraceTag = TraceTag;
+	FCollisionQueryParams CollisionParams(FName(TEXT("FOW trace")), false);
 	CollisionParams.bFindInitialOverlaps = false;
 
 	for (int i = 0; i < 4; i++) 
@@ -73,30 +94,46 @@ TArray<FTransform> ACoveringChecker::RayCastToCardinalDirection(FVector OriginLo
 		if (HitResult.GetActor()) 
 		{
 			FTransform ShieldTransform;
-			ShieldTransform.SetLocation(HitResult.ImpactPoint);
+			FVector ShieldLocation = HitResult.ImpactPoint + ((HitResult.ImpactNormal) * 10) + FVector(0, 0, 50);
+			ShieldTransform.SetLocation(ShieldLocation);
 			ShieldTransform.SetRotation((-HitResult.ImpactNormal).ToOrientationQuat());
 			ShieldTransform.SetScale3D(FVector(1, 1, 1));
-			
-			UE_LOG(LogTemp, Warning, L"여기 충돌감지됬서요");
-			ShieldTransformArray.Add(ShieldTransform);
+
+			ADestructibleWall* DestructibleWall = Cast<ADestructibleWall>(HitResult.GetActor());
+			if (DestructibleWall) 
+			{
+				if (DestructibleWall->CoverInfo == ECoverInfo::FullCover) 
+				{
+					FullCoverNoticeTF.Add(ShieldTransform);
+				}
+				else 
+				{
+					HalfCoverNoticeTF.Add(ShieldTransform);
+				}
+			}
 		}
-
 	}
-
-	return ShieldTransformArray;
 }
 
 
-void ACoveringChecker::AddInstances(TArray<FTransform>& TransformArrray) const 
+void ACoveringChecker::AddFullCoverInstances(TArray<FTransform>& TransformArray) const
 {
-	for (FTransform SingleTransform : TransformArrray) 
+	for (FTransform SingleTransform : TransformArray)
 	{
-		InstancedStaticMesh->AddInstanceWorldSpace(SingleTransform);
-		UE_LOG(LogTemp, Warning, L"임시 : Instance 생성 디버깅 로그");
+		FullCoverInstancedMeshComp->AddInstanceWorldSpace(SingleTransform);
+	}
+}
+
+void ACoveringChecker::AddHalfCoverInstances(TArray<FTransform>& TransformArray) const
+{
+	for (FTransform SingleTransform : TransformArray)
+	{
+		HalfCoverInstancedMeshComp->AddInstanceWorldSpace(SingleTransform);
 	}
 }
 
 void ACoveringChecker::ClearAllCoverNotice()
 {
-	InstancedStaticMesh->ClearInstances();
+	HalfCoverInstancedMeshComp->ClearInstances();
+	FullCoverInstancedMeshComp->ClearInstances();
 }

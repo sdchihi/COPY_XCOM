@@ -23,23 +23,36 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditDefaultsOnly)
-	class UStaticMesh* MeshToRegister = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "Instance Mesh")
+	class UStaticMesh* CoverMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Instance Mesh")
+	class UMaterial* FullCoverMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Instance Mesh")
+	class UMaterial* HalfCoverMaterial = nullptr;
 
 
-	void MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) const;
+	void MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing);
 
 	void ClearAllCoverNotice();
 
 
 
 private:
-	class UInstancedStaticMeshComponent* InstancedStaticMesh = nullptr;
+	class UInstancedStaticMeshComponent* FullCoverInstancedMeshComp = nullptr;
 
-	TArray<FTransform> RayCastToCardinalDirection(FVector OriginLocation, float Spacing) const;
+	UInstancedStaticMeshComponent* HalfCoverInstancedMeshComp = nullptr;
 
-	TArray<FTransform> RayCastToCardinalDirection(FVector OriginLocation) const;
+	UMaterialInstanceDynamic* FullCoverMaterialDynamic;
 
-	void AddInstances(TArray<FTransform>& TransformArrray) const;
+	UMaterialInstanceDynamic* HalfCoverMaterialDynamic;
+
+	void RayCastToCardinalDirection(FVector OriginLocation, float Spacing, OUT TArray<FTransform>& HalfCoverNoticeTF, OUT TArray<FTransform>& FullCoverNoticeTF);
+
+	void AddFullCoverInstances(TArray<FTransform>& TransformArray) const;
+
+	void AddHalfCoverInstances(TArray<FTransform>& TransformArray) const;
+
 
 };

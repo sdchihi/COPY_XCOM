@@ -698,7 +698,7 @@ void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
 			int32 TargetTileIndex = OriginTileIndex + column + row*x;
 			if (CheckAvailability(TargetTileIndex))
 			{
-				FVector TargetTileLocation = ConvertIndexToVector(TargetTileIndex) + FVector(0,0,50);
+				FVector TargetTileLocation = ConvertIndexToVector(TargetTileIndex) + FVector(-50,-50,50);
 				AvailableTilesLocation.Add(TargetTileLocation);
 			}
 		}
