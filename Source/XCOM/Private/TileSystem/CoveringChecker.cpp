@@ -3,19 +3,16 @@
 #include "CoveringChecker.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
-// Sets default values
 ACoveringChecker::ACoveringChecker()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
-	//InstancedStaticMesh = NewObject<UInstancedStaticMeshComponent>(this);
-	//InstancedStaticMesh->RegisterComponent();
-	//InstancedStaticMesh->SetFlags(RF_Transactional);
-	//this->AddInstanceComponent(InstancedStaticMesh);
+	InstancedStaticMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("InstancedStaticMesh"));
+	InstancedStaticMesh->RegisterComponent();
+	InstancedStaticMesh->SetFlags(RF_Transactional);
+	this->AddInstanceComponent(InstancedStaticMesh);
 
 }
 
-// Called when the game starts or when spawned
 void ACoveringChecker::BeginPlay()
 {
 	Super::BeginPlay();
@@ -25,10 +22,68 @@ void ACoveringChecker::BeginPlay()
 	}
 }
 
-// Called every frame
 void ACoveringChecker::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) const
+{
+
+	TArray<FTransform> CoverNoticeTF;
+	for (FVector TileLocation : TileLocationArray) 
+	{
+		TArray<FTransform> CoverNoticeSegment;
+		CoverNoticeSegment = RayCastToCardinalDirection(TileLocation, Spacing);
+		CoverNoticeTF.Append(CoverNoticeSegment);
+	}
+	UE_LOG(LogTemp, Warning, L"%d개 위치 생성", CoverNoticeTF.Num());
+
+
+	AddInstances(CoverNoticeTF);
+}
+
+TArray<FTransform> ACoveringChecker::RayCastToCardinalDirection(FVector OriginLocation, float Spacing) const 
+{
+	TArray<FTransform> ShieldTransformArray;
+	FVector CardinalLocation[4] = { 
+		OriginLocation + FVector(Spacing, 0, 0),
+		OriginLocation + FVector(-Spacing, 0, 0),
+		OriginLocation + FVector(0, Spacing, 0),
+		OriginLocation + FVector(0, -Spacing, 0)
+		};
+
+	const FName TraceTag("MyTraceTag");
+	GetWorld()->DebugDrawTraceTag = TraceTag;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.TraceTag = TraceTag;
+	CollisionParams.bFindInitialOverlaps = false;
+
+	for (int i = 0; i < 4; i++) 
+	{
+		FHitResult HitResult;
+		GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			OriginLocation,
+			CardinalLocation[i],
+			ECC_GameTraceChannel12,
+			CollisionParams
+		);
+
+		if (HitResult.GetActor()) 
+		{
+			FTransform ShieldTransform;
+			ShieldTransform.SetLocation(HitResult.ImpactPoint);
+			ShieldTransform.SetRotation((-HitResult.ImpactNormal).ToOrientationQuat());
+			ShieldTransform.SetScale3D(FVector(1, 1, 1));
+			
+			UE_LOG(LogTemp, Warning, L"여기 충돌감지됬서요");
+			ShieldTransformArray.Add(ShieldTransform);
+		}
+
+	}
+
+	return ShieldTransformArray;
 }
 
 
@@ -36,7 +91,12 @@ void ACoveringChecker::AddInstances(TArray<FTransform>& TransformArrray) const
 {
 	for (FTransform SingleTransform : TransformArrray) 
 	{
-		InstancedStaticMesh->AddInstance(SingleTransform);
+		InstancedStaticMesh->AddInstanceWorldSpace(SingleTransform);
 		UE_LOG(LogTemp, Warning, L"임시 : Instance 생성 디버깅 로그");
 	}
+}
+
+void ACoveringChecker::ClearAllCoverNotice()
+{
+	InstancedStaticMesh->ClearInstances();
 }

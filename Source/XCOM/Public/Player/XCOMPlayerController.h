@@ -54,6 +54,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UCombatWidget> CombatWidgetBlueprint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class ACoveringChecker> CoveringCheckerBlueprint;
+
 	// Variable to hold the widget After Creating it.
 	UCombatWidget* CombatWidget;
 
@@ -73,6 +76,8 @@ private:
 	TArray<ACustomThirdPerson*> PlayerCharacters;
 
 	ACustomThirdPerson* SelectedCharacter= nullptr;
+
+	ACoveringChecker* CoveringChecker = nullptr;
 
 	APlayerPawnInAiming* PawnInAimingSituation[2];
 

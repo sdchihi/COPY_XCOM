@@ -25,6 +25,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class ACoveringChecker> CoveringCheckerBlueprint;
+
 	virtual void Tick(float DeltaTime) override;
 
 	void GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility,int32 MovableStepsPerAct, TArray<ATile*>& AvailableTiles);
@@ -58,6 +61,7 @@ public:
 
 private:
 	// º¯¼ö
+	ACoveringChecker* CoveringChecker = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 TileSize = 100;
@@ -115,5 +119,7 @@ private:
 
 	void CheckWallAroundOneDirection(const int32 TileIndex, const int CardinalIndex, TArray<FVector>& CoverDirectionArr);
 
-	
+	bool CheckAvailability(int32 TileIndex);
+
+	void MakingCoverNotice(int32 OriginTileIndex);
 };

@@ -26,10 +26,20 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMesh* MeshToRegister = nullptr;
 
-	void AddInstances(TArray<FTransform>& TransformArrray) const;
+
+	void MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) const;
+
+	void ClearAllCoverNotice();
+
 
 
 private:
 	class UInstancedStaticMeshComponent* InstancedStaticMesh = nullptr;
-	
+
+	TArray<FTransform> RayCastToCardinalDirection(FVector OriginLocation, float Spacing) const;
+
+	TArray<FTransform> RayCastToCardinalDirection(FVector OriginLocation) const;
+
+	void AddInstances(TArray<FTransform>& TransformArrray) const;
+
 };

@@ -63,16 +63,16 @@ void AXCOMPlayerController::Initialize() {
 
 	FoundActors.Empty();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
-	for (auto ThirdPersonAsActor : FoundActors) 
+	for (auto ThirdPersonAsActor : FoundActors)
 	{
 		ACustomThirdPerson* SingleThirdPerson = Cast<ACustomThirdPerson>(ThirdPersonAsActor);
 		SingleThirdPerson->ChangePlayerPawnDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
 		SingleThirdPerson->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCharacter);
-		SingleThirdPerson->DeadCamDelegate.BindDynamic(this , &AXCOMPlayerController::ChangeToDeathCam);
+		SingleThirdPerson->DeadCamDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDeathCam);
 		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
 		SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
-		if (SingleThirdPerson->GetTeamFlag()) 
+		if (SingleThirdPerson->GetTeamFlag())
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
 			PlayerCharacters.Add(SingleThirdPerson);
@@ -84,7 +84,7 @@ void AXCOMPlayerController::Initialize() {
 		CombatWidget = CreateWidget<UCombatWidget>(this, CombatWidgetBlueprint);
 		if (CombatWidget)
 		{
-			CombatWidget->AddToViewport();	
+			CombatWidget->AddToViewport();
 			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget);
 			CombatWidget->StartAttackDelegate.BindDynamic(this, &AXCOMPlayerController::OrderAttack);
 			CombatWidget->StartTrajectoryDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartTrajectory);

@@ -8,6 +8,7 @@
 #include "Path.h"
 #include "Tile.h"
 #include "DestructibleWall.h"
+#include "CoveringChecker.h"
 
 ATileManager::ATileManager()
 {
@@ -23,6 +24,16 @@ void ATileManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
+	if (CoveringCheckerBlueprint)
+	{
+		CoveringChecker = GetWorld()->SpawnActor<ACoveringChecker>(
+			CoveringCheckerBlueprint,
+			FVector(0, 0, 0),
+			FRotator(0, 0, 0)
+			);
+	}
+
 	for (int i = 0; i < (x*y); i++) 
 	{
 		int collum = i % x;
@@ -44,15 +55,13 @@ void ATileManager::BeginPlay()
 		}
 		TileActor->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
 		UStaticMeshComponent* ActorMeshComponent = TileActor->FindComponentByClass<UStaticMeshComponent>();
-
+		
 		// Delegate 지정
 		ActorMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ATileManager::OnOverlapBegin);
 		ActorMeshComponent->OnComponentEndOverlap.AddDynamic(this, &ATileManager::EndTileOverlap);
 		ActorMeshComponent->OnBeginCursorOver.AddDynamic(this, &ATileManager::MouseOnTile);
 		ActorMeshComponent->OnEndCursorOver.AddDynamic(this,& ATileManager::EndMouseOnTile);
-
 		//Path 정보를 담는 Array 초기화
-		
 		PathArr.Add(Path());
 
 		//Path 갱신
@@ -602,12 +611,15 @@ void ATileManager::MouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
 	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), true);
+	MakingCoverNotice(TileIndex);
+
 };
 
 void ATileManager::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
+	CoveringChecker->ClearAllCoverNotice();
 	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), false);
 };
 
@@ -641,8 +653,6 @@ bool ATileManager::CheckWallAround(const FVector TileLocation, TArray<FVector>& 
 	CheckWallAroundOneDirection(TileIndex, WestIndex, CoverDirectionArr);
 	if (CoverDirectionArr.Num() != 0 ) 
 	{
-		
-
 		bWallAround = true;
 	}
 
@@ -675,4 +685,41 @@ void ATileManager::CheckWallAroundOneDirection(const int32 TileIndex, const int 
 
 		CoverDirectionArr.Add(DirectionToTarget);
 	}
+}
+
+void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
+{
+	TArray<FVector> AvailableTilesLocation;
+
+	for (int row = 1; row >= -1; row--) 
+	{
+		for (int column = 1; column >= -1; column--) 
+		{
+			int32 TargetTileIndex = OriginTileIndex + column + row*x;
+			if (CheckAvailability(TargetTileIndex))
+			{
+				FVector TargetTileLocation = ConvertIndexToVector(TargetTileIndex) + FVector(0,0,50);
+				AvailableTilesLocation.Add(TargetTileLocation);
+			}
+		}
+	}
+	CoveringChecker->MakingCoverNotice(AvailableTilesLocation, TileSize);
+
+}
+
+
+bool ATileManager::CheckAvailability(int32 TileIndex)  
+{
+	bool bAvailability;
+	TArray<AActor*> ChildActors;
+	GetAttachedActors(ChildActors);
+
+	if (!CheckWithinBounds(TileIndex)) 
+	{
+		return false;
+	}
+	ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TileIndex - 1]);
+	bAvailability = TargetTile->GetTileVisibility();
+
+	return bAvailability;
 }
