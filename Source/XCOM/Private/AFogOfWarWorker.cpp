@@ -105,18 +105,22 @@ void AFogOfWarWorker::UpdateFowTexture() {
 						//for every ray we would unveil all the points between the collision and origo using Bresenham's Line-drawing algorithm.
 						//However, the tracing doesn't seem like it takes much time at all (~0.02ms with four actors tracing circles of 18 texels each),
 						//it's the blurring that chews CPU..
-						if (!Manager->GetWorld()->LineTraceTestByChannel(position, currentWorldSpacePos, ECC_WorldStatic, queryParams)) {
-							//Unveil the positions we are currently seeing
-							Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
-							//Store the positions we are currently seeing.
-							currentlyInSight.Add(FVector2D(x, y));
-						}
+						Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
+						//Store the positions we are currently seeing.
+						currentlyInSight.Add(FVector2D(x, y));
+						//if (!Manager->GetWorld()->LineTraceTestByChannel(position, currentWorldSpacePos, ECC_WorldStatic, queryParams)) {
+						//	//Unveil the positions we are currently seeing
+						//	Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
+						//	//Store the positions we are currently seeing.
+						//	currentlyInSight.Add(FVector2D(x, y));
+						//}
 					}
 				}
 			}
 		}
 	}
 
+	//  ÀÌ ¹ØÀ¸·Î´Â Blur
 	if (Manager->GetIsBlurEnabled()) {
 		//Horizontal blur pass
 		int offset = floorf(Manager->blurKernelSize / 2.0f);
@@ -163,10 +167,10 @@ void AFogOfWarWorker::UpdateFowTexture() {
 
 				if (Manager->UnfoggedData[x + (y * signedSize)]) {
 					if (currentlyInSight.Contains(FVector2D(x, y))) {
-						Manager->TextureData[x + y * signedSize] = FColor((uint8)255, (uint8)255, (uint8)255, 255);
+						Manager->TextureData[x + y * signedSize] = FColor((uint8)255, (uint8)1, (uint8)1, 255);
 					}
 					else {
-						Manager->TextureData[x + y * signedSize] = FColor((uint8)100, (uint8)100, (uint8)100, 255);
+						Manager->TextureData[x + y * signedSize] = FColor((uint8)1, (uint8)255, (uint8)1, 255);
 					}
 				}
 			}

@@ -62,10 +62,10 @@ void AFogOfWarManager::StartFOWTextureUpdate()
 		FOWTexture = UTexture2D::CreateTransient(TextureSize, TextureSize);
 		LastFOWTexture = UTexture2D::CreateTransient(TextureSize, TextureSize);
 		int arraySize = TextureSize * TextureSize;
-		TextureData.Init(FColor(0, 0, 0, 255), arraySize);
-		LastFrameTextureData.Init(FColor(0, 0, 0, 255), arraySize);
+		TextureData.Init(FColor(0, 0, 0, 10), arraySize);
+		LastFrameTextureData.Init(FColor(0, 0, 0, 10), arraySize);
 		HorizontalBlurData.Init(0, arraySize);
-		UnfoggedData.Init(false, arraySize);
+		UnfoggedData.Init(true , arraySize);
 		FowThread = new AFogOfWarWorker(this);
 	}
 }
@@ -110,7 +110,7 @@ void AFogOfWarManager::UpdateTextureRegions(UTexture2D* Texture, int32 MipIndex,
 		RegionData->SrcBpp = SrcBpp;
 		RegionData->SrcData = SrcData;
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(	//RederingThread 에 접근하여 명령을 내리는것으로 보임.
 			UpdateTextureRegionsData,
 			FUpdateTextureRegionsData*, RegionData, RegionData,
 			bool, bFreeData, bFreeData,
