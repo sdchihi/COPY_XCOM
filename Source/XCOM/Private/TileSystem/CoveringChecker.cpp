@@ -33,9 +33,13 @@ void ACoveringChecker::BeginPlay()
 		FullCoverMaterialDynamic = UMaterialInstanceDynamic::Create(FullCoverMaterial, this);
 		HalfCoverMaterialDynamic = UMaterialInstanceDynamic::Create(HalfCoverMaterial, this);
 
+		FString ImagePath = "/Game/Material/Shield_border_mat_2.Shield_border_mat_2";
+		UMaterial* BorderMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, *(ImagePath)));
+
+
 		FullCoverInstancedMeshComp->SetStaticMesh(CoverMesh);
 		FullCoverInstancedMeshComp->SetMaterial(0, FullCoverMaterialDynamic);
-		FullCoverInstancedMeshComp->SetMaterial(1, FullCoverMaterialDynamic);
+		FullCoverInstancedMeshComp->SetMaterial(1, BorderMaterial);
 
 		HalfCoverInstancedMeshComp->SetStaticMesh(CoverMesh);
 		HalfCoverInstancedMeshComp->SetMaterial(0, HalfCoverMaterialDynamic);

@@ -58,6 +58,11 @@ public:
 
 	void StartBehaviorTreeFromDefault();
 
+	//여기부터 정찰 이동 로직
+	void SetNextPatrolLocation();
+
+	void SetPatrolDirection(EDirection Direction) { PatrolDirection = Direction; };
+
 private:
 
 	UPROPERTY(transient)
@@ -100,4 +105,12 @@ private:
 
 	void DebugAimingInfo(const FVector TileLocation, const int32 Score);
 
+	//여기부터 정찰 이동 로직
+
+	//Mode부터 결정되는..?
+	EDirection PatrolDirection;
+
+	bool CheckHavingDirectionComponent(FVector VectorToCheck);
+
+	
 };

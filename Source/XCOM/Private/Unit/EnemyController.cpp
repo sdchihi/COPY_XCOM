@@ -390,3 +390,99 @@ void AEnemyController::StartBehaviorTreeFromDefault()
 		UE_LOG(LogTemp, Warning, L"시작! ");
 	}
 };
+
+
+
+void AEnemyController::SetNextPatrolLocation() 
+{
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
+	if (!ControlledPawn) { return; }
+	int32 MovableStep = ControlledPawn->GetMovableStepPerActionPoint();
+
+	ATile* OverllapedTile = TileManager->GetOverlappedTile(ControlledPawn);
+	if (!OverllapedTile) { return; }
+
+	TArray<ATile*> MovableTiles;
+	TileManager->GetAvailableTiles(OverllapedTile, MovableStep, MovableStep, MovableTiles);
+
+	FVector East = FVector(-1, 0, 0);
+	FVector West = FVector(1, 0, 0);
+	FVector North = FVector(0, 1, 0);
+	FVector South = FVector(0, -1, 0);
+
+	ATile* TargetTile;
+	float MaxDistance = 0;
+	for (ATile* SingleTile : MovableTiles)
+	{
+		FVector DirectionToTile = (SingleTile->GetActorLocation() - ControlledPawn->GetActorLocation());
+		if (CheckHavingDirectionComponent(DirectionToTile)) 
+		{
+			float Distance = FVector::Dist2D(SingleTile->GetActorLocation(), ControlledPawn->GetActorLocation());
+			if (MaxDistance < Distance) 
+			{
+				MaxDistance = Distance; 
+				TargetTile = SingleTile;
+			}
+		}
+	}
+
+	if (TargetTile == nullptr) 
+	{
+		UE_LOG(LogTemp, Warning, L"정찰 불가한 상태에 빠진 액터 발생! ");
+		return;
+	}
+
+	int32 TileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
+	TArray<FVector> Tempor;
+	for (int32 PathIndex : TileManager->GetPathToTile(TileIndex).OnTheWay)
+	{
+		FVector PathLocation = TileManager->ConvertIndexToVector(PathIndex);
+		PathLocation += FVector(-50, -50, 0);
+		Tempor.Add(PathLocation);
+	}
+	PathToTarget = Tempor;
+
+	/*
+	if (EnemyBehavior)
+	{
+		BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
+		BehaviorTreeComp->StartTree(*EnemyBehavior);
+		UE_LOG(LogTemp, Warning, L"시작! ");
+	}
+	*/
+};
+
+bool AEnemyController::CheckHavingDirectionComponent(FVector VectorToCheck) 
+{
+	switch (PatrolDirection) 
+	{
+	case EDirection::East:
+		if (FMath::IsNegativeFloat(VectorToCheck.X)) 
+		{
+			return true;
+		}
+		break;
+	case EDirection::West:
+		if (0 < VectorToCheck.X)
+		{
+			return true;
+		}
+		break;
+	case EDirection::North:
+		if (0 < VectorToCheck.Y)
+		{
+			return true;
+		}
+		break;
+	case EDirection::South:
+		if (FMath::IsNegativeFloat(VectorToCheck.Y))
+		{
+			return true;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return false;
+}

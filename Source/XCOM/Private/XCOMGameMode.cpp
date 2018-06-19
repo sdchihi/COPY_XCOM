@@ -2,10 +2,12 @@
 
 #include "XCOMGameMode.h"
 #include "Classes/Kismet/GameplayStatics.h"
+#include "EnemyUnit.h"
 #include "CustomThirdPerson.h"
 #include "XCOMPlayerController.h"
 #include "FogOfWarManager.h"
 #include "EnemyController.h"
+#include "PlayerDetector.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -31,9 +33,28 @@ void AXCOMGameMode::BeginPlay()
 		}
 		else 
 		{
+			AEnemyUnit* SingleEnemy = Cast<AEnemyUnit>(SingleCharacter);
+			
+			if (EnemyTeamMap.Contains(SingleEnemy->GetGroupNumber())) 
+			{
+				EnemyTeamMap[SingleEnemy->GetGroupNumber()].Add((SingleEnemy));
+			}
+			else 
+			{
+				TArray<AEnemyUnit*> EnemyUnitArray;
+				EnemyUnitArray.Add(SingleEnemy);
+				EnemyTeamMap.Add(SingleEnemy->GetGroupNumber(), EnemyUnitArray);
+			}
 			EnemyCharacters.Add(SingleCharacter);
 		}
 	}
+	FoundActors.Empty();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerDetector::StaticClass(), FoundActors);
+	for (auto SingleDetector : FoundActors)
+	{
+		PlayerDetectors.Add(Cast<APlayerDetector>(SingleDetector));
+	}
+
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
 
@@ -175,4 +196,69 @@ void AXCOMGameMode::StartBotActivity()
 		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;
 	}
+}
+
+void AXCOMGameMode::SetEnemysPatrolDirection()
+{
+	for (auto It = EnemyTeamMap.CreateConstIterator(); It; ++It)
+	{
+		float MinSumOfDistance = MAX_FLT;
+		FVector ValidDectectorLocation;
+		FVector MiddlePoint;
+		for (APlayerDetector* Detector : PlayerDetectors) 
+		{
+			float SumOfDistace = 0;
+			for (AEnemyUnit* SingleEnemyUnit : It.Value())
+			{
+				FVector EnemyLocation = SingleEnemyUnit->GetActorLocation();
+				FVector DetectorLocation = Detector->GetActorLocation();
+				float Distance = FVector::Dist2D(EnemyLocation, DetectorLocation);
+				MiddlePoint += EnemyLocation;
+				SumOfDistace += Distance;
+			}
+			if (SumOfDistace < MinSumOfDistance) 
+			{
+				MinSumOfDistance = SumOfDistace;
+				ValidDectectorLocation = Detector->GetActorLocation();
+			}
+		}
+
+		MiddlePoint = MiddlePoint / It.Value().Num();
+		EDirection DirectionToDetector = GetDirectionFromEnemyGroup(MiddlePoint, ValidDectectorLocation);
+		for (AEnemyUnit* SingleEnemyUnit : It.Value()) 
+		{
+			AEnemyController* EnemyUnitController = Cast<AEnemyController>(SingleEnemyUnit->GetController());
+			EnemyUnitController->SetPatrolDirection(DirectionToDetector);
+		}
+	}
+}
+
+EDirection AXCOMGameMode::GetDirectionFromEnemyGroup(FVector GroupMiddlePoint, FVector DetectorLocation) const 
+{
+	FVector DirectionToDetector  = DetectorLocation - GroupMiddlePoint;
+	float AbsoluteValueX = FMath::Abs(DirectionToDetector.X);
+	float AbsoluteValueY = FMath::Abs(DirectionToDetector.Y);
+	if (AbsoluteValueX < AbsoluteValueY) 
+	{
+		if (DirectionToDetector.Y < 0)	
+		{
+			return EDirection::South;
+		}
+		else  
+		{
+			return EDirection::North;
+		}
+	}
+	else
+	{
+		if (DirectionToDetector.X < 0)	
+		{
+			return EDirection::East;
+		}
+		else  
+		{
+			return EDirection::West;
+		}
+	}
+	return EDirection::None;
 }

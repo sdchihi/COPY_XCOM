@@ -30,7 +30,13 @@ public:
 	class UMaterial* FullCoverMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Instance Mesh")
-	class UMaterial* HalfCoverMaterial = nullptr;
+	UMaterial*  FullCoverBorderMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Instance Mesh")
+	UMaterial* HalfCoverMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Instance Mesh")
+	UMaterial* HalfCoverBorderMaterial = nullptr;
 
 
 	void MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing);

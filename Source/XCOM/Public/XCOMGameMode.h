@@ -6,6 +6,8 @@
 #include "GameFramework/GameMode.h"
 #include "XCOMGameMode.generated.h"
 
+enum class EDirection : uint8;
+
 class ACustomThirdPerson;
 class AFogOfWarManager;
 /**
@@ -29,6 +31,9 @@ public:
 
 	void CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Characters);
 
+	UPROPERTY(EditInstanceOnly)
+	TArray<AActor*> PlayerUnitDetectorArray;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFogOfWarManager> FogOfWarBP;
 
@@ -38,8 +43,12 @@ private:
 	TArray<ACustomThirdPerson*> PlayerCharacters;
 
 	TArray<ACustomThirdPerson*> EnemyCharacters;
+
+	TMap<int8, TArray<class AEnemyUnit*>> EnemyTeamMap;
 	
 	void RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characters);
+
+	TArray<class APlayerDetector*> PlayerDetectors;
 
 	UFUNCTION()
 	void SetVisibleAllHealthBar(const bool bVisible);
@@ -48,6 +57,9 @@ private:
 
 	void StartBotActivity();
 
+	void SetEnemysPatrolDirection();
+
+	EDirection GetDirectionFromEnemyGroup(FVector GroupMiddlePoint, FVector DetectorLocation) const;
 
 	int32 EnemyTurnOrder = 0;
 };
