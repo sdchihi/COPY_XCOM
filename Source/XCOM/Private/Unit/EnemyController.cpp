@@ -368,7 +368,6 @@ void AEnemyController::DebugAimingInfo(const FVector TileLocation, const int32 S
 
 void AEnemyController::StopBehaviorTree() 
 {
-	UE_LOG(LogTemp, Warning, L"Ω∫≈È ~");
 	BehaviorTreeComp->StopTree();
 };
 
@@ -382,12 +381,10 @@ void AEnemyController::StartBehaviorTree()
 
 void AEnemyController::StartBehaviorTreeFromDefault()
 {
-	
 	if (EnemyBehavior)
 	{
 		BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
 		BehaviorTreeComp->StartTree(*EnemyBehavior);
-		UE_LOG(LogTemp, Warning, L"Ω√¿€! ");
 	}
 };
 
@@ -457,7 +454,6 @@ void AEnemyController::SetNextPatrolLocation()
 
 bool AEnemyController::CheckHavingDirectionComponent(FVector VectorToCheck) 
 {
-	
 	switch (PatrolDirection) 
 	{
 	case EDirection::East:
