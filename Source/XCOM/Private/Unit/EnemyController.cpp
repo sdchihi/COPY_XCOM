@@ -410,7 +410,7 @@ void AEnemyController::SetNextPatrolLocation()
 	FVector North = FVector(0, 1, 0);
 	FVector South = FVector(0, -1, 0);
 
-	ATile* TargetTile;
+	ATile* TargetTile = nullptr;
 	float MaxDistance = 0;
 	for (ATile* SingleTile : MovableTiles)
 	{
@@ -431,8 +431,9 @@ void AEnemyController::SetNextPatrolLocation()
 		UE_LOG(LogTemp, Warning, L"정찰 불가한 상태에 빠진 액터 발생! ");
 		return;
 	}
+	FVector TileLocation = TargetTile->GetActorLocation();
+	int32 TileIndex = TileManager->ConvertVectorToIndex(TileLocation);
 
-	int32 TileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
 	TArray<FVector> Tempor;
 	for (int32 PathIndex : TileManager->GetPathToTile(TileIndex).OnTheWay)
 	{
@@ -441,6 +442,8 @@ void AEnemyController::SetNextPatrolLocation()
 		Tempor.Add(PathLocation);
 	}
 	PathToTarget = Tempor;
+
+	UE_LOG(LogTemp, Warning, L"정찰 셋팅! ");
 
 	/*
 	if (EnemyBehavior)
@@ -454,6 +457,7 @@ void AEnemyController::SetNextPatrolLocation()
 
 bool AEnemyController::CheckHavingDirectionComponent(FVector VectorToCheck) 
 {
+	
 	switch (PatrolDirection) 
 	{
 	case EDirection::East:

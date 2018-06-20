@@ -34,8 +34,11 @@ public:
 	UPROPERTY(EditInstanceOnly)
 	TArray<AActor*> PlayerUnitDetectorArray;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Fog of war"))
 	TSubclassOf<AFogOfWarManager> FogOfWarBP;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Fog of war"))
+	bool bGenerateFogOfWar = true;
 
 	TArray<ACustomThirdPerson*> GetTeamMemeber(const bool bTeam);
 

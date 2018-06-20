@@ -57,8 +57,10 @@ void AXCOMGameMode::BeginPlay()
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
-
-	SpawnFogOfWar();
+	if (bGenerateFogOfWar) 
+	{
+		SpawnFogOfWar();
+	}
 }
 
 /**
@@ -103,6 +105,7 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			DisableInput(PlayerController);
 			UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버");
 			RestoreTeamActionPoint(EnemyCharacters);
+			SetEnemysPatrolDirection();
 			StartBotActivity();
 		}
 		else 
@@ -179,7 +182,7 @@ TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 	{
 		return EnemyCharacters;
 	}
-};
+}; 
 
 
 void AXCOMGameMode::StartBotActivity() 
@@ -200,31 +203,32 @@ void AXCOMGameMode::StartBotActivity()
 
 void AXCOMGameMode::SetEnemysPatrolDirection()
 {
+	FVector PlayerUnitsMiddlePoint;
+	for (ACustomThirdPerson* SinglePlayerUnit : PlayerCharacters)
+	{
+		PlayerUnitsMiddlePoint += SinglePlayerUnit->GetActorLocation();
+	}
+	PlayerUnitsMiddlePoint = PlayerUnitsMiddlePoint / PlayerCharacters.Num();
+
 	for (auto It = EnemyTeamMap.CreateConstIterator(); It; ++It)
 	{
-		float MinSumOfDistance = MAX_FLT;
-		FVector ValidDectectorLocation;
-		FVector MiddlePoint;
-		for (APlayerDetector* Detector : PlayerDetectors) 
+		FVector EnemyUnitsMiddlePoint;
+		bool bSkipLoop = false;
+		
+		for (AEnemyUnit* SingleEnemyUnit : It.Value())
 		{
-			float SumOfDistace = 0;
-			for (AEnemyUnit* SingleEnemyUnit : It.Value())
+			if (SingleEnemyUnit->IsAggro()) 
 			{
-				FVector EnemyLocation = SingleEnemyUnit->GetActorLocation();
-				FVector DetectorLocation = Detector->GetActorLocation();
-				float Distance = FVector::Dist2D(EnemyLocation, DetectorLocation);
-				MiddlePoint += EnemyLocation;
-				SumOfDistace += Distance;
+				bSkipLoop = true;
+				break;
 			}
-			if (SumOfDistace < MinSumOfDistance) 
-			{
-				MinSumOfDistance = SumOfDistace;
-				ValidDectectorLocation = Detector->GetActorLocation();
-			}
+			FVector EnemyLocation = SingleEnemyUnit->GetActorLocation();
+			EnemyUnitsMiddlePoint += EnemyLocation;
 		}
+		if (bSkipLoop) { continue; }		// 어그로 상태일땐 Direction Setting 할 필요 없음.
 
-		MiddlePoint = MiddlePoint / It.Value().Num();
-		EDirection DirectionToDetector = GetDirectionFromEnemyGroup(MiddlePoint, ValidDectectorLocation);
+		EnemyUnitsMiddlePoint = EnemyUnitsMiddlePoint / It.Value().Num();
+		EDirection DirectionToDetector = GetDirectionFromEnemyGroup(EnemyUnitsMiddlePoint, PlayerUnitsMiddlePoint);
 		for (AEnemyUnit* SingleEnemyUnit : It.Value()) 
 		{
 			AEnemyController* EnemyUnitController = Cast<AEnemyController>(SingleEnemyUnit->GetController());

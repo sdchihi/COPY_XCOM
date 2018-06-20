@@ -18,7 +18,10 @@ EBTNodeResult::Type UBTTask_FinishTurn::ExecuteTask(UBehaviorTreeComponent& Owne
 		return EBTNodeResult::Failed;
 	}
 	BotController->StopBehaviorTree();
+	if (ControlledUnit->bCanAction) 
+	{
+		ControlledUnit->UseActionPoint(3);
+	}
 
 	return EBTNodeResult::Succeeded;
-	
 };
