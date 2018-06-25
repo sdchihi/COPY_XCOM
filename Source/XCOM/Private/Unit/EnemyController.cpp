@@ -434,3 +434,13 @@ void AEnemyController::SetNextPatrolLocation()
 	}
 	PathToTarget = Tempor;
 };
+
+void AEnemyController::ChangeBehavior() 
+{
+	if (CombatBehavior) 
+	{
+		StopBehaviorTree();
+		SelectedBehavior = CombatBehavior;
+	}
+	//로드 Object를 할지 아니면 BP에서 가져오는걸로 결정
+}

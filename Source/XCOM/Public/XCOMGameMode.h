@@ -42,6 +42,8 @@ public:
 
 	TArray<ACustomThirdPerson*> GetTeamMemeber(const bool bTeam);
 
+	void ChangeEnemyAggro(int8 EnemyGroupNumber);
+
 private:
 	int32 EnemyTurnOrder = 0;
 
@@ -72,6 +74,5 @@ private:
 	void InitializeWaypointMap();
 
 	void RenewWaypoint(int8 EnemyGroupNumber);
-
 
 };

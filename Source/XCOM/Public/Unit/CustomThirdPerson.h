@@ -237,6 +237,8 @@ protected:
 
 	EWalkingState WalkingState = EWalkingState::Running;
 
+	virtual void FinishMoving();
+
 
 private:
 	UPROPERTY()
@@ -266,7 +268,6 @@ private:
 	UPROPERTY()
 	UCurveFloat* FloatCurve;
 
-	void FinishMoving();
 
 	FVector RelativeCoverLoc = FVector(0,0,0);
 

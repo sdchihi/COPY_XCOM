@@ -314,18 +314,28 @@ void AXCOMGameMode::RenewWaypoint(int8 EnemyGroupNumber)
 		CurrentWaypoint->TurnDirection();
 		WaypointMap.Add(EnemyGroupNumber, PrevWaypoint);
 		UE_LOG(LogTemp, Warning, L"뒤방향으로 진행")
-
 	}
 	else if( !IsValid(NextWaypoint))
 	{
 		WaypointMap.Add(EnemyGroupNumber, PrevWaypoint);
 		UE_LOG(LogTemp, Warning, L"뒤방향으로 진행")
-
 	}
 	else 
 	{
 		WaypointMap.Add(EnemyGroupNumber, NextWaypoint);
 		UE_LOG(LogTemp, Warning, L"앞방향으로 진행")
+	}
+}
+
+
+void AXCOMGameMode::ChangeEnemyAggro(int8 EnemyGroupNumber) 
+{
+	TArray<AEnemyUnit*> EnemyGroup = EnemyTeamMap[EnemyGroupNumber];
+
+	for (AEnemyUnit* SingleEnemy : EnemyGroup) 
+	{
+		AEnemyController* EnemyController = Cast<AEnemyController>(SingleEnemy->GetController());
+		SingleEnemy->OnAggo();
 
 	}
 }

@@ -20,6 +20,12 @@ public:
 
 	bool IsAggro() { return bAggro; };
 
+	bool OnAggo() { bAggro = true; };
+
+protected:
+	virtual void FinishMoving() override;
+
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	int8 Group;

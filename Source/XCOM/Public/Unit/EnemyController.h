@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Behavior)
 	class UBehaviorTree* EnemyBehavior;
 
+	UPROPERTY(EditAnywhere, Category = Behavior)
+	UBehaviorTree* CombatBehavior;
+
 	void FollowThePath();
 
 	void ShootToPlayerUnit();
@@ -75,13 +78,19 @@ public:
 		PatrolTargetLocation = TargetLocation; 
 	};
 
+	void ChangeBehavior();
+
 private:
+	UBehaviorTree* SelectedBehavior = nullptr;
+
 
 	UPROPERTY(transient)
 	class UBlackboardComponent* BlackboardComp;
 
 	UPROPERTY(transient)
 	class UBehaviorTreeComponent* BehaviorTreeComp;
+
+
 
 	int32 NextLocationKeyID;
 
