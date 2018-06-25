@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "EnemyController.generated.h"
 
 class ATile;
@@ -61,7 +62,18 @@ public:
 	//여기부터 정찰 이동 로직
 	void SetNextPatrolLocation();
 
-	void SetPatrolDirection(EDirection Direction) { PatrolDirection = Direction; };
+	void SetPatrolTargetLocation(FVector TargetLocation) 
+	{
+		UKismetSystemLibrary::DrawDebugPoint(
+			GetWorld(),
+			TargetLocation,
+			20,
+			FColor::Green,
+			5
+		);
+
+		PatrolTargetLocation = TargetLocation; 
+	};
 
 private:
 
@@ -108,9 +120,8 @@ private:
 	//여기부터 정찰 이동 로직
 
 	//Mode부터 결정되는..?
-	EDirection PatrolDirection;
+	FVector PatrolTargetLocation;
 
-	bool CheckHavingDirectionComponent(FVector VectorToCheck);
 
 	
 };

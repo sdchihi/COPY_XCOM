@@ -5,3 +5,7 @@
 
 
 
+AEnemyUnit::AEnemyUnit() 
+{
+	WalkingState = EWalkingState::Walk;
+}

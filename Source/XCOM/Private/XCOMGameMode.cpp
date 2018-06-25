@@ -8,6 +8,7 @@
 #include "FogOfWarManager.h"
 #include "EnemyController.h"
 #include "PlayerDetector.h"
+#include "Waypoint.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -48,12 +49,7 @@ void AXCOMGameMode::BeginPlay()
 			EnemyCharacters.Add(SingleCharacter);
 		}
 	}
-	FoundActors.Empty();
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerDetector::StaticClass(), FoundActors);
-	for (auto SingleDetector : FoundActors)
-	{
-		PlayerDetectors.Add(Cast<APlayerDetector>(SingleDetector));
-	}
+	InitializeWaypointMap();
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
@@ -85,7 +81,7 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 	else 
 	{
 		for (auto SingleEnemyCharacter : EnemyCharacters)
-		{
+	{
 			if (SingleEnemyCharacter->bCanAction)
 			{
 				bIsEnd = false;
@@ -103,9 +99,9 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 		if (bIsPlayerTeam) 
 		{
 			DisableInput(PlayerController);
-			UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버");
+			UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버 - > AI측 턴 시작");
 			RestoreTeamActionPoint(EnemyCharacters);
-			SetEnemysPatrolDirection();
+			SetEnemysPatrolLocation();
 			StartBotActivity();
 		}
 		else 
@@ -182,7 +178,7 @@ TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 	{
 		return EnemyCharacters;
 	}
-}; 
+};
 
 
 void AXCOMGameMode::StartBotActivity() 
@@ -201,7 +197,7 @@ void AXCOMGameMode::StartBotActivity()
 	}
 }
 
-void AXCOMGameMode::SetEnemysPatrolDirection()
+void AXCOMGameMode::SetEnemysPatrolLocation()
 {
 	FVector PlayerUnitsMiddlePoint;
 	for (ACustomThirdPerson* SinglePlayerUnit : PlayerCharacters)
@@ -212,57 +208,124 @@ void AXCOMGameMode::SetEnemysPatrolDirection()
 
 	for (auto It = EnemyTeamMap.CreateConstIterator(); It; ++It)
 	{
-		FVector EnemyUnitsMiddlePoint;
 		bool bSkipLoop = false;
 		
 		for (AEnemyUnit* SingleEnemyUnit : It.Value())
 		{
-			if (SingleEnemyUnit->IsAggro()) 
+			if (IsValid(SingleEnemyUnit)) 
 			{
-				bSkipLoop = true;
-				break;
+				if (SingleEnemyUnit->IsAggro()) 
+				{
+					bSkipLoop = true;
+					break;
+				}
+				else { break; }
 			}
-			FVector EnemyLocation = SingleEnemyUnit->GetActorLocation();
-			EnemyUnitsMiddlePoint += EnemyLocation;
 		}
 		if (bSkipLoop) { continue; }		// 어그로 상태일땐 Direction Setting 할 필요 없음.
 
-		EnemyUnitsMiddlePoint = EnemyUnitsMiddlePoint / It.Value().Num();
-		EDirection DirectionToDetector = GetDirectionFromEnemyGroup(EnemyUnitsMiddlePoint, PlayerUnitsMiddlePoint);
+		FVector TargetLocation;
+		bool bRenewAfterUsingWaypoint = false;
+		if (bEnemyNoticeBattle) 
+		{
+			TargetLocation = PlayerUnitsMiddlePoint;
+		}
+		else 
+		{
+			TargetLocation = WaypointMap[It.Key()]->GetActorLocation();
+			bRenewAfterUsingWaypoint = true;
+		}
+
+		if (bRenewAfterUsingWaypoint) 
+		{
+			RenewWaypoint(It.Key());
+		}
+
 		for (AEnemyUnit* SingleEnemyUnit : It.Value()) 
 		{
 			AEnemyController* EnemyUnitController = Cast<AEnemyController>(SingleEnemyUnit->GetController());
-			EnemyUnitController->SetPatrolDirection(DirectionToDetector);
+			EnemyUnitController->SetPatrolTargetLocation(TargetLocation);
 		}
 	}
 }
 
-EDirection AXCOMGameMode::GetDirectionFromEnemyGroup(FVector GroupMiddlePoint, FVector DetectorLocation) const 
+
+/*
+* Enemy Group 별로 정찰을 하게될 Waypoint를 Map으로 구성합니다
+*/
+void AXCOMGameMode::InitializeWaypointMap()
 {
-	FVector DirectionToDetector  = DetectorLocation - GroupMiddlePoint;
-	float AbsoluteValueX = FMath::Abs(DirectionToDetector.X);
-	float AbsoluteValueY = FMath::Abs(DirectionToDetector.Y);
-	if (AbsoluteValueX < AbsoluteValueY) 
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWaypoint::StaticClass(), FoundActors);
+	for (AActor* SingleWaypoint : FoundActors) 
 	{
-		if (DirectionToDetector.Y < 0)	
-		{
-			return EDirection::South;
-		}
-		else  
-		{
-			return EDirection::North;
-		}
+		WaypointArray.Add(Cast<AWaypoint>(SingleWaypoint));
 	}
-	else
+
+	for (auto It = EnemyTeamMap.CreateConstIterator(); It; ++It) 
 	{
-		if (DirectionToDetector.X < 0)	
+		FVector GroupMiddlePoint;
+		for (AEnemyUnit* SingleEnemyUnit : It.Value())
 		{
-			return EDirection::East;
+			FVector EnemyLocation = SingleEnemyUnit->GetActorLocation();
+			GroupMiddlePoint += EnemyLocation;
 		}
-		else  
+		GroupMiddlePoint = GroupMiddlePoint / It.Value().Num();
+
+		float MinDistance = FLT_MAX;
+		AWaypoint* NearestWaypoint = nullptr;
+		for (AWaypoint* SingleWaypoint : WaypointArray) 
 		{
-			return EDirection::West;
+			float Distance = FVector::Dist2D(SingleWaypoint->GetActorLocation(), GroupMiddlePoint);
+			if (Distance < MinDistance) 
+			{
+				MinDistance = Distance;
+				NearestWaypoint = SingleWaypoint;
+			}
 		}
+		if (!NearestWaypoint) 
+		{
+			
+			return; 
+		}
+
+		WaypointMap.Add(It.Key(), NearestWaypoint);
 	}
-	return EDirection::None;
+}
+
+/**
+* Waypoint의 연결 상태에 따라 다음 진행 Waypoint로 맵을 갱신시킵니다.
+* @param EnemyGroupNumber
+*/
+void AXCOMGameMode::RenewWaypoint(int8 EnemyGroupNumber) 
+{
+	AWaypoint* CurrentWaypoint = WaypointMap[EnemyGroupNumber];
+	AWaypoint* NextWaypoint = WaypointMap[EnemyGroupNumber]->NextWaypoint;
+	AWaypoint* PrevWaypoint = WaypointMap[EnemyGroupNumber]->PrevWaypoint;
+
+	if (CurrentWaypoint->IsForward() && IsValid(NextWaypoint))
+	{
+		CurrentWaypoint->TurnDirection();
+		WaypointMap.Add(EnemyGroupNumber, NextWaypoint);
+		UE_LOG(LogTemp, Warning, L"앞방향으로 진행")
+	}
+	else if( !CurrentWaypoint->IsForward() && IsValid(PrevWaypoint))
+	{
+		CurrentWaypoint->TurnDirection();
+		WaypointMap.Add(EnemyGroupNumber, PrevWaypoint);
+		UE_LOG(LogTemp, Warning, L"뒤방향으로 진행")
+
+	}
+	else if( !IsValid(NextWaypoint))
+	{
+		WaypointMap.Add(EnemyGroupNumber, PrevWaypoint);
+		UE_LOG(LogTemp, Warning, L"뒤방향으로 진행")
+
+	}
+	else 
+	{
+		WaypointMap.Add(EnemyGroupNumber, NextWaypoint);
+		UE_LOG(LogTemp, Warning, L"앞방향으로 진행")
+
+	}
 }

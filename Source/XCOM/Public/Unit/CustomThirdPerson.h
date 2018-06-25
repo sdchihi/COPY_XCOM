@@ -45,6 +45,13 @@ enum class EAction : uint8
 	None
 };
 
+UENUM(BlueprintType)
+enum class EWalkingState : uint8
+{
+	Running,
+	Walk 
+};
+
 
 UCLASS()
 class XCOM_API ACustomThirdPerson : public ACharacter
@@ -222,9 +229,14 @@ public:
 
 	void ExecuteChangePawnDelegate();
 
+	void SetWalkingState(EWalkingState WalkingStateToSet) { WalkingState = WalkingStateToSet; };
 
 protected:
+	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
+
+	EWalkingState WalkingState = EWalkingState::Running;
+
 
 private:
 	UPROPERTY()
@@ -296,4 +308,7 @@ private:
 	int32 MovementIndex = 0;
 
 	float Speed = 0;
+
+	void ChangeTimelineFactor();
+
 };

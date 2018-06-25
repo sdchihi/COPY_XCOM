@@ -388,8 +388,6 @@ void AEnemyController::StartBehaviorTreeFromDefault()
 	}
 };
 
-
-
 void AEnemyController::SetNextPatrolLocation() 
 {
 	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
@@ -408,18 +406,14 @@ void AEnemyController::SetNextPatrolLocation()
 	FVector South = FVector(0, -1, 0);
 
 	ATile* TargetTile = nullptr;
-	float MaxDistance = 0;
+	float MinDistance = MAX_FLT;
 	for (ATile* SingleTile : MovableTiles)
 	{
-		FVector DirectionToTile = (SingleTile->GetActorLocation() - ControlledPawn->GetActorLocation());
-		if (CheckHavingDirectionComponent(DirectionToTile)) 
+		float Distance = FVector::Dist2D(SingleTile->GetActorLocation(), PatrolTargetLocation);
+		if (Distance < MinDistance)
 		{
-			float Distance = FVector::Dist2D(SingleTile->GetActorLocation(), ControlledPawn->GetActorLocation());
-			if (MaxDistance < Distance) 
-			{
-				MaxDistance = Distance; 
-				TargetTile = SingleTile;
-			}
+			MinDistance = Distance;
+			TargetTile = SingleTile;
 		}
 	}
 
@@ -439,50 +433,4 @@ void AEnemyController::SetNextPatrolLocation()
 		Tempor.Add(PathLocation);
 	}
 	PathToTarget = Tempor;
-
-	UE_LOG(LogTemp, Warning, L"정찰 셋팅! ");
-
-	/*
-	if (EnemyBehavior)
-	{
-		BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
-		BehaviorTreeComp->StartTree(*EnemyBehavior);
-		UE_LOG(LogTemp, Warning, L"시작! ");
-	}
-	*/
 };
-
-bool AEnemyController::CheckHavingDirectionComponent(FVector VectorToCheck) 
-{
-	switch (PatrolDirection) 
-	{
-	case EDirection::East:
-		if (FMath::IsNegativeFloat(VectorToCheck.X)) 
-		{
-			return true;
-		}
-		break;
-	case EDirection::West:
-		if (0 < VectorToCheck.X)
-		{
-			return true;
-		}
-		break;
-	case EDirection::North:
-		if (0 < VectorToCheck.Y)
-		{
-			return true;
-		}
-		break;
-	case EDirection::South:
-		if (FMath::IsNegativeFloat(VectorToCheck.Y))
-		{
-			return true;
-		}
-		break;
-	default:
-		break;
-	}
-
-	return false;
-}

@@ -14,6 +14,8 @@ class XCOM_API AEnemyUnit : public ACustomThirdPerson
 {
 	GENERATED_BODY()
 public:
+	AEnemyUnit();
+
 	int8 GetGroupNumber() { return Group; }
 
 	bool IsAggro() { return bAggro; };

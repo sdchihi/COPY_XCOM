@@ -482,12 +482,21 @@ void ACustomThirdPerson::StopVisilance()
 	}
 }
 
-void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32 ActionPointToUse) 
+void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32 ActionPointToUse)
 {
 	PathToTargetTile = *OnTheWay;
 	MovementIndex = PathToTargetTile.Num() - 1;
 	ActionPointForMoving = ActionPointToUse;
-	SetSpeed(400);
+
+	if (WalkingState == EWalkingState::Running) 
+	{
+		SetSpeed(400);
+	}
+	else 
+	{
+		SetSpeed(200);
+	}
+
 	if (bIsCovering)
 	{
 		ClearCoverDirectionInfo();
@@ -524,7 +533,12 @@ void ACustomThirdPerson::RotateToNextTile(const FVector NextTileLocation)
 
 void ACustomThirdPerson::MoveToNextTarget(const float LerpAlpha) 
 {
-	FVector CurrentLocation = FMath::Lerp(PrevLocation, NextLocation, LerpAlpha);
+	float CorrectedLerpAlpha = LerpAlpha;
+	if (WalkingState == EWalkingState::Walk) 
+	{
+		CorrectedLerpAlpha /= 3;
+	}
+	FVector CurrentLocation = FMath::Lerp(PrevLocation, NextLocation, CorrectedLerpAlpha);
 	SetActorLocation(CurrentLocation);
 }
 
@@ -558,7 +572,6 @@ void ACustomThirdPerson::InitializeTimeline()
 	{
 		FloatCurve = Curve;
 	}
-	
 	FOnTimelineFloat onTimelineCallback;
 	FOnTimelineEventStatic onTimelineFinishedCallback;
 	if (FloatCurve != NULL)
@@ -568,8 +581,8 @@ void ACustomThirdPerson::InitializeTimeline()
 		this->BlueprintCreatedComponents.Add(MovingTimeline); // Add to array so it gets saved
 
 		MovingTimeline->SetLooping(false);
-		MovingTimeline->SetTimelineLength(0.25f);
-		MovingTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+		ChangeTimelineFactor();
+		MovingTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_TimelineLength);
 
 		MovingTimeline->SetPlaybackPosition(0.0f, false);
 
@@ -584,11 +597,22 @@ void ACustomThirdPerson::InitializeTimeline()
 void ACustomThirdPerson::FinishMoving() 
 {
 	SetSpeed(0);
-
 	UseActionPoint(ActionPointForMoving);
-	if (AfterMovingDelegate.IsBound()) 
+	if (AfterMovingDelegate.IsBound())
 	{
 		AfterMovingDelegate.Execute(this);
 	}
 }
 
+
+void ACustomThirdPerson::ChangeTimelineFactor() 
+{
+	if (WalkingState == EWalkingState::Running) 
+	{
+		MovingTimeline->SetTimelineLength(0.25f);
+	}
+	else 
+	{
+		MovingTimeline->SetTimelineLength(0.75f);
+	}
+}

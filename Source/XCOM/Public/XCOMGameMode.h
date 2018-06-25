@@ -43,15 +43,22 @@ public:
 	TArray<ACustomThirdPerson*> GetTeamMemeber(const bool bTeam);
 
 private:
+	int32 EnemyTurnOrder = 0;
+
+	bool bEnemyNoticeBattle = false;
+
 	TArray<ACustomThirdPerson*> PlayerCharacters;
 
 	TArray<ACustomThirdPerson*> EnemyCharacters;
 
+	TArray<class AWaypoint*> WaypointArray;
+
 	TMap<int8, TArray<class AEnemyUnit*>> EnemyTeamMap;
 	
+	TMap<int8, AWaypoint*> WaypointMap;
+
 	void RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characters);
 
-	TArray<class APlayerDetector*> PlayerDetectors;
 
 	UFUNCTION()
 	void SetVisibleAllHealthBar(const bool bVisible);
@@ -60,9 +67,11 @@ private:
 
 	void StartBotActivity();
 
-	void SetEnemysPatrolDirection();
+	void SetEnemysPatrolLocation();
 
-	EDirection GetDirectionFromEnemyGroup(FVector GroupMiddlePoint, FVector DetectorLocation) const;
+	void InitializeWaypointMap();
 
-	int32 EnemyTurnOrder = 0;
+	void RenewWaypoint(int8 EnemyGroupNumber);
+
+
 };
