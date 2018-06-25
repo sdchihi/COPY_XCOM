@@ -47,7 +47,7 @@ public:
 	void SetNextAction();
 
 	UPROPERTY(EditAnywhere, Category = Behavior)
-	class UBehaviorTree* EnemyBehavior;
+	class UBehaviorTree* PatrolBehavior;
 
 	UPROPERTY(EditAnywhere, Category = Behavior)
 	UBehaviorTree* CombatBehavior;
@@ -78,7 +78,7 @@ public:
 		PatrolTargetLocation = TargetLocation; 
 	};
 
-	void ChangeBehavior();
+	void ChangeBehaviorToCombat();
 
 private:
 	UBehaviorTree* SelectedBehavior = nullptr;
@@ -90,7 +90,7 @@ private:
 	UPROPERTY(transient)
 	class UBehaviorTreeComponent* BehaviorTreeComp;
 
-
+	void ChangeBehavior(UBehaviorTree* BehaviorTreeToSet);
 
 	int32 NextLocationKeyID;
 

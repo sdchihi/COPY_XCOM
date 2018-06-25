@@ -13,7 +13,6 @@ AEnemyUnit::AEnemyUnit()
 void AEnemyUnit::FinishMoving() 
 {
 	Super::FinishMoving();
-	EObjectTypeQuery::ObjectTypeQuery1;
 
 	//여기 밑으론 일단 매번하면 안되요요오
 	TArray<AActor*> OutActors;
@@ -33,7 +32,7 @@ void AEnemyUnit::FinishMoving()
 
 		if (bFliteredUnit)
 		{
-			GetWolrd()->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, "발겨어어언"); 
+			UE_LOG(LogTemp,Warning,L"발견!")
 
 			AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			GameMode->ChangeEnemyAggro(Group);

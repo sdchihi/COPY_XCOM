@@ -229,7 +229,7 @@ public:
 
 	void ExecuteChangePawnDelegate();
 
-	void SetWalkingState(EWalkingState WalkingStateToSet) { WalkingState = WalkingStateToSet; };
+	void SetWalkingState(EWalkingState WalkingStateToSet);
 
 protected:
 	

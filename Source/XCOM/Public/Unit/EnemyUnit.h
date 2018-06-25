@@ -20,7 +20,7 @@ public:
 
 	bool IsAggro() { return bAggro; };
 
-	bool OnAggo() { bAggro = true; };
+	void OnAggo() { bAggro = true; };
 
 protected:
 	virtual void FinishMoving() override;

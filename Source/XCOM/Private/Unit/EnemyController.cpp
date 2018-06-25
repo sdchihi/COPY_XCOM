@@ -35,27 +35,17 @@ void AEnemyController::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager>(FoundActors[0]);
 
+	if (PatrolBehavior) 
+	{
+		SelectedBehavior = PatrolBehavior;
+	}
 }
 
 void AEnemyController::Possess(APawn* InPawn) 
 {
 	Super::Possess(InPawn);
 
-	if (EnemyBehavior)
-	{
-		if (EnemyBehavior->BlackboardAsset)
-		{
-			BlackboardComp->InitializeBlackboard(*EnemyBehavior->BlackboardAsset);
-		}
-
-		NextLocationKeyID = BlackboardComp->GetKeyID("NextLocation");
-		ActionKeyID = BlackboardComp->GetKeyID("NextAction");
-		RemainingMovementKeyID = BlackboardComp->GetKeyID("RemainingMovement");
-
-		/*BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
-
-		BehaviorTreeComp->StartTree(*EnemyBehavior);*/
-	}
+	ChangeBehavior(PatrolBehavior);
 };
 
 
@@ -373,18 +363,24 @@ void AEnemyController::StopBehaviorTree()
 
 void AEnemyController::StartBehaviorTree() 
 {
-	if (EnemyBehavior)
+	if (SelectedBehavior)
 	{
-		BehaviorTreeComp->StartTree(*EnemyBehavior);
+		UE_LOG(LogTemp, Warning, L"문제없음");
+
+		BehaviorTreeComp->StartTree(*SelectedBehavior);
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"Tree 문제 발생");
 	}
 };
 
 void AEnemyController::StartBehaviorTreeFromDefault()
 {
-	if (EnemyBehavior)
+	if (SelectedBehavior)
 	{
 		BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(EAction::None));
-		BehaviorTreeComp->StartTree(*EnemyBehavior);
+		BehaviorTreeComp->StartTree(*SelectedBehavior);
 	}
 };
 
@@ -435,12 +431,38 @@ void AEnemyController::SetNextPatrolLocation()
 	PathToTarget = Tempor;
 };
 
-void AEnemyController::ChangeBehavior() 
+void AEnemyController::ChangeBehaviorToCombat() 
 {
 	if (CombatBehavior) 
 	{
-		StopBehaviorTree();
-		SelectedBehavior = CombatBehavior;
+		ChangeBehavior(CombatBehavior);
+		UE_LOG(LogTemp, Warning, L"컴뱃으로 변경! ");
+
+
+	}
+}
+
+
+void AEnemyController::ChangeBehavior(UBehaviorTree* BehaviorTreeToSet)
+{
+	if (BehaviorTreeToSet)
+	{
+		//StopBehaviorTree();
+		SelectedBehavior = BehaviorTreeToSet;
+		if (SelectedBehavior->BlackboardAsset)
+		{
+			BlackboardComp->InitializeBlackboard(*BehaviorTreeToSet->BlackboardAsset);
+		}
+
+		NextLocationKeyID = BlackboardComp->GetKeyID("NextLocation");
+		ActionKeyID = BlackboardComp->GetKeyID("NextAction");
+		RemainingMovementKeyID = BlackboardComp->GetKeyID("RemainingMovement");
+		UE_LOG(LogTemp, Warning, L"변경 완료됬죠");
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"변경 실패");
+
 	}
 	//로드 Object를 할지 아니면 BP에서 가져오는걸로 결정
 }

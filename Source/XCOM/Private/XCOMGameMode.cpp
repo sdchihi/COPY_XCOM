@@ -336,6 +336,7 @@ void AXCOMGameMode::ChangeEnemyAggro(int8 EnemyGroupNumber)
 	{
 		AEnemyController* EnemyController = Cast<AEnemyController>(SingleEnemy->GetController());
 		SingleEnemy->OnAggo();
-
+		SingleEnemy->SetWalkingState(EWalkingState::Running);
+		EnemyController->ChangeBehaviorToCombat();
 	}
 }

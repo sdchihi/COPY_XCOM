@@ -8,6 +8,11 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyAllTypes.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 
+UBTTask_AttackPlayerUnit::UBTTask_AttackPlayerUnit()
+{
+	NodeName = "FollowThePath";
+	bNotifyTick = true;
+}
 
 
 EBTNodeResult::Type UBTTask_AttackPlayerUnit::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -21,6 +26,17 @@ EBTNodeResult::Type UBTTask_AttackPlayerUnit::ExecuteTask(UBehaviorTreeComponent
 
 	BotController->ShootToPlayerUnit();
 
+	return EBTNodeResult::InProgress;
+}
 
-	return EBTNodeResult::Succeeded;
+
+
+void UBTTask_AttackPlayerUnit::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	AEnemyController* BotController = Cast<AEnemyController>(OwnerComp.GetAIOwner());
+	ACustomThirdPerson* ControlledUnit = BotController ? Cast<ACustomThirdPerson>(BotController->GetPawn()) : nullptr;
+	if (!ControlledUnit->bIsAttack && !ControlledUnit->bIsReadyToAttack)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
 }

@@ -25,3 +25,5 @@ EBTNodeResult::Type UBTTask_FinishTurn::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	return EBTNodeResult::Succeeded;
 };
+
+

@@ -604,7 +604,6 @@ void ACustomThirdPerson::FinishMoving()
 	}
 }
 
-
 void ACustomThirdPerson::ChangeTimelineFactor() 
 {
 	if (WalkingState == EWalkingState::Running) 
@@ -616,3 +615,9 @@ void ACustomThirdPerson::ChangeTimelineFactor()
 		MovingTimeline->SetTimelineLength(0.75f);
 	}
 }
+
+void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)
+{
+	WalkingState = WalkingStateToSet; 
+	ChangeTimelineFactor();
+};
