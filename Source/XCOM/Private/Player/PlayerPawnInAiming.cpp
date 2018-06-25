@@ -150,3 +150,15 @@ bool APlayerPawnInAiming::CheckInView(const FVector StartLocation, const FVector
 		return true;
 	}
 }
+
+// 사격하는 장면을 캐릭터 정면에서 촬영할때 사용
+void APlayerPawnInAiming::SetFrontCam(const FVector AimingCharLoc, const FVector MurderedCharLocation)
+{
+	FVector StraightLineDirection = (AimingCharLoc - MurderedCharLocation).GetSafeNormal();
+	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
+	FVector NewPawnPosition = AimingCharLoc + (StraightLineDirection * 200) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
+
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, AimingCharLoc);
+	SetActorLocation(NewPawnPosition);
+	SetActorRotation(NewPawnRotation);
+};
