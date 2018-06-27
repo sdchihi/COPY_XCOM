@@ -81,6 +81,8 @@ private:
 
 	APlayerPawnInAiming* PawnInAimingSituation[2];
 
+	class UWidgetComponent* AimWidget = nullptr;
+
 	bool bCameraOrder = false;
 
 	//¸Þ¼Òµå
@@ -110,7 +112,7 @@ private:
 	void ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation);
 
 	UFUNCTION()
-	void ChangeViewTargetByCombatWidget(const FVector TargetLocation);
+	void ChangeViewTargetByCombatWidget(AActor* TargetActor);
 
 	UFUNCTION()
 	void ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation);

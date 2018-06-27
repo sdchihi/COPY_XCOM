@@ -13,9 +13,12 @@
 #include "PlayerPawnInAiming.h"
 #include "CombatWidget.h"
 #include "XCOMGameMode.h"
+#include "Components/WidgetComponent.h"
+
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
+
 }
 
 void AXCOMPlayerController::BeginPlay()
@@ -32,6 +35,8 @@ void AXCOMPlayerController::BeginPlay()
 	TileManager = Cast<ATileManager>(FoundActors[0]);
 
 	Initialize();
+	AimWidget = FindComponentByClass<UWidgetComponent>();
+
 };
 
 void AXCOMPlayerController::Tick(float DeltaTime)
@@ -94,6 +99,7 @@ void AXCOMPlayerController::Initialize() {
 	}
 
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
 }
 
 void AXCOMPlayerController::OnClick()
@@ -152,7 +158,9 @@ void AXCOMPlayerController::OnClick()
 				Tempor.Add(PathLocation);
 			}
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
-
+			FAttachmentTransformRules TransformRule(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, false);
+			//GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform, FName(L"Gun"));
+			DefaultPlayerPawn->AttachToActor(SelectedCharacter->GetController(), TransformRule);
 		}
 		else
 		{
@@ -251,6 +259,7 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingCharacter) 
 {
 	CheckWallAround(MovingCharacter);
+	DefaultPlayerPawn->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	if (MovingCharacter->bCanAction) 
 	{
 		EnableInput(this);
@@ -371,6 +380,7 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 */
 void AXCOMPlayerController::ChangeToDefaultPawn() 
 {
+	AimWidget->SetVisibility(false);
 	if (HealthBarVisiblityDelegate.IsBound()) 
 	{
 		HealthBarVisiblityDelegate.Execute(true);
@@ -435,16 +445,24 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocatio
 
 /**
 * Combat Widget에 의해 Action Cam 시점으로 부드럽게 이동합니다.
-* @param TargetLocation
+* @param TagetActor
 */
-void AXCOMPlayerController::ChangeViewTargetByCombatWidget(const FVector TargetLocation)
+void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor)
 {
-	FVector2D ScreenLocation;
-	ProjectWorldLocationToScreen(TargetLocation, ScreenLocation);
-
-	CombatWidget->SetAimWidgetLocation(ScreenLocation);
-
-	ChangeViewTargetWithBlend(SelectedCharacter->GetActorLocation(), TargetLocation);
+	if (AimWidget)
+	{
+		AimWidget->DetachFromParent();
+		AimWidget->SetVisibility(true);
+		if (TargetActor)
+		{
+			AimWidget->AttachTo(TargetActor->GetRootComponent());
+		}
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"component 없음");
+	}
+	ChangeViewTargetWithBlend(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation());
 }
 
 /**
@@ -505,6 +523,7 @@ void AXCOMPlayerController::CancelWithESC()
 */
 void AXCOMPlayerController::OrderAttack(const int32 TargetEnemyIndex)
 {
+	AimWidget->SetVisibility(false);
 	SelectedCharacter->AttackEnemyAccoringToIndex(TargetEnemyIndex);
 }
 

@@ -30,14 +30,13 @@ void UCombatWidget::InitializeInBP()
 	RightFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("RightContainer")));
 	CenterFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("CenterContainer")));
 
-	Aim = Cast<UImage>(GetWidgetFromName(FName("AimImage")));
-
+	
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
-
 	ConstructWidgetMinimum();
 };
+
 
 void UCombatWidget::ClearContents(const bool bClearAll)
 {
@@ -56,7 +55,6 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 {
 	ConstructWidgetMinimum();
 	ClearContents(true);
-
 	
 	SelectedCharacterAimingInfo = AimingInfoArray;
 	PossibleActionMap = PossibleActionMapWrapper.PossibleAction;
@@ -69,6 +67,7 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	{
 		ConvertToSuitableFormat(SelectedCharacterAimingInfo[0], Explanation, Percentage); 
 	}
+
 	// 상단 Enemy Icon
 	FillEnemyList();
 	FillActionButtonList();
@@ -155,7 +154,7 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	float Percentage;
 	ConvertToSuitableFormat(SelectedCharacterAimingInfo[ButtonIndex], Explanation, Percentage);
 
-	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetLocation);
+	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetActor);
 	TargetEnemyIndex = ButtonIndex;
 }
 
@@ -346,14 +345,5 @@ void UCombatWidget::ConstructWidgetNormal()
 	CenterFrame->SetVisibility(ESlateVisibility::Visible);
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
-}
-
-void UCombatWidget::SetAimWidgetLocation(FVector2D AimLocation)
-{
-	Aim->SetVisibility(ESlateVisibility::Visible);
-	UCanvasPanelSlot* AimPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Aim);
-	AimPanelSlot->SetPosition(AimLocation);
-	//Aim->
-	UE_LOG(LogTemp, Warning, L"%s 로 Aim 위치", *AimLocation.ToString())
 }
 

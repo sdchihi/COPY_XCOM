@@ -9,7 +9,7 @@
 #include "CombatWidget.generated.h"
 
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FChangeViewTargetDelegate, const FVector, TargetLoc);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FChangeViewTargetDelegate, AActor*, TargetActor);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FStartAttackDelegate, const int32, TargetEnemyIndex);
 DECLARE_DYNAMIC_DELEGATE(FStartTrajectoryDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartAmbushDelegate);
@@ -42,7 +42,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitializeInBP();
 
-
 	FChangeViewTargetDelegate ChangeViewTargetDelegate;
 
 	FStartAttackDelegate StartAttackDelegate;
@@ -53,7 +52,6 @@ public:
 
 	FStartVisilianceDelegate StartVisilianceDelegate;
 
-	void SetAimWidgetLocation(FVector2D AimLocation);
 
 protected:
 
@@ -93,9 +91,6 @@ private:
 	UPROPERTY()
 	UUserWidget* SumAimingProbBox = nullptr;
 
-
-	UPROPERTY()
-	UImage* Aim = nullptr;
 
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);

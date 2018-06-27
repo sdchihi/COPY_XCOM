@@ -132,7 +132,6 @@ bool APlayerPawnInAiming::CheckInView(const FVector StartLocation, const FVector
 	//CollisionParams.bFindInitialOverlaps = false;
 
 	FHitResult HitResult;
-	GetOwner()->GetActorLocation();
 	GetWorld()->LineTraceSingleByChannel(
 		HitResult,
 		StartLocation,

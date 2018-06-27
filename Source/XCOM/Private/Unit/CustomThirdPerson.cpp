@@ -484,6 +484,8 @@ void ACustomThirdPerson::StopVisilance()
 
 void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32 ActionPointToUse)
 {
+	//
+
 	PathToTargetTile = *OnTheWay;
 	MovementIndex = PathToTargetTile.Num() - 1;
 	ActionPointForMoving = ActionPointToUse;
