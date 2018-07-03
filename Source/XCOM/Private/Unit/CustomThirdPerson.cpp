@@ -625,3 +625,9 @@ void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)
 	WalkingState = WalkingStateToSet; 
 	ChangeTimelineFactor();
 };
+
+bool ACustomThirdPerson::IsInUnFoggedArea() const
+{
+	return FOWComponent->isActorInTerraIncog;
+}
+

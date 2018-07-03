@@ -4,6 +4,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "CustomThirdPerson.h"
 #include "XCOMGameMode.h"
+#include "Classes/Animation/AnimMontage.h"
+#include "Public/UObject/ConstructorHelpers.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 AEnemyUnit::AEnemyUnit() 
 {
@@ -12,7 +15,7 @@ AEnemyUnit::AEnemyUnit()
 
 void AEnemyUnit::FinishMoving() 
 {
-
+	bool bChangeAggro = false;
 	//여기 밑으론 일단 매번하면 안되요요오
 	TArray<AActor*> OutActors;
 	TArray<TEnumAsByte<EObjectTypeQuery>> Fillter;
@@ -29,19 +32,43 @@ void AEnemyUnit::FinishMoving()
 			OutActors
 		);
 
+		//거리 안에 적이있어서 확인될경우 어그로 변경 tODO 팀 확인
+		AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
 		if (bFliteredUnit)
 		{
 			UE_LOG(LogTemp,Warning,L"발견!")
-
-			AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			GameMode->ChangeEnemyAggro(Group);
+			bChangeAggro = true;
+		}
+		else 
+		{
+			if (GameMode->GetEnemysBattleCognition() == true && IsInUnFoggedArea())
+			{
+				GameMode->ChangeEnemyAggro(Group);
+				bChangeAggro = true;
+			}
 		}
 	}
 	//여기까지 아직 Point 사용전. 즉 Cut scene event 처리하기 위한 위치 
 
-	Super::FinishMoving();
+	if (bChangeAggro) 
+	{
+		FinishMovingAfterMontage();
+	}
+	else 
+	{
+		Super::FinishMoving();
+	}
+
 
 }
+
+void AEnemyUnit::FinishMovingAfterMontage() 
+{
+	PlayEmoteMontage();
+}
+
 	
 
 float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) 
@@ -82,15 +109,30 @@ void AEnemyUnit::UnHideUnit()
 	HealthBar->SetVisibilityLocker(false);
 	HealthBar->SetWidgetVisibility(true);
 
-	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode->GetEnemysBattleCognition() == true)
+	
+
+}
+
+void AEnemyUnit::PlayEmoteMontage() 
+{
+	if (EmoteMontage) 
 	{
-		GameMode->ChangeEnemyAggro(Group);
-		if (PlayAggroEventDelegate.IsBound()) 
-		{
-			PlayAggroEventDelegate.Execute(this);
-		}
-		//Play Aggro Animation - > Anim Notify에 의한 이벤트 발생 고려
+		//Montage_SetEndDelegate가 작동안해서 그냥 FTimerDelegate로 Montage_SetEndDelegate 대체
+
+		//FOnMontageEnded EndDelegate;
+		//EndDelegate.BindUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
+		////EmoteMontage->Montage_SetEndDelegate(EndDelegate);
+		//GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndDelegate);
+		float FuncCallDelay = PlayAnimMontage(EmoteMontage);
+
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);	
 	}
 
+}
+
+void AEnemyUnit::OnEmoteMontageEnded() 
+{
+	Super::FinishMoving();
 }

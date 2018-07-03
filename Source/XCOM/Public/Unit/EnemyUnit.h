@@ -27,8 +27,18 @@ public:
 	void HideUnit();
 
 	void UnHideUnit();
+	
 
 	FPlayAggroEventDelegate PlayAggroEventDelegate;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UAnimMontage* EmoteMontage;
+
+
+	UFUNCTION()
+	void OnEmoteMontageEnded();
+
+		//void OnEmoteMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 protected:
 	virtual void FinishMoving() override;
@@ -40,6 +50,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int8 Group;
 	
+	void PlayEmoteMontage();
+
+	void FinishMovingAfterMontage();
+
 
 	bool bAggro = false;
 };
