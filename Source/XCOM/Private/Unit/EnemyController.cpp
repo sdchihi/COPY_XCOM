@@ -437,11 +437,8 @@ void AEnemyController::ChangeBehaviorToCombat()
 	{
 		ChangeBehavior(CombatBehavior);
 		UE_LOG(LogTemp, Warning, L"컴뱃으로 변경! ");
-
-
 	}
 }
-
 
 void AEnemyController::ChangeBehavior(UBehaviorTree* BehaviorTreeToSet)
 {

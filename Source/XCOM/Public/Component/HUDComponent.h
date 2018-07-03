@@ -27,8 +27,11 @@ public:
 
 	void SetWidgetVisibility(const bool bVisiblity);
 
+	void SetVisibilityLocker(bool bLock);
+
 
 private:
+	bool bLockVisibility = false;
 
 	USpringArmComponent* SpringArm = nullptr;
 	

@@ -90,8 +90,6 @@ public:
 	UPROPERTY()
 	TArray<FColor> TextureInFileData;
 
-
-
 	//Check to see if we have a new FOW-texture.
 	bool bHasFOWTextureUpdate = false;
 

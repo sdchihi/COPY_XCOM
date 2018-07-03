@@ -22,8 +22,15 @@ public:
 
 	void OnAggo() { bAggro = true; };
 
+	void HideUnit();
+
+	void UnHideUnit();
+
+
 protected:
 	virtual void FinishMoving() override;
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
 
 private:

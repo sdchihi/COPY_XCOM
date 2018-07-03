@@ -83,9 +83,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<AGun> GunBlueprint;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	AGun* GunReference;
-
 	//void CheckAttackPotential(APawn* TargetPawn);
 
 	bool GetTeamFlag() { return bTeam; };
@@ -137,7 +134,6 @@ public:
 	FAfterMovingDelegate AfterMovingDelegate;
 
 	void InformVisilanceSuccess(const FVector StartLocation, const FVector TargetLocation);
-
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 RemainingActionPoint = 2;
@@ -231,9 +227,6 @@ public:
 
 	void SetWalkingState(EWalkingState WalkingStateToSet);
 
-	void HideUnit();
-	void UnHideUnit();
-
 protected:
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -245,13 +238,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UFogOfWarComponent* FOWComponent = nullptr;
 
+	UPROPERTY()
+	UHUDComponent* HealthBar = nullptr;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	AGun* GunReference;
+
 private:
 	UPROPERTY()
 	UAimingComponent* AimingComponent = nullptr;
 	
-	UPROPERTY()
-	UHUDComponent* HealthBar = nullptr;
-
 	UPROPERTY(EditDefaultsOnly)
 	UTrajectoryComponent* TrajectoryComponent = nullptr;
 

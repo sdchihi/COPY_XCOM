@@ -40,6 +40,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FogOfWar)
 	bool isActorInTerraIncog = false;
-
+		
 	void SetActorInTerraInCog(bool bCanCognize);
 };

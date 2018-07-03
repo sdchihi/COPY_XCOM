@@ -46,6 +46,10 @@ public:
 
 	AFogOfWarManager* GetFowManager() { return FogOfWar; }
 
+	bool GetEnemysBattleCognition() { return bEnemyNoticeBattle; };
+
+	void SetEnemysBattleCognition() { bEnemyNoticeBattle = true; };
+
 private:
 	UPROPERTY()
 	AFogOfWarManager* FogOfWar = nullptr;

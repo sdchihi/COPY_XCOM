@@ -147,7 +147,6 @@ void AFogOfWarWorker::UpdateFowTexture() {
 					UE_LOG(LogTemp, Warning, L"호출됨");
 
 				}*/
-				UE_LOG(LogTemp, Warning, L"%s Actor 범위 안", *(*Itr)->GetName());
 
 			}
 			//If this is a previously discovered position that we're not currently looking at, put it into a "shroud of darkness".
@@ -157,6 +156,8 @@ void AFogOfWarWorker::UpdateFowTexture() {
 					((textureSpacePos.X - (int)halfTextureSize)) * dividend,
 					((textureSpacePos.Y - (int)halfTextureSize)) * dividend,
 					position.Z);
+
+
 				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(false);
 
 				/*if (CurrentCog)
@@ -165,7 +166,6 @@ void AFogOfWarWorker::UpdateFowTexture() {
 					UE_LOG(LogTemp, Warning, L"호출됨2");
 
 				}*/
-				UE_LOG(LogTemp, Warning, L"%s Actor 범위 밖 Pos: %s" , *(*Itr)->GetName(), *currentWorldSpacePos.ToString());
 
 			}
 		}

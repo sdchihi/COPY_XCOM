@@ -5,6 +5,7 @@
 #include "XCOMGameMode.h"
 #include "Classes/Kismet/GameplayStatics.h"
 #include "CustomThirdPerson.h"
+#include "EnemyUnit.h"
 
 UFogOfWarComponent::UFogOfWarComponent()
 {
@@ -20,16 +21,16 @@ void UFogOfWarComponent::BeginPlay()
 
 void UFogOfWarComponent::SetActorInTerraInCog(bool bCanCognize)
 {
-	ACustomThirdPerson* Unit = Cast<ACustomThirdPerson>(GetOwner());
-	if (Unit) 
+	AEnemyUnit* EnemyUnit = Cast<AEnemyUnit>(GetOwner());
+	if (EnemyUnit)
 	{
 		if (bCanCognize) 
 		{
-			Unit->UnHideUnit();
+			EnemyUnit->UnHideUnit();
 		}
 		else 
 		{
-			Unit->HideUnit();
+			EnemyUnit->HideUnit();
 		}
 	}
 	isActorInTerraIncog = bCanCognize;

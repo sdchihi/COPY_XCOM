@@ -625,19 +625,3 @@ void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)
 	WalkingState = WalkingStateToSet; 
 	ChangeTimelineFactor();
 };
-
-void ACustomThirdPerson::HideUnit() 
-{
-	SetActorHiddenInGame(true);
-	GunReference->SetActorHiddenInGame(true);
-	HealthBar->SetVisibility(false);
-};
-
-
-void ACustomThirdPerson::UnHideUnit()
-{
-	SetActorHiddenInGame(false);
-	GunReference->SetActorHiddenInGame(false);
-	HealthBar->SetVisibility(true);
-
-}

@@ -40,5 +40,46 @@ void AEnemyUnit::FinishMoving()
 	}
 	
 }
+	
+
+float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) 
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode->GetEnemysBattleCognition() == false) 
+	{
+		GameMode->SetEnemysBattleCognition();
+	}
+
+	if (bAggro == false) 
+	{
+		GameMode->ChangeEnemyAggro(Group);
+	}
+
+	return ActualDamage;
+}
+
+void AEnemyUnit::HideUnit()
+{
+	SetActorHiddenInGame(true);
+	GunReference->SetActorHiddenInGame(true);
+	HealthBar->SetVisibilityLocker(true);
+	HealthBar->SetWidgetVisibility(true);
+};
 
 
+void AEnemyUnit::UnHideUnit()
+{
+	SetActorHiddenInGame(false);
+	GunReference->SetActorHiddenInGame(false);
+	HealthBar->SetVisibilityLocker(false);
+	HealthBar->SetWidgetVisibility(true);
+
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode->GetEnemysBattleCognition() == true)
+	{
+		GameMode->ChangeEnemyAggro(Group);
+	}
+
+}
