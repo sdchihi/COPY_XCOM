@@ -12,7 +12,6 @@ AEnemyUnit::AEnemyUnit()
 
 void AEnemyUnit::FinishMoving() 
 {
-	Super::FinishMoving();
 
 	//여기 밑으론 일단 매번하면 안되요요오
 	TArray<AActor*> OutActors;
@@ -38,7 +37,10 @@ void AEnemyUnit::FinishMoving()
 			GameMode->ChangeEnemyAggro(Group);
 		}
 	}
-	
+	//여기까지 아직 Point 사용전. 즉 Cut scene event 처리하기 위한 위치 
+
+	Super::FinishMoving();
+
 }
 	
 
@@ -55,6 +57,10 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 	if (bAggro == false) 
 	{
 		GameMode->ChangeEnemyAggro(Group);
+		if (PlayAggroEventDelegate.IsBound())
+		{
+			PlayAggroEventDelegate.Execute(this);
+		}
 	}
 
 	return ActualDamage;
@@ -80,6 +86,11 @@ void AEnemyUnit::UnHideUnit()
 	if (GameMode->GetEnemysBattleCognition() == true)
 	{
 		GameMode->ChangeEnemyAggro(Group);
+		if (PlayAggroEventDelegate.IsBound()) 
+		{
+			PlayAggroEventDelegate.Execute(this);
+		}
+		//Play Aggro Animation - > Anim Notify에 의한 이벤트 발생 고려
 	}
 
 }

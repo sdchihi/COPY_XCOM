@@ -272,7 +272,10 @@ void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingChara
 			{
 				return;
 			}
-			SetTilesToUseSelectedChararacter(OverlappedTile, MovingCharacter->CurrentMovableStep, MovingCharacter->GetMovableStepPerActionPoint());
+			if (MovingCharacter->bCanAction) 
+			{
+				SetTilesToUseSelectedChararacter(OverlappedTile, MovingCharacter->CurrentMovableStep, MovingCharacter->GetMovableStepPerActionPoint());
+			}
 		}
 	}
 }

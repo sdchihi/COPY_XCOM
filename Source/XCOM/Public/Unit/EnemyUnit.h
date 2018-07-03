@@ -6,6 +6,8 @@
 #include "Unit/CustomThirdPerson.h"
 #include "EnemyUnit.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FPlayAggroEventDelegate, AEnemyUnit*, PlayUnit);
+
 /**
  * 
  */
@@ -26,6 +28,7 @@ public:
 
 	void UnHideUnit();
 
+	FPlayAggroEventDelegate PlayAggroEventDelegate;
 
 protected:
 	virtual void FinishMoving() override;
