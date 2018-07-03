@@ -24,6 +24,7 @@ APlayerPawn::APlayerPawn()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArm->SetupAttachment(RootSceneComponent);
 	SpringArm->TargetArmLength = 700.0f;
+	SpringArm->bInheritYaw = false;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);

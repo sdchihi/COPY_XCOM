@@ -9,6 +9,7 @@
 #include "EnemyController.h"
 #include "PlayerDetector.h"
 #include "Waypoint.h"
+#include "FogOfWarComponent.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -161,9 +162,16 @@ void AXCOMGameMode::SpawnFogOfWar()
 		FRotator(0, 0, 0)
 		);
 
-	for (ACustomThirdPerson* SinglePlayerChar : PlayerCharacters)
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACustomThirdPerson::StaticClass(), FoundActors);
+
+	for (AActor* SingleActor : FoundActors) 
 	{
-		FogOfWar->RegisterFowActor(SinglePlayerChar);
+		UFogOfWarComponent* FowComp = SingleActor->FindComponentByClass<UFogOfWarComponent>();
+		if (FowComp) 
+		{
+			FogOfWar->RegisterFowActor(SingleActor);
+		}
 	}
 }
 

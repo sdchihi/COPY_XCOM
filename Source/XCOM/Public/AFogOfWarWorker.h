@@ -31,5 +31,11 @@ public:
 	//Method to perform work
 	void UpdateFowTexture();
 	bool bShouldUpdate = false;
+
+	bool isWriteUnFog = false;
+	bool isWriteFow = false;
+	bool isWriteTerraIncog = false;
+	bool bCheckActorInTerraIncog = false;//Bool, is the actor in terra incognita territory
+
 	void ShutDown();
 };

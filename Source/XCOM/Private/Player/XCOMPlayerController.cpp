@@ -106,7 +106,7 @@ void AXCOMPlayerController::OnClick()
 {
 	FHitResult TraceResult;
 	GetHitResultUnderCursor(ECollisionChannel::ECC_MAX, true, TraceResult);
-	AActor* actor = TraceResult.GetActor();
+	AActor* actor = TraceResult.GetActor(); 
 
 	if (!ensure(TraceResult.GetActor())) { return; }
 	else
@@ -158,9 +158,10 @@ void AXCOMPlayerController::OnClick()
 				Tempor.Add(PathLocation);
 			}
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
-			FAttachmentTransformRules TransformRule(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, false);
+			FAttachmentTransformRules TransformRule(EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepRelative, false);
+			
 			//GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform, FName(L"Gun"));
-			DefaultPlayerPawn->AttachToActor(SelectedCharacter->GetController(), TransformRule);
+			DefaultPlayerPawn->AttachToActor(SelectedCharacter, TransformRule);
 		}
 		else
 		{

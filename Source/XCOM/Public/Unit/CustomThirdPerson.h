@@ -231,6 +231,9 @@ public:
 
 	void SetWalkingState(EWalkingState WalkingStateToSet);
 
+	void HideUnit();
+	void UnHideUnit();
+
 protected:
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -239,6 +242,8 @@ protected:
 
 	virtual void FinishMoving();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UFogOfWarComponent* FOWComponent = nullptr;
 
 private:
 	UPROPERTY()

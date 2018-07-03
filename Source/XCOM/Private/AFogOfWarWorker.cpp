@@ -2,8 +2,10 @@
 #include "AFogOfWarWorker.h"
 #include "HAL/RunnableThread.h"
 #include "FogOfWarManager.h"
+#include "FogOfWarComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
-AFogOfWarWorker::AFogOfWarWorker() 
+AFogOfWarWorker::AFogOfWarWorker()
 {
 
 }
@@ -24,7 +26,8 @@ void AFogOfWarWorker::ShutDown() {
 }
 
 bool AFogOfWarWorker::Init() {
-	if (Manager) {
+	if (Manager)
+	{
 		Manager->GetWorld()->GetFirstPlayerController()->ClientMessage("Fog of War worker thread started");
 		return true;
 	}
@@ -53,7 +56,6 @@ void AFogOfWarWorker::UpdateFowTexture() {
 	Manager->LastFrameTextureData = TArray<FColor>(Manager->TextureData);
 	uint32 halfTextureSize = Manager->TextureSize / 2;
 	int signedSize = (int)Manager->TextureSize; //For convenience....
-	TSet<FVector2D> currentlyInSight;
 	TSet<FVector2D> texelsToBlur;
 	int sightTexels = Manager->SightRange * Manager->SamplesPerMeter;
 	float dividend = 100.0f / Manager->SamplesPerMeter;
@@ -72,7 +74,6 @@ void AFogOfWarWorker::UpdateFowTexture() {
 		FVector2D textureSpacePos = FVector2D(posX, posY);
 		int size = (int)Manager->TextureSize;
 
-		FCollisionQueryParams queryParams(FName(TEXT("FOW trace")), false, (*Itr));
 		int halfKernelSize = (Manager->blurKernelSize - 1) / 2;
 
 		//Store the positions we want to blur
@@ -84,41 +85,92 @@ void AFogOfWarWorker::UpdateFowTexture() {
 			}
 		}
 
-		//Unveil the positions our actors are currently looking at
-		for (int y = posY - sightTexels; y <= posY + sightTexels; y++) {
-			for (int x = posX - sightTexels; x <= posX + sightTexels; x++) {
-				//Kernel for radial sight
-				if (x > 0 && x < size && y > 0 && y < size) {
-					FVector2D currentTextureSpacePos = FVector2D(x, y);
-					int length = (int)(textureSpacePos - currentTextureSpacePos).Size();
-					if (length <= sightTexels) {
-						FVector currentWorldSpacePos = FVector(
-							((x - (int)halfTextureSize)) * dividend,
-							((y - (int)halfTextureSize)) * dividend,
-							position.Z);
+		isWriteUnFog = (*Itr)->FindComponentByClass<UFogOfWarComponent>()->WriteUnFog;
+		isWriteFow = (*Itr)->FindComponentByClass<UFogOfWarComponent>()->WriteFow;
+		isWriteTerraIncog = (*Itr)->FindComponentByClass<UFogOfWarComponent>()->WriteTerraIncog;
 
-						//CONSIDER: This is NOT the most efficient way to do conditional unfogging. With long view distances and/or a lot of actors affecting the FOW-data
-						//it would be preferrable to not trace against all the boundary points and internal texels/positions of the circle, but create and cache "rasterizations" of
-						//viewing circles (using Bresenham's midpoint circle algorithm) for the needed sightranges, shift the circles to the actor's location
-						//and just trace against the boundaries. 
-						//We would then use Manager->GetWorld()->LineTraceSingle() and find the first collision texel. Having found the nearest collision
-						//for every ray we would unveil all the points between the collision and origo using Bresenham's Line-drawing algorithm.
-						//However, the tracing doesn't seem like it takes much time at all (~0.02ms with four actors tracing circles of 18 texels each),
-						//it's the blurring that chews CPU..
-						Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
-						//Store the positions we are currently seeing.
-						currentlyInSight.Add(FVector2D(x, y));
-						//if (!Manager->GetWorld()->LineTraceTestByChannel(position, currentWorldSpacePos, ECC_WorldStatic, queryParams)) {
-						//	//Unveil the positions we are currently seeing
-						//	Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
-						//	//Store the positions we are currently seeing.
-						//	currentlyInSight.Add(FVector2D(x, y));
-						//}
+		if (isWriteUnFog)
+		{
+			//Unveil the positions our actors are currently looking at
+			for (int y = posY - sightTexels; y <= posY + sightTexels; y++) {
+				for (int x = posX - sightTexels; x <= posX + sightTexels; x++) {
+					//Kernel for radial sight
+					if (x > 0 && x < size && y > 0 && y < size) {
+						FVector2D currentTextureSpacePos = FVector2D(x, y);
+						int length = (int)(textureSpacePos - currentTextureSpacePos).Size();
+						if (length <= sightTexels) {
+							FVector currentWorldSpacePos = FVector(
+								((x - (int)halfTextureSize)) * dividend,
+								((y - (int)halfTextureSize)) * dividend,
+								position.Z);
+
+							//CONSIDER: This is NOT the most efficient way to do conditional unfogging. With long view distances and/or a lot of actors affecting the FOW-data
+							//it would be preferrable to not trace against all the boundary points and internal texels/positions of the circle, but create and cache "rasterizations" of
+							//viewing circles (using Bresenham's midpoint circle algorithm) for the needed sightranges, shift the circles to the actor's location
+							//and just trace against the boundaries. 
+							//We would then use Manager->GetWorld()->LineTraceSingle() and find the first collision texel. Having found the nearest collision
+							//for every ray we would unveil all the points between the collision and origo using Bresenham's Line-drawing algorithm.
+							//However, the tracing doesn't seem like it takes much time at all (~0.02ms with four actors tracing circles of 18 texels each),
+							//it's the blurring that chews CPU..
+							Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
+							//Store the positions we are currently seeing.
+
+							Manager->CurrentlyInSight[x + y * Manager->TextureSize] = true;
+
+						}
+					}
+					else
+					{
+						Manager->CurrentlyInSight[x + y * Manager->TextureSize] = false;
 					}
 				}
 			}
 		}
+		//currentlyInSight.Contains(FVector2D(textureSpacePos.X  , textureSpacePos.Y))
+		//Is the current actor marked for checking if is in terra incognita
+		bCheckActorInTerraIncog = (*Itr)->FindComponentByClass<UFogOfWarComponent>()->bCheckActorTerraIncog;
+		if (bCheckActorInTerraIncog)
+		{
+			bool CurrentCog = (*Itr)->FindComponentByClass<UFogOfWarComponent>()->isActorInTerraIncog;
+			if (Manager->CurrentlyInSight[textureSpacePos.X + textureSpacePos.Y * Manager->TextureSize])
+			{
+				FVector currentWorldSpacePos = FVector(
+					((textureSpacePos.X - (int)halfTextureSize)) * dividend,
+					((textureSpacePos.Y - (int)halfTextureSize)) * dividend,
+					position.Z);
+
+				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(true);
+				/*UE_LOG(LogTemp, Warning, L"È£ÃâµÊ");
+				if (!CurrentCog)
+				{
+					(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(true);
+					UE_LOG(LogTemp, Warning, L"È£ÃâµÊ");
+
+				}*/
+				UE_LOG(LogTemp, Warning, L"%s Actor ¹üÀ§ ¾È", *(*Itr)->GetName());
+
+			}
+			//If this is a previously discovered position that we're not currently looking at, put it into a "shroud of darkness".
+			else
+			{
+				FVector currentWorldSpacePos = FVector(
+					((textureSpacePos.X - (int)halfTextureSize)) * dividend,
+					((textureSpacePos.Y - (int)halfTextureSize)) * dividend,
+					position.Z);
+				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(false);
+
+				/*if (CurrentCog)
+				{
+					(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(false);
+					UE_LOG(LogTemp, Warning, L"È£ÃâµÊ2");
+
+				}*/
+				UE_LOG(LogTemp, Warning, L"%s Actor ¹üÀ§ ¹Û Pos: %s" , *(*Itr)->GetName(), *currentWorldSpacePos.ToString());
+
+			}
+		}
 	}
+
 
 	//  ÀÌ ¹ØÀ¸·Î´Â Blur
 	if (Manager->GetIsBlurEnabled()) {
@@ -133,7 +185,7 @@ void AFogOfWarWorker::UpdateFowTexture() {
 				if (x + shiftedIndex >= 0 && x + shiftedIndex <= signedSize - 1) {
 					if (Manager->UnfoggedData[x + shiftedIndex + (y * signedSize)]) {
 						//If we are currently looking at a position, unveil it completely
-						if (currentlyInSight.Contains(FVector2D(x + shiftedIndex, y))) {
+						if (Manager->CurrentlyInSight[x + shiftedIndex + y* Manager->TextureSize]) {
 							sum += (Manager->blurKernel[i] * 255);
 						}
 						//If this is a previously discovered position that we're not currently looking at, put it into a "shroud of darkness".							
@@ -166,11 +218,17 @@ void AFogOfWarWorker::UpdateFowTexture() {
 			for (int x = 0; x < signedSize; x++) {
 
 				if (Manager->UnfoggedData[x + (y * signedSize)]) {
-					if (currentlyInSight.Contains(FVector2D(x, y))) {
-						Manager->TextureData[x + y * signedSize] = FColor((uint8)255, (uint8)1, (uint8)1, 255);
+					//If we are currently looking at a position, unveil it completely
+					//if the vectors are inside de Tset
+					if (Manager->CurrentlyInSight[x + (y * signedSize)]) {
+						Manager->TextureData[x + y * signedSize] = FColor(Manager->UnfogColor, Manager->UnfogColor, Manager->UnfogColor, 255);
 					}
+					//If this is a previously discovered position that we're not currently looking at, put it into a "shroud of darkness".
 					else {
-						Manager->TextureData[x + y * signedSize] = FColor((uint8)1, (uint8)255, (uint8)1, 255);
+						Manager->TextureData[x + y * signedSize] = FColor(Manager->FowMaskColor, Manager->FowMaskColor, Manager->FowMaskColor, 255);
+
+						//RED mask?, no , this needs to work in tandem with the material
+						//Manager->TextureData[x + y * signedSize] = FColor(Manager->FowMaskColor, (uint8)0, (uint8)0, 255);
 					}
 				}
 			}
@@ -178,6 +236,7 @@ void AFogOfWarWorker::UpdateFowTexture() {
 	}
 	Manager->bHasFOWTextureUpdate = true;
 }
+
 
 void AFogOfWarWorker::Stop() {
 	StopTaskCounter.Increment();

@@ -44,7 +44,12 @@ public:
 
 	void ChangeEnemyAggro(int8 EnemyGroupNumber);
 
+	AFogOfWarManager* GetFowManager() { return FogOfWar; }
+
 private:
+	UPROPERTY()
+	AFogOfWarManager* FogOfWar = nullptr;
+
 	int32 EnemyTurnOrder = 0;
 
 	bool bEnemyNoticeBattle = false;

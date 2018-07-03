@@ -17,6 +17,7 @@
 #include "Public/UObject/ConstructorHelpers.h"
 #include "Components/TimelineComponent.h"
 #include "Classes/Curves/CurveFloat.h"
+#include "FogOfWarComponent.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -25,6 +26,7 @@ ACustomThirdPerson::ACustomThirdPerson()
 
 	AimingComponent = CreateDefaultSubobject<UAimingComponent>(TEXT("AimingComponent"));
 	TrajectoryComponent = CreateDefaultSubobject<UTrajectoryComponent>(TEXT("TrajectoryComponent"));
+	FOWComponent = CreateDefaultSubobject<UFogOfWarComponent>(TEXT("FogOfWarComponent"));
 }
 
 void ACustomThirdPerson::BeginPlay()
@@ -623,3 +625,19 @@ void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)
 	WalkingState = WalkingStateToSet; 
 	ChangeTimelineFactor();
 };
+
+void ACustomThirdPerson::HideUnit() 
+{
+	SetActorHiddenInGame(true);
+	GunReference->SetActorHiddenInGame(true);
+	HealthBar->SetVisibility(false);
+};
+
+
+void ACustomThirdPerson::UnHideUnit()
+{
+	SetActorHiddenInGame(false);
+	GunReference->SetActorHiddenInGame(false);
+	HealthBar->SetVisibility(true);
+
+}
