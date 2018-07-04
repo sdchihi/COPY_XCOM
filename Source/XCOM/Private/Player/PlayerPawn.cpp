@@ -33,6 +33,7 @@ APlayerPawn::APlayerPawn()
 // Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {
+	EstimatedHeight = MinHeight;
 	Super::BeginPlay();
 }
 
@@ -74,6 +75,20 @@ void APlayerPawn::Tick(float DeltaTime)
 		}
 	}
 
+	if (bExecuteZoom) 
+	{
+		FVector ActorLocation = GetActorLocation();
+		float DeltaHeight = UKismetMathLibrary::Lerp(ActorLocation.Z, EstimatedHeight, DeltaTime);
+		UE_LOG(LogTemp, Warning, L" Delta   %f !   And Time %f ", DeltaHeight, DeltaTime);
+		ActorLocation.Z = DeltaHeight;
+		SetActorLocation(ActorLocation);
+
+		if (FMath::IsNearlyEqual(DeltaHeight, EstimatedHeight, 50.f)) 
+		{
+			bExecuteZoom = false;
+		};
+		//	ControlDistanceToUIDelegate.Broadcast((PlayerPawnSpringArmLength - 100) / 4 + 150); 줌될때 사용되던 delegate
+	}
 }
 
 // Called to bind functionality to input
@@ -81,8 +96,8 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
-	PlayerInputComponent->BindAction("ZoomIn", IE_Pressed, this, &APlayerPawn::CameraZoomIn);
-	PlayerInputComponent->BindAction("ZoomOut", IE_Pressed, this, &APlayerPawn::CameraZoomOut);
+	PlayerInputComponent->BindAction("ZoomIn", IE_Pressed, this, &APlayerPawn::LiftCamera);
+	PlayerInputComponent->BindAction("ZoomOut", IE_Pressed, this, &APlayerPawn::LowerCamera);
 
 	PlayerInputComponent->BindAction("HoverCharacter", IE_Pressed, this, &APlayerPawn::EnableHover);
 	PlayerInputComponent->BindAction("HoverCharacter", IE_Released, this, &APlayerPawn::DisableHover);
@@ -90,26 +105,6 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("Hover", this, &APlayerPawn::HoverCamera);
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerPawn::MoveCameraForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerPawn::MoveCameraRight);
-}
-
-
-
-void APlayerPawn::CameraZoomIn() 
-{
-	float PlayerPawnSpringArmLength= FMath::Clamp(SpringArm->TargetArmLength - CameraZoomSpeed, 100.f, 700.f);
-	//100 ~ 700
-	SpringArm->TargetArmLength = PlayerPawnSpringArmLength;
-	//150 ~ 200
-	ControlDistanceToUIDelegate.Broadcast((PlayerPawnSpringArmLength - 100) / 4 + 150);
-}
-
-void APlayerPawn::CameraZoomOut() 
-{
-	float PlayerPawnSpringArmLength = FMath::Clamp(SpringArm->TargetArmLength + CameraZoomSpeed, 100.f, 700.f);
-	//100 ~ 700
-	SpringArm->TargetArmLength = PlayerPawnSpringArmLength;
-	//150 ~ 200
-	ControlDistanceToUIDelegate.Broadcast((PlayerPawnSpringArmLength - 100) / 4 + 150);
 }
 
 void APlayerPawn::MoveCameraForward(float Direction) 
@@ -160,10 +155,6 @@ void APlayerPawn::TurnCamera(const float PrevArmYaw, const float LerpAlpha)
 {
 	FRotator SpringArmRotator = SpringArm->GetComponentRotation();
 	
-	//float StartCameraYaw = PrevLocationOrder * 90;
-	//float TargetYaw = CameraLocationOrder * 90;
-	
-
 	SpringArm->SetWorldRotation(FRotator(SpringArmRotator.Pitch, FMath::Lerp(PrevArmYaw, ArmYaw, LerpAlpha), SpringArmRotator.Roll));
 }
 
@@ -193,6 +184,25 @@ void APlayerPawn::MoveToTarget(AActor& TargetActor)
 
 	FVector DeltaMovement = UKismetMathLibrary::VLerp(ActorLocation, TargetLocation, GetWorld()->GetDeltaSeconds());
 	SetActorLocation(DeltaMovement);
-	
+}
+
+void APlayerPawn::LiftCamera() 
+{
+	SetNewHeightValue(CameraLiftingSpeed);
+}
+
+void APlayerPawn::LowerCamera()
+{
+	SetNewHeightValue(-CameraLiftingSpeed);
+}
+
+void APlayerPawn::SetNewHeightValue(float Amount) 
+{
+	float EstimatedHeightBeforeChecking = EstimatedHeight + Amount;
+	if (EstimatedHeightBeforeChecking < MaxHeight && MinHeight < EstimatedHeightBeforeChecking)
+	{
+		EstimatedHeight += Amount;
+		bExecuteZoom = true;
+	}	
 }
 

@@ -37,7 +37,7 @@ public:
 	float CameraMovementSpeed = 50;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float CameraZoomSpeed = 50;
+	float CameraLiftingSpeed = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraScrollBoundary =25;
@@ -58,8 +58,20 @@ public:
 
 	void MoveToTarget(AActor& TargetActor);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float MaxHeight = 1500;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float MinHeight = 200;
+
+	float CurrentHeight = 0;
+
+	float EstimatedHeight = 0;
+
+
 private:
 
+	bool bExecuteZoom = false;
 	//변수
 
 	UPROPERTY(VisibleAnywhere)
@@ -82,12 +94,6 @@ private:
 	// 메소드
 
 	UFUNCTION()
-	void CameraZoomIn();
-
-	UFUNCTION()
-	void CameraZoomOut();
-
-	UFUNCTION()
 	void MoveCameraForward(float Direction);
 
 	UFUNCTION()
@@ -101,6 +107,14 @@ private:
 	
 	UFUNCTION()
 	void DisableHover();
+
+	void SetNewHeightValue(float Amount);
+
+	UFUNCTION()
+	void LiftCamera();
+
+	UFUNCTION()
+	void LowerCamera();
 
 
 };
