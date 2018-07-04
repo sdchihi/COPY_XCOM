@@ -108,9 +108,6 @@ void AEnemyUnit::UnHideUnit()
 	GunReference->SetActorHiddenInGame(false);
 	HealthBar->SetVisibilityLocker(false);
 	HealthBar->SetWidgetVisibility(true);
-
-	
-
 }
 
 void AEnemyUnit::PlayEmoteMontage() 
@@ -125,6 +122,11 @@ void AEnemyUnit::PlayEmoteMontage()
 		//GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndDelegate);
 		float FuncCallDelay = PlayAnimMontage(EmoteMontage);
 
+		if (PlayAggroEventDelegate.IsBound()) 
+		{
+			PlayAggroEventDelegate.Execute(Cast<AActor>(this));
+		}
+
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);	
@@ -134,5 +136,9 @@ void AEnemyUnit::PlayEmoteMontage()
 
 void AEnemyUnit::OnEmoteMontageEnded() 
 {
+	if (FinishAggroEventDelegate.IsBound()) 
+	{
+		FinishAggroEventDelegate.Execute();
+	}
 	Super::FinishMoving();
 }

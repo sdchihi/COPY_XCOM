@@ -6,7 +6,8 @@
 #include "Unit/CustomThirdPerson.h"
 #include "EnemyUnit.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FPlayAggroEventDelegate, AEnemyUnit*, PlayUnit);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FPlayAggroEventDelegate, AActor*, PlayUnit);
+DECLARE_DYNAMIC_DELEGATE(FFinishAggroEventDelegate);
 
 /**
  * 
@@ -30,6 +31,8 @@ public:
 	
 
 	FPlayAggroEventDelegate PlayAggroEventDelegate;
+
+	FFinishAggroEventDelegate FinishAggroEventDelegate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UAnimMontage* EmoteMontage;

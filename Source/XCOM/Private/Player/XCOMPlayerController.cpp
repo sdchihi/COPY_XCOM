@@ -14,7 +14,7 @@
 #include "CombatWidget.h"
 #include "XCOMGameMode.h"
 #include "Components/WidgetComponent.h"
-
+#include "EnemyUnit.h"
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -81,6 +81,12 @@ void AXCOMPlayerController::Initialize() {
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
 			PlayerCharacters.Add(SingleThirdPerson);
+		}
+		else 
+		{
+			AEnemyUnit* Enemy = Cast<AEnemyUnit>(SingleThirdPerson);
+			Enemy->PlayAggroEventDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToFrontCam);
+			Enemy->FinishAggroEventDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
 		}
 	}
 
@@ -492,6 +498,18 @@ void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;
 }
+
+/**
+* 캐릭터의 정면을 비출 Action Cam 으로 시점을 바꿉니다.
+* @param TargetActor
+*/
+void AXCOMPlayerController::ChangeToFrontCam(AActor* TargetActor)
+{
+	APlayerPawnInAiming* ActionCam = GetNextActionCam();
+	ActionCam->SetFrontCam(TargetActor);
+	SetViewTarget(ActionCam);
+}
+
 
 /**
 * 사용될 Action Cam  Actor를 가져옵니다.

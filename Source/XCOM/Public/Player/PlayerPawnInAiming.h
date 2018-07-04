@@ -37,7 +37,7 @@ public:
 
 	void SetDeathCam(const FVector AimingCharLoc, const FVector MurderedCharLocation);
 
-	void SetFrontCam(const FVector AimingCharLoc, const FVector MurderedCharLocation);
+	void SetFrontCam(AActor* Actor);
 
 
 	UPROPERTY(EditDefaultsOnly)

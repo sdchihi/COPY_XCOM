@@ -106,7 +106,6 @@ private:
 	UFUNCTION()
 	void SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility, const int32 MovableStepPerAct);
 
-
 	void ReleaseCharacter();
 
 	void ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation);
@@ -120,6 +119,10 @@ private:
 
 	UFUNCTION()
 	void ChangeToDeathCam(const FVector TargetLocation);
+
+	UFUNCTION()
+	void ChangeToFrontCam(AActor* TargetActor);
+
 
 	APlayerPawnInAiming* GetNextActionCam();
 
