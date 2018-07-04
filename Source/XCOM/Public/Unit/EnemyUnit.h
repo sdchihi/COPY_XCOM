@@ -41,7 +41,7 @@ public:
 	UFUNCTION()
 	void OnEmoteMontageEnded();
 
-		//void OnEmoteMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	//void OnEmoteMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 protected:
 	virtual void FinishMoving() override;

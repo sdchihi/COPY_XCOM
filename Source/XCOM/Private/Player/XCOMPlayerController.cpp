@@ -24,7 +24,7 @@ AXCOMPlayerController::AXCOMPlayerController()
 void AXCOMPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
@@ -42,6 +42,14 @@ void AXCOMPlayerController::BeginPlay()
 void AXCOMPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsFocusing) 
+	{
+		if (IsValid(FocusedActor)) 
+		{
+			DefaultPlayerPawn->MoveToTarget(*FocusedActor);
+		}
+	}
 };
 
 void AXCOMPlayerController::SetupInputComponent() {
@@ -163,11 +171,10 @@ void AXCOMPlayerController::OnClick()
 				PathLocation += FVector(-50, -50, 0);
 				Tempor.Add(PathLocation);
 			}
+			FocusedActor = SelectedCharacter;
+			SetFocus(true);
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
-			FAttachmentTransformRules TransformRule(EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepRelative, false);
 			
-			//GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform, FName(L"Gun"));
-			DefaultPlayerPawn->AttachToActor(SelectedCharacter, TransformRule);
 		}
 		else
 		{
@@ -203,6 +210,7 @@ ATile* AXCOMPlayerController::GetOverlappedTile(ACustomThirdPerson* TargetCharac
 */
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 {
+	SetFocus(false);
 	if (TargetCharacter->RemainingActionPoint > 0) {
 		DisableInput(this);
 		ATile* OverlappedTile = GetOverlappedTile(TargetCharacter);
@@ -266,7 +274,6 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingCharacter) 
 {
 	CheckWallAround(MovingCharacter);
-	DefaultPlayerPawn->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	if (MovingCharacter->bCanAction) 
 	{
 		EnableInput(this);
@@ -588,4 +595,12 @@ void AXCOMPlayerController::OrderStartVigilance()
 void AXCOMPlayerController::SetInvisibleCombatWidget()
 {
 	CombatWidget->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+
+void AXCOMPlayerController::SetFocus(bool bFocus) 
+{
+	bIsFocusing = bFocus;
+	// Block Camera Movement By Cursor
+	DefaultPlayerPawn->SetActorTickEnabled(!bFocus);
 }

@@ -82,7 +82,7 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 	else 
 	{
 		for (auto SingleEnemyCharacter : EnemyCharacters)
-	{
+		{
 			if (SingleEnemyCharacter->bCanAction)
 			{
 				bIsEnd = false;
@@ -104,9 +104,13 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			RestoreTeamActionPoint(EnemyCharacters);
 			SetEnemysPatrolLocation();
 			StartBotActivity();
+
+			PlayerController->SetFocus(true);
 		}
 		else 
 		{
+			PlayerController->SetFocus(false);
+
 			EnableInput(PlayerController);
 			UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
 			RestoreTeamActionPoint(PlayerCharacters);
@@ -200,6 +204,11 @@ void AXCOMGameMode::StartBotActivity()
 	}
 	else 
 	{
+		if (EnemyChar->IsInUnFoggedArea()) 
+		{
+			AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
+			PlayerController->SetFocusedActor(*EnemyChar);
+		}
 		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;
 	}

@@ -56,6 +56,8 @@ public:
 
 	float ArmYaw = 0;
 
+	void MoveToTarget(AActor& TargetActor);
+
 private:
 
 	//º¯¼ö

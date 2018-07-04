@@ -181,3 +181,18 @@ float APlayerPawn::GetNextCameraArmYaw(const bool bTurnCameraClockWise)
 	
 	return PrevArmYaw;
 }
+
+void APlayerPawn::MoveToTarget(AActor& TargetActor)  
+{
+	FVector ActorLocation = GetActorLocation();
+	FVector TargetLocation = TargetActor.GetActorLocation();
+	
+	FVector DirectionFromTargetToCamera = (ActorLocation - TargetLocation).GetSafeNormal2D();
+	TargetLocation = TargetLocation + (DirectionFromTargetToCamera * 800);
+	TargetLocation.Z = ActorLocation.Z;
+
+	FVector DeltaMovement = UKismetMathLibrary::VLerp(ActorLocation, TargetLocation, GetWorld()->GetDeltaSeconds());
+	SetActorLocation(DeltaMovement);
+	
+}
+

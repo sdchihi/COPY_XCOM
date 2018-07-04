@@ -63,10 +63,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void SwitchNextCharacter(bool bTeam);
 
+	void SetFocus(bool bFocus);
+
+	void SetFocusedActor(AActor& abc) { FocusedActor = &abc; };
+
+
 protected:
 	virtual void SetupInputComponent() override;
 
 private:
+	bool bIsFocusing = false;
+
+	UPROPERTY()
+	AActor* FocusedActor;
+
 	//º¯¼ö
 	int32 CharacterSwitchIndex = 1;
 

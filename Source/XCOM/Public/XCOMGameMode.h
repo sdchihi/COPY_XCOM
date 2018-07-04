@@ -70,7 +70,6 @@ private:
 
 	void RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characters);
 
-
 	UFUNCTION()
 	void SetVisibleAllHealthBar(const bool bVisible);
 
