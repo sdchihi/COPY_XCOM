@@ -79,7 +79,6 @@ void APlayerPawn::Tick(float DeltaTime)
 	{
 		FVector ActorLocation = GetActorLocation();
 		float DeltaHeight = UKismetMathLibrary::Lerp(ActorLocation.Z, EstimatedHeight, DeltaTime);
-		UE_LOG(LogTemp, Warning, L" Delta   %f !   And Time %f ", DeltaHeight, DeltaTime);
 		ActorLocation.Z = DeltaHeight;
 		SetActorLocation(ActorLocation);
 
@@ -182,7 +181,7 @@ void APlayerPawn::MoveToTarget(AActor& TargetActor)
 	TargetLocation = TargetLocation + (DirectionFromTargetToCamera * 800);
 	TargetLocation.Z = ActorLocation.Z;
 
-	FVector DeltaMovement = UKismetMathLibrary::VLerp(ActorLocation, TargetLocation, GetWorld()->GetDeltaSeconds());
+	FVector DeltaMovement = UKismetMathLibrary::VLerp(ActorLocation, TargetLocation, GetWorld()->GetDeltaSeconds() * 5);
 	SetActorLocation(DeltaMovement);
 }
 

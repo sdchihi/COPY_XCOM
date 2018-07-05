@@ -173,6 +173,7 @@ void AXCOMPlayerController::OnClick()
 			}
 			FocusedActor = SelectedCharacter;
 			SetFocus(true);
+			CombatWidget->ConstructWidgetMinimum();
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
 			
 		}

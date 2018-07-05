@@ -31,7 +31,7 @@ class XCOM_API UCombatWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-
+	virtual void NativeConstruct() override;
 	//virtual	bool Initialize() override;	
 	
 
@@ -51,6 +51,12 @@ public:
 	FStartAmbushDelegate StartAmbushDelegate;
 
 	FStartVisilianceDelegate StartVisilianceDelegate;
+
+	void ConstructWidgetMinimum();
+
+	void ConstructWidgetRequiredForAttack();
+
+	void ConstructWidgetNormal();
 
 
 protected:
@@ -130,11 +136,10 @@ private:
 	UFUNCTION()
 	void StartGrenadeButtonClicked();
 
-	void ConstructWidgetMinimum();
+	class UWidgetAnimation* GetAnimationByName(FName AnimationName) const;
 
-	void ConstructWidgetRequiredForAttack();
-	
-	void ConstructWidgetNormal();
-	
+	TMap<FName, UWidgetAnimation*> AnimationsMap;
+
+	void FillAnimationsMap();
 
 };
