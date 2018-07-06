@@ -37,8 +37,11 @@ public:
 
 	void SetDeathCam(const FVector AimingCharLoc, const FVector MurderedCharLocation);
 
+	void SetCloseUpCam(FVector TargetActorLocation, FVector ForwardDirction);
+
 	void SetFrontCam(AActor* Actor);
 
+	void StopCameraMoving();
 
 	UPROPERTY(EditDefaultsOnly)
 	float BackWardDistance = 100;
@@ -50,6 +53,15 @@ public:
 	float UpwardDistance = 100;
 	
 private:
+
+	FVector StartLocation;
+
+	FVector TargetLocation;
+
+	
+
+	bool bCameraMoving = false;
+
 	bool CheckInView(const FVector StartLocation, const FVector TargetLocation);
 
 	bool bNeedToChangeLocation = false;

@@ -95,6 +95,9 @@ private:
 
 	bool bCameraOrder = false;
 
+	APlayerPawnInAiming* GetCurrentActionCam();
+
+
 	//¸Þ¼Òµå
 	void Initialize();
 
@@ -133,6 +136,8 @@ private:
 	UFUNCTION()
 	void ChangeToFrontCam(AActor* TargetActor);
 
+	UFUNCTION()
+	void ChangeToCloseUpCam(FVector TargetLocation, FVector ForwardDirection);
 
 	APlayerPawnInAiming* GetNextActionCam();
 
@@ -156,4 +161,5 @@ private:
 	UFUNCTION()
 	void AfterCharacterMoving(ACustomThirdPerson* MovingCharacter);
 
+	
 };

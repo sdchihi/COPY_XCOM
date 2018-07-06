@@ -88,6 +88,10 @@ void AXCOMPlayerController::Initialize() {
 		if (SingleThirdPerson->GetTeamFlag())
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
+			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
+			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget);
+
+
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
 		else 
@@ -498,14 +502,28 @@ void AXCOMPlayerController::ChangeViewTargetByCharacter(const FVector CharacterL
 */
 void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 {
+	GetCurrentActionCam()->StopCameraMoving();
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
-	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedCharLocation);
+	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedCharLocation); // 수정 필요
 	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드
 	SetViewTarget(ActionCam);
 
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;
 }
+
+void AXCOMPlayerController::ChangeToCloseUpCam(FVector TargetLocation, FVector ForwardDirection) 
+{
+	APlayerPawnInAiming* ActionCam = GetNextActionCam();
+	ActionCam->SetCloseUpCam(TargetLocation, ForwardDirection);
+	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드
+	SetViewTarget(ActionCam);
+
+	bCameraOrder = !bCameraOrder;
+}
+
+
+
 
 /**
 * 캐릭터의 정면을 비출 Action Cam 으로 시점을 바꿉니다.
@@ -517,6 +535,24 @@ void AXCOMPlayerController::ChangeToFrontCam(AActor* TargetActor)
 	ActionCam->SetFrontCam(TargetActor);
 	SetViewTarget(ActionCam);
 }
+
+
+/**
+* 최근 사용된 Action Cam  Actor를 가져옵니다.
+* @return APlayerPawnInAiming
+*/
+APlayerPawnInAiming* AXCOMPlayerController::GetCurrentActionCam()
+{
+	if (bCameraOrder)
+	{
+		return PawnInAimingSituation[1];
+	}
+	else
+	{
+		return PawnInAimingSituation[0];
+	}
+}
+
 
 
 /**

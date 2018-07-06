@@ -174,11 +174,18 @@ void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha)
 
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
+	if (StartShootingDelegate.IsBound())
+	{
+		if (SelectedAimingInfo.TargetActor)
+		{
+			StartShootingDelegate.Execute(SelectedAimingInfo.TargetActor);
+		}
+	}
 	bIsReadyToAttack = false;
 	bIsAttack = true;
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
-
 	
+
 }
 
 void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
@@ -286,10 +293,10 @@ void ACustomThirdPerson::AttackAfterCoverMoving()
 
 void ACustomThirdPerson::Shoot() 
 {
-
 	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
 	float RandomValue = FMath::FRandRange(0, 1);
+	
 
 	//성공
 	if (RandomValue <= AttackSuccessProbability)
@@ -320,6 +327,15 @@ void ACustomThirdPerson::Shoot()
 		{
 			AimAt(AimDirection + FVector(0, 50, 50), FName(L"ProjectileToWall"));
 			UE_LOG(LogTemp, Warning, L"공격 실패 : 허공향해 사격");
+		}
+	}
+
+	float DistanceToTarget = GetDistanceTo(SelectedAimingInfo.TargetActor);
+	if (DistanceToTarget > 700.f) 
+	{
+		if (ReadyToAttackDelegate.IsBound())
+		{
+			ReadyToAttackDelegate.Execute(GetActorLocation(), AimDirection);
 		}
 	}
 }

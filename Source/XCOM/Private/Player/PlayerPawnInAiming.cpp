@@ -8,7 +8,7 @@
 
 APlayerPawnInAiming::APlayerPawnInAiming()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	SetRootComponent(Camera);
@@ -22,6 +22,15 @@ void APlayerPawnInAiming::BeginPlay()
 
 void APlayerPawnInAiming::Tick(float DeltaTime)
 {
+	if (bCameraMoving) 
+	{
+		FVector DeltaMovement = UKismetMathLibrary::VLerp(GetActorLocation(), StartLocation, GetWorld()->GetDeltaSeconds() * 3);
+		FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(DeltaMovement, TargetLocation);
+
+		SetActorRotation(NewPawnRotation);
+		SetActorLocation(DeltaMovement);
+	}
+
 	Super::Tick(DeltaTime);
 }
 
@@ -163,3 +172,29 @@ void APlayerPawnInAiming::SetFrontCam(AActor* Actor)
 	SetActorLocation(NewPawnPosition);
 	SetActorRotation(NewPawnRotation);
 };
+
+// 사격하기 전 준비동작을 정면에서 움직이는 캠으로 촬영할때 사용
+void APlayerPawnInAiming::SetCloseUpCam(FVector TargetActorLocation, FVector ForwardDirction) 
+{
+	TargetLocation = TargetActorLocation + FVector(0, 0, UpwardDistance /2);
+
+	FVector ForwardUnitVec = ForwardDirction.GetSafeNormal2D();
+	UE_LOG(LogTemp,Warning, L"CloseCam Target Loc : %s , Dir : %s", *TargetActorLocation.ToString(), *ForwardDirction.ToString())
+	FVector RightDirection = FVector::CrossProduct(ForwardUnitVec, FVector(0, 0, 1));
+
+	FVector NewPawnPosition = TargetActorLocation + (ForwardUnitVec * 200) + (RightDirection * 200);
+
+	StartLocation = TargetActorLocation + (ForwardUnitVec * 100) + (RightDirection * 100);
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetActorLocation);
+
+	SetActorLocation(NewPawnPosition);
+	SetActorRotation(NewPawnRotation);
+
+	bCameraMoving = true;
+}
+
+
+void APlayerPawnInAiming::StopCameraMoving() 
+{
+	bCameraMoving = false;
+}
