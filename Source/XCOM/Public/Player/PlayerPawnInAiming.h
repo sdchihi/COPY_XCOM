@@ -58,6 +58,7 @@ private:
 
 	FVector TargetLocation;
 
+	FVector EndLocation;
 	
 
 	bool bCameraMoving = false;

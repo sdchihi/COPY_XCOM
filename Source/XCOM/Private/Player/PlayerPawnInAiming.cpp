@@ -24,7 +24,7 @@ void APlayerPawnInAiming::Tick(float DeltaTime)
 {
 	if (bCameraMoving) 
 	{
-		FVector DeltaMovement = UKismetMathLibrary::VLerp(GetActorLocation(), StartLocation, GetWorld()->GetDeltaSeconds() * 3);
+		FVector DeltaMovement = UKismetMathLibrary::VLerp(GetActorLocation(), EndLocation, GetWorld()->GetDeltaSeconds() * 3);
 		FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(DeltaMovement, TargetLocation);
 
 		SetActorRotation(NewPawnRotation);
@@ -179,13 +179,12 @@ void APlayerPawnInAiming::SetCloseUpCam(FVector TargetActorLocation, FVector For
 	TargetLocation = TargetActorLocation + FVector(0, 0, UpwardDistance /2);
 
 	FVector ForwardUnitVec = ForwardDirction.GetSafeNormal2D();
-	UE_LOG(LogTemp,Warning, L"CloseCam Target Loc : %s , Dir : %s", *TargetActorLocation.ToString(), *ForwardDirction.ToString())
 	FVector RightDirection = FVector::CrossProduct(ForwardUnitVec, FVector(0, 0, 1));
-
 	FVector NewPawnPosition = TargetActorLocation + (ForwardUnitVec * 200) + (RightDirection * 200);
 
-	StartLocation = TargetActorLocation + (ForwardUnitVec * 100) + (RightDirection * 100);
-	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetActorLocation);
+	EndLocation = TargetActorLocation + (ForwardUnitVec * 170) + (RightDirection * 70) + FVector(0, 0, UpwardDistance / 3);
+
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, TargetLocation);
 
 	SetActorLocation(NewPawnPosition);
 	SetActorRotation(NewPawnRotation);
