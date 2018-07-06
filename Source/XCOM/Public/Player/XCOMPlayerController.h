@@ -121,10 +121,10 @@ private:
 
 	void ReleaseCharacter();
 
-	void ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation);
+	void ChangeViewTarget(const FVector StartLocation, const FVector TargetLocation, bool bPlayBlend);
 
 	UFUNCTION()
-	void ChangeViewTargetByCombatWidget(AActor* TargetActor);
+	void ChangeViewTargetByCombatWidget(AActor* TargetActor , bool bPlayBlend);
 
 	UFUNCTION()
 	void ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation);

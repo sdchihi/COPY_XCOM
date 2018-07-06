@@ -178,7 +178,7 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 	{
 		if (SelectedAimingInfo.TargetActor)
 		{
-			StartShootingDelegate.Execute(SelectedAimingInfo.TargetActor);
+			StartShootingDelegate.Execute(SelectedAimingInfo.TargetActor, false);
 		}
 	}
 	bIsReadyToAttack = false;

@@ -89,7 +89,7 @@ void AXCOMPlayerController::Initialize() {
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
 			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
-			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget);
+			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget); // 여기
 
 
 			PlayerCharacters.Add(SingleThirdPerson);
@@ -108,7 +108,7 @@ void AXCOMPlayerController::Initialize() {
 		if (CombatWidget)
 		{
 			CombatWidget->AddToViewport();
-			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget);
+			CombatWidget->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget); // 여기
 			CombatWidget->StartAttackDelegate.BindDynamic(this, &AXCOMPlayerController::OrderAttack);
 			CombatWidget->StartTrajectoryDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartTrajectory);
 			CombatWidget->StartVisilianceDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartVigilance);
@@ -445,12 +445,14 @@ void AXCOMPlayerController::ReleaseCharacter()
 }
 
 /**
-* Action Cam 시점으로 부드럽게 이동합니다.
+* Action Cam 시점으로 변경합니다
 * @param StartLocation 
 * @param TargetLocation
+* @param 블렌드 여부
 */
-void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocation, const FVector TargetLocation)
+void AXCOMPlayerController::ChangeViewTarget(const FVector StartLocation, const FVector TargetLocation, bool bPlayBlend = true)
 {
+	GetCurrentActionCam()->StopCameraMoving();
 	if (HealthBarVisiblityDelegate.IsBound())
 	{
 		HealthBarVisiblityDelegate.Execute(false);
@@ -458,7 +460,14 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocatio
 
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
 	ActionCam->SetCameraPositionInAimingSituation(StartLocation, TargetLocation);
-	SetViewTargetWithBlend(ActionCam, 0.5);
+	if (bPlayBlend) 
+	{
+		SetViewTargetWithBlend(ActionCam, 0.5);
+	}
+	else 
+	{
+		SetViewTarget(ActionCam);
+	}
 
 	TileManager->ClearAllTiles(true);
 	bCameraOrder = !bCameraOrder;
@@ -469,7 +478,7 @@ void AXCOMPlayerController::ChangeViewTargetWithBlend(const FVector StartLocatio
 * Combat Widget에 의해 Action Cam 시점으로 부드럽게 이동합니다.
 * @param TagetActor
 */
-void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor)
+void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, bool bPlayBlend = true)
 {
 	if (AimWidget)
 	{
@@ -484,7 +493,8 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor)
 	{
 		UE_LOG(LogTemp, Warning, L"component 없음");
 	}
-	ChangeViewTargetWithBlend(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation());
+	
+	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
 }
 
 /**
@@ -493,7 +503,7 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor)
 */
 void AXCOMPlayerController::ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation)
 {
-	ChangeViewTargetWithBlend(CharacterLocation, TargetLocation);
+	ChangeViewTarget(CharacterLocation, TargetLocation);
 }
 
 /**
@@ -501,8 +511,7 @@ void AXCOMPlayerController::ChangeViewTargetByCharacter(const FVector CharacterL
 * @param MurderedCharLocation
 */
 void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
-{
-	GetCurrentActionCam()->StopCameraMoving();
+{;
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
 	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedCharLocation); // 수정 필요
 	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드

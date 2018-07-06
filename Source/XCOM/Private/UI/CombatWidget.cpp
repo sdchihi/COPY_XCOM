@@ -170,7 +170,7 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	float Percentage;
 	ConvertToSuitableFormat(SelectedCharacterAimingInfo[ButtonIndex], Explanation, Percentage);
 
-	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetActor);
+	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetActor, true);
 	TargetEnemyIndex = ButtonIndex;
 }
 

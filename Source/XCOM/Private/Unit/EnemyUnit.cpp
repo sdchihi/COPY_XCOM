@@ -66,7 +66,7 @@ void AEnemyUnit::FinishMoving()
 
 void AEnemyUnit::FinishMovingAfterMontage() 
 {
-	PlayEmoteMontage();
+	PlayEmoteMontage(true);
 }
 
 	
@@ -88,7 +88,9 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 		{
 			PlayAggroEventDelegate.Execute(this);
 		}
+		PlayEmoteMontage(false);
 	}
+	// 이부분 수정- > 맞고나서 다 끝난 후 이벤트 처리 필요
 
 	return ActualDamage;
 }
@@ -110,7 +112,7 @@ void AEnemyUnit::UnHideUnit()
 	HealthBar->SetWidgetVisibility(true);
 }
 
-void AEnemyUnit::PlayEmoteMontage() 
+void AEnemyUnit::PlayEmoteMontage(bool bRemainingWork = false) 
 {
 	if (EmoteMontage) 
 	{
@@ -127,9 +129,12 @@ void AEnemyUnit::PlayEmoteMontage()
 			PlayAggroEventDelegate.Execute(Cast<AActor>(this));
 		}
 
-		FTimerHandle UnUsedHandle;
-		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
-		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);	
+		if (bRemainingWork) 
+		{
+			FTimerHandle UnUsedHandle;
+			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
+			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);
+		}
 	}
 
 }

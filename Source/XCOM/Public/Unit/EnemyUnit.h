@@ -53,7 +53,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int8 Group;
 	
-	void PlayEmoteMontage();
+	void PlayEmoteMontage(bool bRemainingWork);
 
 	void FinishMovingAfterMontage();
 
