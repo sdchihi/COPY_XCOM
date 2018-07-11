@@ -63,7 +63,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void SwitchNextCharacter(bool bTeam);
 
-	void SetFocus(bool bFocus);
+	void EnableFocusing(AActor* ActorToFocus);
+
+	void DisableFocusing();
 
 	void SetFocusedActor(AActor& abc) { FocusedActor = &abc; };
 
@@ -104,6 +106,9 @@ private:
 	void OnClick();
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
+
+	void FocusNextAvailablePlayerUnit();
+
 
 	void CheckWallAround(ACustomThirdPerson* TargetCharacter);
 

@@ -175,8 +175,8 @@ void AXCOMPlayerController::OnClick()
 				PathLocation += FVector(-50, -50, 0);
 				Tempor.Add(PathLocation);
 			}
+			EnableFocusing(SelectedCharacter);
 			FocusedActor = SelectedCharacter;
-			SetFocus(true);
 			CombatWidget->ConstructWidgetMinimum();
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
 			
@@ -215,7 +215,8 @@ ATile* AXCOMPlayerController::GetOverlappedTile(ACustomThirdPerson* TargetCharac
 */
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 {
-	SetFocus(false);
+	DisableFocusing();;
+
 	if (TargetCharacter->RemainingActionPoint > 0) {
 		DisableInput(this);
 		ATile* OverlappedTile = GetOverlappedTile(TargetCharacter);
@@ -438,6 +439,29 @@ FVector AXCOMPlayerController::GetNextAvailableCharLocation()
 	return AvailableCharacters[NextIndex]->GetActorLocation();;
 }
 
+void AXCOMPlayerController::FocusNextAvailablePlayerUnit() 
+{
+	TArray<ACustomThirdPerson*> AvailableCharacters;
+	for (auto SinglePlayerChar : PlayerCharacters)
+	{
+		if (SinglePlayerChar->bCanAction)
+		{
+			AvailableCharacters.Add(SinglePlayerChar);
+		}
+	}
+
+	if (AvailableCharacters.Num() == 0)
+	{
+		return;
+	}
+
+	int32 NextIndex = CharacterSwitchIndex % AvailableCharacters.Num();
+	CharacterSwitchIndex++;
+	SwitchCharacter(AvailableCharacters[NextIndex]);
+	EnableFocusing(AvailableCharacters[NextIndex]);
+}
+
+
 
 void AXCOMPlayerController::ReleaseCharacter() 
 {
@@ -643,10 +667,17 @@ void AXCOMPlayerController::SetInvisibleCombatWidget()
 	CombatWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-
-void AXCOMPlayerController::SetFocus(bool bFocus) 
+void AXCOMPlayerController::EnableFocusing(AActor* ActorToFocus) 
 {
-	bIsFocusing = bFocus;
-	// Block Camera Movement By Cursor
-	DefaultPlayerPawn->SetActorTickEnabled(!bFocus);
+	FocusedActor = ActorToFocus;
+
+	bIsFocusing = true;
+	DefaultPlayerPawn->SetActorTickEnabled(true);
 }
+
+void AXCOMPlayerController::DisableFocusing() 
+{
+	bIsFocusing = false;
+	DefaultPlayerPawn->SetActorTickEnabled(true);
+}
+
