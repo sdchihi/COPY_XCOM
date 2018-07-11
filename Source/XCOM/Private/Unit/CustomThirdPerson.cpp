@@ -335,7 +335,7 @@ void ACustomThirdPerson::Shoot()
 	{
 		if (ReadyToAttackDelegate.IsBound())
 		{
-			ReadyToAttackDelegate.Execute(GetActorLocation(), AimDirection);
+			ReadyToAttackDelegate.Execute(this, AimDirection);
 		}
 	}
 }

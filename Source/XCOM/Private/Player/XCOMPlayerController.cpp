@@ -530,17 +530,15 @@ void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
 	bCameraOrder = !bCameraOrder;
 }
 
-void AXCOMPlayerController::ChangeToCloseUpCam(FVector TargetLocation, FVector ForwardDirection) 
+void AXCOMPlayerController::ChangeToCloseUpCam(AActor* TargetActor, FVector ForwardDirection) 
 {
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
-	ActionCam->SetCloseUpCam(TargetLocation, ForwardDirection);
+	ActionCam->SetCloseUpCam(TargetActor, ForwardDirection);
 	//SetViewTargetWithBlend(ActionCam, 0.5); ºí·»µå
 	SetViewTarget(ActionCam);
 
 	bCameraOrder = !bCameraOrder;
 }
-
-
 
 
 /**

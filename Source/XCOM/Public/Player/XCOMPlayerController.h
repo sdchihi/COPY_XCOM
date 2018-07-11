@@ -139,7 +139,7 @@ private:
 	void ChangeToFrontCam(AActor* TargetActor);
 
 	UFUNCTION()
-	void ChangeToCloseUpCam(FVector TargetLocation, FVector ForwardDirection);
+	void ChangeToCloseUpCam(AActor* TargetActor, FVector ForwardDirection);
 
 	APlayerPawnInAiming* GetNextActionCam();
 

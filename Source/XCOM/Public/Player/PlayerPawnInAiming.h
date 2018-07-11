@@ -37,7 +37,7 @@ public:
 
 	void SetDeathCam(const FVector AimingCharLoc, const FVector MurderedCharLocation);
 
-	void SetCloseUpCam(FVector TargetActorLocation, FVector ForwardDirction);
+	void SetCloseUpCam(AActor* TargetActor, FVector ForwardDirction);
 
 	void SetFrontCam(AActor* Actor);
 
@@ -53,10 +53,14 @@ public:
 	float UpwardDistance = 100;
 	
 private:
+	bool bFocusHead = false;
+
+	USkeletalMeshComponent* BoneToFocus;
+
+	AActor* ActorToFocus;
 
 	FVector StartLocation;
 
-	FVector TargetLocation;
 
 	FVector EndLocation;
 	
@@ -66,4 +70,9 @@ private:
 	bool CheckInView(const FVector StartLocation, const FVector TargetLocation);
 
 	bool bNeedToChangeLocation = false;
+
+	FVector GetActorsHeadLocation()const;
+
+	void SetFocusTarget(AActor* TargetActor);
+
 };

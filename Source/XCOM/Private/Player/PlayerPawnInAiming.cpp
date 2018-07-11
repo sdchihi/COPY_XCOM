@@ -4,7 +4,7 @@
 #include "Classes/Camera/CameraComponent.h"
 #include "Classes/Kismet/KismetMathLibrary.h"
 #include "Classes/Kismet/KismetSystemLibrary.h"
-
+#include "Classes/Components/SkeletalMeshComponent.h"
 
 APlayerPawnInAiming::APlayerPawnInAiming()
 {
@@ -24,6 +24,16 @@ void APlayerPawnInAiming::Tick(float DeltaTime)
 {
 	if (bCameraMoving) 
 	{
+		FVector TargetLocation;
+		if (bFocusHead)
+		{
+			TargetLocation = GetActorsHeadLocation();
+		}
+		else 
+		{
+			TargetLocation = ActorToFocus->GetActorLocation() + FVector(0, 0, UpwardDistance / 2);
+		}
+
 		FVector DeltaMovement = UKismetMathLibrary::VLerp(GetActorLocation(), EndLocation, GetWorld()->GetDeltaSeconds() * 3);
 		FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(DeltaMovement, TargetLocation);
 
@@ -173,9 +183,13 @@ void APlayerPawnInAiming::SetFrontCam(AActor* Actor)
 };
 
 // 사격하기 전 준비동작을 정면에서 움직이는 캠으로 촬영할때 사용
-void APlayerPawnInAiming::SetCloseUpCam(FVector TargetActorLocation, FVector ForwardDirction) 
+void APlayerPawnInAiming::SetCloseUpCam(AActor* TargetActor, FVector ForwardDirction)
 {
-	TargetLocation = TargetActorLocation + FVector(0, 0, UpwardDistance /2);
+	SetFocusTarget(TargetActor);
+	FVector TargetActorLocation = TargetActor->GetActorLocation();
+
+	FVector TargetLocation = TargetActorLocation + FVector(0, 0, UpwardDistance /2);
+	
 
 	FVector ForwardUnitVec = ForwardDirction.GetSafeNormal2D();
 	FVector RightDirection = FVector::CrossProduct(ForwardUnitVec, FVector(0, 0, 1));
@@ -195,4 +209,24 @@ void APlayerPawnInAiming::SetCloseUpCam(FVector TargetActorLocation, FVector For
 void APlayerPawnInAiming::StopCameraMoving() 
 {
 	bCameraMoving = false;
+}
+
+FVector APlayerPawnInAiming::GetActorsHeadLocation() const
+{
+	return BoneToFocus->GetBoneLocation(FName("head"));
+}
+
+void APlayerPawnInAiming::SetFocusTarget(AActor* TargetActor)
+{
+	USkeletalMeshComponent* ActorsSkeletal = TargetActor->FindComponentByClass<USkeletalMeshComponent>();
+	if (ActorsSkeletal)
+	{
+		BoneToFocus = ActorsSkeletal;
+		bFocusHead = true;
+	}
+	else
+	{
+		ActorToFocus = TargetActor;
+		bFocusHead = false;
+	}
 }
