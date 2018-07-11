@@ -216,6 +216,21 @@ void AFogOfWarManager::UpdateTextureRegions(UTexture2D* Texture, int32 MipIndex,
 			FMemory::Free(RegionData->SrcData);
 		}
 		delete RegionData;
-			});
+			}
+		);
 	}
+}
+
+bool AFogOfWarManager::IsInCognitionArea(FVector Location) 
+{
+	if (FowThread) 
+	{
+		return FowThread->IsInIncogArea(Location);
+	}
+	else 
+	{
+		UE_LOG(LogTemp,Warning, L"½ÇÆÐ¾Ö")
+		return false;
+	}
+
 }

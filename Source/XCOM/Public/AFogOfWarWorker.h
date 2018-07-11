@@ -38,4 +38,9 @@ public:
 	bool bCheckActorInTerraIncog = false;//Bool, is the actor in terra incognita territory
 
 	void ShutDown();
+
+	bool IsInIncogArea(FVector Location);
+
+private:
+
 };

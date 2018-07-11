@@ -16,6 +16,8 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Enum.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "XCOMGameMode.h"
+#include "FogOfWarManager.h"
 
 
 AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -271,6 +273,7 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 			HighestScoredTile = It.Key();
 		}
 	}
+	CheckTargetLocation(HighestScoredTile->GetActorLocation());
 
 	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
 
@@ -462,4 +465,19 @@ void AEnemyController::ChangeBehavior(UBehaviorTree* BehaviorTreeToSet)
 
 	}
 	//로드 Object를 할지 아니면 BP에서 가져오는걸로 결정
+}
+
+void AEnemyController::CheckTargetLocation(FVector TargetLocation) 
+{
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	bool IsInCog = GameMode->GetFowManager()->IsInCognitionArea(TargetLocation);
+	if (IsInCog) 
+	{
+		UE_LOG(LogTemp, Warning, L"추적 가능");
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"추적 불가");
+	}
 }

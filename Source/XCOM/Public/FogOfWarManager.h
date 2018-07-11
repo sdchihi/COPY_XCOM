@@ -113,7 +113,8 @@ public:
 	//Getter for the working thread
 	bool GetIsTextureFileEnabled();
 
-	
+	bool IsInCognitionArea(FVector Location);
+
 private:
 
 	void UpdateFowTexture();

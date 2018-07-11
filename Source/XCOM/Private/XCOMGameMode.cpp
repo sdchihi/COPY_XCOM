@@ -150,7 +150,7 @@ void AXCOMGameMode::SetVisibleAllHealthBar(const bool bVisible)
 	{
 		SinglePlayerChar->SetHealthBarVisibility(bVisible);
 	}
-	for (ACustomThirdPerson* SingleEnemyChar : EnemyCharacters)
+	for (ACustomThirdPerson* SingleEnemyChar : EnemyCharacters)¤¸
 	{
 		SingleEnemyChar->SetHealthBarVisibility(bVisible);
 	}
@@ -160,7 +160,7 @@ void AXCOMGameMode::SpawnFogOfWar()
 {
 	if (!FogOfWarBP) { return; }
 
-	AFogOfWarManager* FogOfWar = GetWorld()->SpawnActor<AFogOfWarManager>(
+	FogOfWar = GetWorld()->SpawnActor<AFogOfWarManager>(
 		FogOfWarBP,
 		FVector(0, 0, 0),
 		FRotator(0, 0, 0)
@@ -178,7 +178,6 @@ void AXCOMGameMode::SpawnFogOfWar()
 		}
 	}
 }
-
 
 TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 {

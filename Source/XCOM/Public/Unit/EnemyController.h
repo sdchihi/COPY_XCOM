@@ -131,6 +131,7 @@ private:
 	//Mode부터 결정되는..?
 	FVector PatrolTargetLocation;
 
+	void CheckTargetLocation(FVector TargetLocation);
 
 	
 };

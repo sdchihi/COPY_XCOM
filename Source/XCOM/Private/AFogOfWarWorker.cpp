@@ -241,3 +241,25 @@ void AFogOfWarWorker::UpdateFowTexture() {
 void AFogOfWarWorker::Stop() {
 	StopTaskCounter.Increment();
 }
+
+bool AFogOfWarWorker::IsInIncogArea(FVector Location) 
+{
+	uint32 halfTextureSize = Manager->TextureSize / 2;
+	float dividend = 100.0f / Manager->SamplesPerMeter;
+
+	FVector position = Location;
+
+	int posX = (int)(position.X / dividend) + halfTextureSize;
+	int posY = (int)(position.Y / dividend) + halfTextureSize;
+
+	FVector2D textureSpacePos = FVector2D(posX, posY);
+
+	if (Manager->CurrentlyInSight[textureSpacePos.X + textureSpacePos.Y * Manager->TextureSize])
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
