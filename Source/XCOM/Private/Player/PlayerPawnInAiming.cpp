@@ -39,7 +39,6 @@ void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-// 왼쪽, 오른쪽, 캐릭터 정면 왼쪽 이렇게 세위치에서..
 /**
 * 조준하는 상황에서 사용될 Pawn의 카메라의 위치, 방향을 결정합니다.
 * @param AimingCharLoc - 조준하는 캐릭터의 위치

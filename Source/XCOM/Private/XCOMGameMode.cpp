@@ -105,11 +105,10 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			SetEnemysPatrolLocation();
 			StartBotActivity();
 
-			PlayerController->SetFocus(true);
 		}
 		else 
 		{
-			PlayerController->SetFocus(false);
+			PlayerController->DisableFocusing();
 
 			EnableInput(PlayerController);
 			UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
@@ -150,7 +149,7 @@ void AXCOMGameMode::SetVisibleAllHealthBar(const bool bVisible)
 	{
 		SinglePlayerChar->SetHealthBarVisibility(bVisible);
 	}
-	for (ACustomThirdPerson* SingleEnemyChar : EnemyCharacters)ㅈ
+	for (ACustomThirdPerson* SingleEnemyChar : EnemyCharacters)
 	{
 		SingleEnemyChar->SetHealthBarVisibility(bVisible);
 	}
@@ -206,7 +205,7 @@ void AXCOMGameMode::StartBotActivity()
 		if (EnemyChar->IsInUnFoggedArea()) 
 		{
 			AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
-			PlayerController->EnableFocusing(EnemyChar);
+			PlayerController->EnableFocusing(EnemyChar, false);
 		}
 		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;

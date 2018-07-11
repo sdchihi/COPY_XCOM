@@ -41,9 +41,6 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable)
-	FVector GetNextAvailableCharLocation();
-
 	FDeleverInfoDelegate DeleverInfoDelegate;
 
 	FHealthBarVisiblityDelegate HealthBarVisiblityDelegate;
@@ -60,10 +57,7 @@ public:
 	// Variable to hold the widget After Creating it.
 	UCombatWidget* CombatWidget;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void SwitchNextCharacter(bool bTeam);
-
-	void EnableFocusing(AActor* ActorToFocus);
+	void EnableFocusing(AActor* ActorToFocus , bool bStopAutoMatically);
 
 	void DisableFocusing();
 
@@ -75,6 +69,8 @@ protected:
 
 private:
 	bool bIsFocusing = false;
+
+	bool bStopFocusingAutomatically = false;
 
 	UPROPERTY()
 	AActor* FocusedActor;
@@ -107,7 +103,8 @@ private:
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 
-	void FocusNextAvailablePlayerUnit();
+	UFUNCTION(BlueprintCallable)
+	void FocusNextAvailablePlayerUnit(bool bTeam);
 
 
 	void CheckWallAround(ACustomThirdPerson* TargetCharacter);

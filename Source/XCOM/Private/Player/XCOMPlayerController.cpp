@@ -48,6 +48,18 @@ void AXCOMPlayerController::Tick(float DeltaTime)
 		if (IsValid(FocusedActor)) 
 		{
 			DefaultPlayerPawn->MoveToTarget(*FocusedActor);
+			if (bStopFocusingAutomatically) 
+			{
+				FVector RTSCameraLocation = DefaultPlayerPawn->GetActorLocation();
+				FVector TargetActorLocation = FocusedActor->GetActorLocation();
+				float Distance = FVector::Dist(RTSCameraLocation, TargetActorLocation);
+				if (Distance < 30.f)
+				{
+					bStopFocusingAutomatically = false;
+					DisableFocusing();
+				};
+			
+			}
 		}
 	}
 };
@@ -87,7 +99,7 @@ void AXCOMPlayerController::Initialize() {
 
 		if (SingleThirdPerson->GetTeamFlag())
 		{
-			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::SwitchNextCharacter);
+			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::FocusNextAvailablePlayerUnit);
 			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
 			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget); // 여기
 
@@ -175,8 +187,8 @@ void AXCOMPlayerController::OnClick()
 				PathLocation += FVector(-50, -50, 0);
 				Tempor.Add(PathLocation);
 			}
-			EnableFocusing(SelectedCharacter);
 			FocusedActor = SelectedCharacter;
+			EnableFocusing(FocusedActor, false);
 			CombatWidget->ConstructWidgetMinimum();
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
 			
@@ -215,7 +227,6 @@ ATile* AXCOMPlayerController::GetOverlappedTile(ACustomThirdPerson* TargetCharac
 */
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 {
-	DisableFocusing();;
 
 	if (TargetCharacter->RemainingActionPoint > 0) {
 		DisableInput(this);
@@ -412,34 +423,8 @@ void AXCOMPlayerController::ChangeToDefaultPawn()
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
 };
 
-/**
-* 캐릭터가 Action point를 소모 후 RTS 캠을 이동시킬때 호출됩니다.
-*/
-FVector AXCOMPlayerController::GetNextAvailableCharLocation() 
-{
-	TArray<ACustomThirdPerson*> AvailableCharacters;
-	for (auto SinglePlayerChar : PlayerCharacters)
-	{
-		if (SinglePlayerChar->bCanAction) 
-		{	
-			AvailableCharacters.Add(SinglePlayerChar);
-		}
-	}
 
-	if (AvailableCharacters.Num() == 0) 
-	{
-		//todo something
-		return FVector(0, 0, 0);
-	}
-
-	int32 NextIndex = CharacterSwitchIndex % AvailableCharacters.Num();
-	CharacterSwitchIndex++;
-	SwitchCharacter(AvailableCharacters[NextIndex]);	
-
-	return AvailableCharacters[NextIndex]->GetActorLocation();;
-}
-
-void AXCOMPlayerController::FocusNextAvailablePlayerUnit() 
+void AXCOMPlayerController::FocusNextAvailablePlayerUnit(bool bTeam) 
 {
 	TArray<ACustomThirdPerson*> AvailableCharacters;
 	for (auto SinglePlayerChar : PlayerCharacters)
@@ -458,7 +443,7 @@ void AXCOMPlayerController::FocusNextAvailablePlayerUnit()
 	int32 NextIndex = CharacterSwitchIndex % AvailableCharacters.Num();
 	CharacterSwitchIndex++;
 	SwitchCharacter(AvailableCharacters[NextIndex]);
-	EnableFocusing(AvailableCharacters[NextIndex]);
+	EnableFocusing(AvailableCharacters[NextIndex], true);
 }
 
 
@@ -667,9 +652,10 @@ void AXCOMPlayerController::SetInvisibleCombatWidget()
 	CombatWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void AXCOMPlayerController::EnableFocusing(AActor* ActorToFocus) 
+void AXCOMPlayerController::EnableFocusing(AActor* ActorToFocus, bool bStopAutoMatically = false)
 {
 	FocusedActor = ActorToFocus;
+	bStopFocusingAutomatically = bStopAutoMatically;
 
 	bIsFocusing = true;
 	DefaultPlayerPawn->SetActorTickEnabled(true);
