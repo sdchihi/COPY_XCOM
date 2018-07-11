@@ -80,6 +80,8 @@ public:
 
 	void ChangeBehaviorToCombat();
 
+	void OrderStartVigilance();
+
 private:
 	UBehaviorTree* SelectedBehavior = nullptr;
 
@@ -107,6 +109,9 @@ private:
 	class ATileManager* TileManager = nullptr;
 
 	TMap<ATile*, FAICommandInfo> GetScoreBoard(TArray<ATile*> MovableTiles);
+
+	void ScoreToTile(ATile* TargetTile, TArray<FVector> CoverDirectionArr, TMap<ATile*, FAICommandInfo>& TileScoreBoard);
+
 
 	EAction NextAction;
 

@@ -13,10 +13,13 @@ EBTNodeResult::Type UBTTask_GetNextAction::ExecuteTask(UBehaviorTreeComponent& O
 	ACustomThirdPerson* MyBot = BotController ? Cast<ACustomThirdPerson>(BotController->GetPawn()) : NULL;
 	if (MyBot == NULL)
 	{
+		UE_LOG(LogTemp, Warning, L"GetNextAction 실패")
+
 		return EBTNodeResult::Failed;
 	}
 	BotController->SetNextAction();
 	
+	UE_LOG(LogTemp, Warning, L"GetNextAction 성공")
 
 	return EBTNodeResult::Succeeded;
 }

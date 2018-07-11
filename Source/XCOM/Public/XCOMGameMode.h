@@ -50,6 +50,8 @@ public:
 
 	void SetEnemysBattleCognition() { bEnemyNoticeBattle = true; };
 
+	FVector GetPlayerUnitMiddlePoint();
+
 private:
 	UPROPERTY()
 	AFogOfWarManager* FogOfWar = nullptr;

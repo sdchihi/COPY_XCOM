@@ -10,7 +10,7 @@
 
 UBTTask_AttackPlayerUnit::UBTTask_AttackPlayerUnit()
 {
-	NodeName = "FollowThePath";
+	NodeName = "AttackPlayerUnit";
 	bNotifyTick = true;
 }
 

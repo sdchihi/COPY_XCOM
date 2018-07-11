@@ -355,3 +355,15 @@ void AXCOMGameMode::ChangeEnemyAggro(int8 EnemyGroupNumber)
 		EnemyController->ChangeBehaviorToCombat();
 	}
 }
+
+FVector AXCOMGameMode::GetPlayerUnitMiddlePoint() 
+{
+	FVector PlayerUnitsMiddlePoint;
+	for (ACustomThirdPerson* SinglePlayerUnit : PlayerCharacters)
+	{
+		PlayerUnitsMiddlePoint += SinglePlayerUnit->GetActorLocation();
+	}
+	PlayerUnitsMiddlePoint = PlayerUnitsMiddlePoint / PlayerCharacters.Num();
+
+	return PlayerUnitsMiddlePoint;
+}

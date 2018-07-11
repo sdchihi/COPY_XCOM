@@ -58,7 +58,11 @@ void AEnemyController::SetNextAction()
 	int32 MovableStep = ControlledPawn->GetMovableStepPerActionPoint();
 
 	ATile* OverllapedTile = TileManager->GetOverlappedTile(ControlledPawn);
-	if (!OverllapedTile) { return; }
+	if (!OverllapedTile) 
+	{ 
+		UE_LOG(LogTemp, Warning, L"타일 문제로 실패")
+		return; 
+	}
 
 	TArray<ATile*> MovableTiles;
 	TileManager->GetAvailableTiles(OverllapedTile, MovableStep, MovableStep, MovableTiles);
@@ -75,51 +79,95 @@ TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> Mova
 
 	for (auto TargeTile : MovableTiles)
 	{
-		int32 GeographicalScore = 0;
-		int32 ActionScore = 0;
-
 		FVector TileLocation = TargeTile->GetActorLocation();
 		TArray<FVector> CoverDirectionArr;
 		bool bWallAround = TileManager->CheckWallAround(TileLocation, CoverDirectionArr);
 		if (bWallAround)	//엄폐 가능.
 		{
-			for (ACustomThirdPerson* Unit : PlayerCharacters)
-			{
-				FVector UnitLocation = Unit->GetActorLocation();
-				bool bGoodAngle;
-
-				if ( !CheckMimiumInterval(TileLocation, UnitLocation))// 최소 간격 유지 실패시 Score - 50 패널티 
-				{
-					GeographicalScore -= 50;
-				}
-				if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr, bGoodAngle))
-				{
-					if (bGoodAngle) { GeographicalScore += 6; }
-					GeographicalScore += 20;
-				}
-			}
-			FAimingInfo BestAimingInfo;
-			ScoringByAimingInfo(TileLocation, CoverDirectionArr, ActionScore, BestAimingInfo);
-			
-			EAction ActionOnTargetTile = DecideActionOnTile(ActionScore);
-
-			int32 TotalScore = ActionScore + GeographicalScore;
-			FAICommandInfo CommandInfo;// = FAICommandInfo(TotalScore, &BestAimingInfo, ActionOnTargetTile);
-			CommandInfo.Action = ActionOnTargetTile;
-			CommandInfo.AimingInfo = new FAimingInfo(BestAimingInfo);
-			CommandInfo.Score = TotalScore;
-
-			TileScoreBoard.Add(TargeTile, CommandInfo);
-
-			int32 Index = TileManager->ConvertVectorToIndex(TargeTile->GetActorLocation());
-			UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: (지리 점수)%d + (액션 점수)%d = %d", Index, GeographicalScore, ActionScore, TotalScore);
-
-			DebugAimingInfo(TileLocation, TotalScore);
+			ScoreToTile(TargeTile, CoverDirectionArr, TileScoreBoard);
 		}
+	}
+
+	// 엄폐가능한 블록이 없을때
+	if (TileScoreBoard.Num() == 0) 
+	{
+		for (auto TargeTile : MovableTiles)
+		{
+			ScoreToTile(TargeTile, TArray<FVector>(), TileScoreBoard);
+		}
+	}
+
+	//공격 가능한 적이 없을때
+	if (TileScoreBoard.Num() == 0)
+	{
+		AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		FVector PlayerUnitMiddlePoint = GameMode->GetPlayerUnitMiddlePoint();
+
+		float  MinDist = MAX_FLT;
+		ATile* NearestTile;
+		for (auto TargeTile : MovableTiles)
+		{
+			float Dist = FVector::Dist2D(TargeTile->GetActorLocation(), PlayerUnitMiddlePoint);
+			if (Dist < MinDist) 
+			{
+				MinDist = Dist;
+				NearestTile = TargeTile;
+			}
+		}
+		FAICommandInfo CommandInfo;// = FAICommandInfo(TotalScore, &BestAimingInfo, ActionOnTargetTile);
+		CommandInfo.Action = EAction::Vigilance;
+		CommandInfo.Score = 1;
+
+		TileScoreBoard.Add(NearestTile, CommandInfo);
 	}
 
 	return TileScoreBoard;
 }
+
+
+void AEnemyController::ScoreToTile(ATile* TargetTile, TArray<FVector> CoverDirectionArr , TMap<ATile*, FAICommandInfo>& TileScoreBoard)
+{
+	FVector TileLocation = TargetTile->GetActorLocation();
+	TArray<ACustomThirdPerson*> PlayerCharacters = GetPlayerCharacters();
+
+	int32 GeographicalScore = 0;
+	int32 ActionScore = 0;
+
+	for (ACustomThirdPerson* Unit : PlayerCharacters)
+	{
+		FVector UnitLocation = Unit->GetActorLocation();
+		bool bGoodAngle;
+
+		if (!CheckMimiumInterval(TileLocation, UnitLocation))// 최소 간격 유지 실패시 Score - 50 패널티 
+		{
+			GeographicalScore -= 50;
+		}
+		if (IsProtectedByCover(TileLocation, UnitLocation, CoverDirectionArr, bGoodAngle))
+		{
+			if (bGoodAngle) { GeographicalScore += 6; }
+			GeographicalScore += 20;
+		}
+	}
+	FAimingInfo BestAimingInfo;
+	ScoringByAimingInfo(TileLocation, CoverDirectionArr, ActionScore, BestAimingInfo);
+
+	EAction ActionOnTargetTile = DecideActionOnTile(ActionScore);
+
+	int32 TotalScore = ActionScore + GeographicalScore;
+	FAICommandInfo CommandInfo;// = FAICommandInfo(TotalScore, &BestAimingInfo, ActionOnTargetTile);
+	CommandInfo.Action = ActionOnTargetTile;
+	CommandInfo.AimingInfo = new FAimingInfo(BestAimingInfo);
+	CommandInfo.Score = TotalScore;
+
+	TileScoreBoard.Add(TargetTile, CommandInfo);
+
+	int32 Index = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
+	UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: (지리 점수)%d + (액션 점수)%d = %d", Index, GeographicalScore, ActionScore, TotalScore);
+
+	DebugAimingInfo(TileLocation, TotalScore);
+}
+
+
 
 TArray<ACustomThirdPerson*> AEnemyController::GetPlayerCharacters()
 {
@@ -267,7 +315,7 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 	ATile* HighestScoredTile = nullptr;
 	for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
 	{
-		if (HighestScore < It.Value().Score) 
+		if (HighestScore <= It.Value().Score) 
 		{
 			HighestScore = It.Value().Score;
 			HighestScoredTile = It.Key();
@@ -281,8 +329,12 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 	{
 		delete AimingInfo;
 	}
+	EAction EnemyAction = TileScoreBoard[HighestScoredTile].Action;
+	if (EnemyAction == EAction::Attack) 
+	{
+		AimingInfo = new FAimingInfo(*TileScoreBoard[HighestScoredTile].AimingInfo);
+	}
 
-	AimingInfo = new FAimingInfo(*TileScoreBoard[HighestScoredTile].AimingInfo);
 	BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, true);
 	BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(TileScoreBoard[HighestScoredTile].Action));
 	
@@ -480,4 +532,21 @@ void AEnemyController::CheckTargetLocation(FVector TargetLocation)
 	{
 		UE_LOG(LogTemp, Warning, L"추적 불가");
 	}
+}
+
+
+/**
+* 경계 명령을 내립니다.
+*/
+void AEnemyController::OrderStartVigilance()
+{
+	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
+
+	bool PlayersUnitTeamFlag = !ControlledPawn->GetTeamFlag();
+
+	ControlledPawn->BindVigilanceEvent(GameMode->GetTeamMemeber(PlayersUnitTeamFlag));
+	ControlledPawn->bInVisilance = true;
+	ControlledPawn->UseActionPoint(2);
+	UE_LOG(LogTemp, Warning, L"Enemy 경계 시작");
 }

@@ -52,7 +52,7 @@ void AXCOMPlayerController::Tick(float DeltaTime)
 			{
 				FVector RTSCameraLocation = DefaultPlayerPawn->GetActorLocation();
 				FVector TargetActorLocation = FocusedActor->GetActorLocation();
-				float Distance = FVector::Dist(RTSCameraLocation, TargetActorLocation);
+				float Distance = FVector::Dist2D(RTSCameraLocation, TargetActorLocation);
 				if (Distance < 30.f)
 				{
 					bStopFocusingAutomatically = false;
@@ -290,6 +290,7 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 */
 void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingCharacter) 
 {
+	DisableFocusing();
 	CheckWallAround(MovingCharacter);
 	if (MovingCharacter->bCanAction) 
 	{

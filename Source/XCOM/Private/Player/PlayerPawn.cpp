@@ -178,7 +178,6 @@ void APlayerPawn::MoveToTarget(AActor& TargetActor)
 	FVector TargetLocation = TargetActor.GetActorLocation();
 	
 	FVector DirectionFromTargetToCamera = (ActorLocation - TargetLocation).GetSafeNormal2D();
-	TargetLocation = TargetLocation + (DirectionFromTargetToCamera * 800);
 	TargetLocation.Z = ActorLocation.Z;
 
 	FVector DeltaMovement = UKismetMathLibrary::VLerp(ActorLocation, TargetLocation, GetWorld()->GetDeltaSeconds() * 5);
