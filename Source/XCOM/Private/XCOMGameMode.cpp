@@ -202,11 +202,7 @@ void AXCOMGameMode::StartBotActivity()
 	}
 	else 
 	{
-		if (EnemyChar->IsInUnFoggedArea()) 
-		{
-			AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
-			PlayerController->EnableFocusing(EnemyChar, false);
-		}
+		
 		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;
 	}

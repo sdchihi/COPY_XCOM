@@ -18,7 +18,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "XCOMGameMode.h"
 #include "FogOfWarManager.h"
-
+#include "XCOMPlayerController.h"
 
 AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -321,7 +321,6 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 			HighestScoredTile = It.Key();
 		}
 	}
-	CheckTargetLocation(HighestScoredTile->GetActorLocation());
 
 	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
 
@@ -335,6 +334,8 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 		AimingInfo = new FAimingInfo(*TileScoreBoard[HighestScoredTile].AimingInfo);
 	}
 
+
+	DecideWayToProceedBasedLocation(HighestScoredTile->GetActorLocation());
 	BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, true);
 	BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(TileScoreBoard[HighestScoredTile].Action));
 	
@@ -476,6 +477,7 @@ void AEnemyController::SetNextPatrolLocation()
 	FVector TileLocation = TargetTile->GetActorLocation();
 	int32 TileIndex = TileManager->ConvertVectorToIndex(TileLocation);
 
+	DecideWayToProceedBasedLocation(TileLocation);
 	TArray<FVector> Tempor;
 	for (int32 PathIndex : TileManager->GetPathToTile(TileIndex).OnTheWay)
 	{
@@ -499,7 +501,6 @@ void AEnemyController::ChangeBehavior(UBehaviorTree* BehaviorTreeToSet)
 {
 	if (BehaviorTreeToSet)
 	{
-		//StopBehaviorTree();
 		SelectedBehavior = BehaviorTreeToSet;
 		if (SelectedBehavior->BlackboardAsset)
 		{
@@ -509,17 +510,15 @@ void AEnemyController::ChangeBehavior(UBehaviorTree* BehaviorTreeToSet)
 		NextLocationKeyID = BlackboardComp->GetKeyID("NextLocation");
 		ActionKeyID = BlackboardComp->GetKeyID("NextAction");
 		RemainingMovementKeyID = BlackboardComp->GetKeyID("RemainingMovement");
-		UE_LOG(LogTemp, Warning, L"변경 완료됬죠");
+		FormalProceedKeyID = BlackboardComp->GetKeyID("FormalProceed");
 	}
-	else 
-	{
-		UE_LOG(LogTemp, Warning, L"변경 실패");
-
-	}
-	//로드 Object를 할지 아니면 BP에서 가져오는걸로 결정
 }
 
-void AEnemyController::CheckTargetLocation(FVector TargetLocation) 
+/**
+* 해당 위치가 FOW 안에 위치했는지 확인합니다.
+* @param TargetLocation 확인할 위치 벡터
+*/
+bool AEnemyController::CheckTargetLocation(FVector TargetLocation) 
 {
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
@@ -532,6 +531,7 @@ void AEnemyController::CheckTargetLocation(FVector TargetLocation)
 	{
 		UE_LOG(LogTemp, Warning, L"추적 불가");
 	}
+	return IsInCog;
 }
 
 
@@ -549,4 +549,22 @@ void AEnemyController::OrderStartVigilance()
 	ControlledPawn->bInVisilance = true;
 	ControlledPawn->UseActionPoint(2);
 	UE_LOG(LogTemp, Warning, L"Enemy 경계 시작");
+}
+
+void AEnemyController::DecideWayToProceedBasedLocation(FVector TargetLocation) 
+{
+	bool bIsInCog = CheckTargetLocation(TargetLocation);
+
+	if (bIsInCog) 
+	{
+		AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
+		ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
+
+		PlayerController->EnableFocusing(ControlledPawn, false);
+		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(FormalProceedKeyID, true);
+	}
+	else 
+	{
+		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(FormalProceedKeyID, false);
+	}
 }

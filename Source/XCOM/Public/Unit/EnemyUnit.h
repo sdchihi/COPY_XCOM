@@ -29,6 +29,7 @@ public:
 
 	void UnHideUnit();
 	
+	void ForceOverTurn();
 
 	FPlayAggroEventDelegate PlayAggroEventDelegate;
 

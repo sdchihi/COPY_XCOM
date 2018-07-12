@@ -147,3 +147,13 @@ void AEnemyUnit::OnEmoteMontageEnded()
 	}
 	Super::FinishMoving();
 }
+
+
+void AEnemyUnit::ForceOverTurn() 
+{
+	bCanAction = false;
+	if (AfterActionDelegate.IsBound()) 
+	{
+		AfterActionDelegate.Broadcast(GetTeamFlag());
+	}
+}

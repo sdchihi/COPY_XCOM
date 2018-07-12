@@ -100,6 +100,8 @@ private:
 
 	int32 RemainingMovementKeyID;
 
+	int32 FormalProceedKeyID;
+
 	int32 MovementIndex = 0;
 
 	FAimingInfo* AimingInfo;
@@ -136,7 +138,8 @@ private:
 	//Mode부터 결정되는..?
 	FVector PatrolTargetLocation;
 
-	void CheckTargetLocation(FVector TargetLocation);
+	bool CheckTargetLocation(FVector TargetLocation);
 
-	
+	void DecideWayToProceedBasedLocation(FVector TargetLocation);
+
 };

@@ -95,14 +95,14 @@ void AXCOMPlayerController::Initialize() {
 		SingleThirdPerson->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCharacter);
 		SingleThirdPerson->DeadCamDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDeathCam);
 		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
-		SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
+		//SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 		if (SingleThirdPerson->GetTeamFlag())
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::FocusNextAvailablePlayerUnit);
 			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
 			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget); // ¿©±â
-
+			SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
