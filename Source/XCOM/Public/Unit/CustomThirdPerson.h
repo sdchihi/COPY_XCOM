@@ -147,7 +147,11 @@ public:
 	void AimAt(FVector AimDirection, FName NewCollisionPresetName);
 
 	UFUNCTION(BlueprintCallable)
-	void RotateCharacter(FVector AimDirection, float LerpAlpha);
+	void RotateCharacter(float NewYaw, float LerpAlpha);
+
+	UFUNCTION(BlueprintCallable)
+	float DecideDirectionOfRotation(FVector AimDirection);
+
 
 	UFUNCTION(BlueprintCallable)
 	void StartFiring(FName NewCollisionPresetName);
@@ -233,6 +237,13 @@ public:
 	void SetWalkingState(EWalkingState WalkingStateToSet);
 
 	bool IsInUnFoggedArea() const;
+
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
+	class UAnimMontage* LeftTurnMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
+	UAnimMontage* RightTurnMontage;
 
 protected:
 	

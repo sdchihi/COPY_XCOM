@@ -18,6 +18,9 @@
 #include "Components/TimelineComponent.h"
 #include "Classes/Curves/CurveFloat.h"
 #include "FogOfWarComponent.h"
+#include "Classes/Animation/AnimMontage.h"
+#include "Animation/AnimEnums.h"
+
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -127,7 +130,7 @@ void ACustomThirdPerson::RotateTowardWall() {
 */
 void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	bIsAttack = false;
-	SetActorLocation(PrevLocation, true);
+	SetActorLocation(PrevLocation);
 	if (!bInVisilance) 
 	{
 		UseActionPoint(2);
@@ -157,23 +160,51 @@ void ACustomThirdPerson::ExecuteChangePawnDelegate()
 	{
 		UE_LOG(LogTemp, Warning, L"Unbound");
 	}
+
 }
 
 /**
 * 블루프린트에서 호출될 수 있는 메소드로 일정 시간내에 캐릭터를 목표 방향으로 회전시킵니다. (Timeline과 연계해서 사용)
-* @param AimDirection - 목표 방향 벡터입니다.
+* @param NewYaw - 목표로 하는 Yaw값입니다.
 * @param LerpAlpha - Lerp에 사용될 Alpha값입니다.
 */
-void ACustomThirdPerson::RotateCharacter(FVector AimDirection, float LerpAlpha) 
+void ACustomThirdPerson::RotateCharacter(float NewYaw, float LerpAlpha)
 {
-	float CharacterRotatorYaw = GetActorRotation().Yaw;
-	float AimAsRotatorYaw = AimDirection.Rotation().Yaw;
+	float ActorYaw = GetActorRotation().Yaw;
 
-	SetActorRotation(FRotator(0,FMath::Lerp(CharacterRotatorYaw, AimAsRotatorYaw, LerpAlpha), 0));
+	SetActorRotation(FRotator(0, FMath::Lerp(ActorYaw, NewYaw, LerpAlpha), 0));
 }
+
+/**
+* 조준하는 방향에 따라 캐릭터의 회전 방향을 결정합니다.
+* @param AimDirection - 조준 방향 벡터입니다.
+* @return NewYaw - 목표로 하는 Yaw값입니다.
+*/
+float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
+{
+	float ActorYaw = GetActorRotation().Yaw;
+	float AimYaw = AimDirection.Rotation().Yaw;
+	float DeltaYaw = AimYaw - ActorYaw;
+
+	float NewYaw;
+	if ( FMath::Abs(DeltaYaw) <= 180)
+	{
+		PlayAnimMontage(LeftTurnMontage);
+		NewYaw = AimYaw;
+	}
+	else 
+	{
+		PlayAnimMontage(RightTurnMontage);
+		NewYaw = ActorYaw - (360.f - AimYaw);
+	}
+
+	return NewYaw;
+}
+
 
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
+	PrevLocation = GetActorLocation();
 	if (StartShootingDelegate.IsBound())
 	{
 		if (SelectedAimingInfo.TargetActor)
@@ -184,8 +215,6 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 	bIsReadyToAttack = false;
 	bIsAttack = true;
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
-	
-
 }
 
 void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
@@ -636,7 +665,7 @@ void ACustomThirdPerson::ChangeTimelineFactor()
 	}
 }
 
-void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)
+void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)	
 {
 	WalkingState = WalkingStateToSet; 
 	ChangeTimelineFactor();
