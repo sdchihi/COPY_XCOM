@@ -24,20 +24,11 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(EditDefaultsOnly)
-	float Damage = 1;
 
-	float GetDamage() { return Damage; }
-
-	void SetProjCollisionChannel(FName NewPresetName);
-
-	void ApplyRealDamage() { bApplyRealDamage = true; };
 
 private: 
 	//UProjectileMovementComponent* ProjectileMovementComponent;
 	UStaticMeshComponent* Mesh = nullptr;
-
-	bool bApplyRealDamage = false;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);

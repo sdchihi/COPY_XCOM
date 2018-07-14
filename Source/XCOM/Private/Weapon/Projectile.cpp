@@ -22,15 +22,11 @@ AProjectile::AProjectile()
 		Mesh->SetNotifyRigidBodyCollision(true); // 확인 필요   Hit Event 발생 여부
 	}
 }
-	
-	
-
 
 void AProjectile::BeginPlay() 
 {
 
 }
-
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) 
 {
@@ -46,7 +42,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		}
 
 	}
-
 	
 	//UE_LOG(LogTemp, Warning, L"Hit Obj name : %s", *OtherActor->GetName());
 	//Todo - 파티클 생성 및 삭제 후 Destroy
@@ -58,7 +53,7 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 	TSubclassOf<UDamageType> DamageType;
 	UGameplayStatics::ApplyRadialDamage(
 		GetWorld(),
-		Damage,
+		1,
 		HitLocation,
 		40,
 		DamageType,
@@ -69,8 +64,6 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 	Destroy();
 }
 
-
-
 void AProjectile::ApplyToCharacter(AActor* DamagedActor)
 {
 	TSubclassOf<UDamageType> DamageType;
@@ -79,7 +72,7 @@ void AProjectile::ApplyToCharacter(AActor* DamagedActor)
 	{
 		UGameplayStatics::ApplyDamage(
 			DamagedActor,
-			Damage,
+			1,
 			nullptr,
 			this,
 			DamageType

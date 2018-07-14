@@ -31,13 +31,32 @@ public:
 	TSubclassOf<AProjectile> ProejctileBlueprint;
 
 	UFUNCTION(BlueprintCallable)
-	void Fire();
+	void GenerateProjectile();
 
 	FName ProjectileCollisionPresetName;
+
+	UPROPERTY(EditDefaultsOnly)
+	int8 Damage = 1;
+
+	int8 GetDamage() { return  Damage; };
+
+	void FireToTarget(AActor* TargetActor);
+
+	void SetShootingResult(bool bAimSuccess, bool bCritical = false);
 
 private:
 	UStaticMeshComponent* StaticMeshComponentRef = nullptr;
 	
 	//0 ~ 5
 	int32 FiringRotOrder = 0;
+
+	UFUNCTION()
+	void ApplyDamageToTarget(AActor* TargetActor);
+
+	bool bAimSuccess;
+
+	bool bCritical;
+
+	int8 CalculateActualDamage() const;
 };
+

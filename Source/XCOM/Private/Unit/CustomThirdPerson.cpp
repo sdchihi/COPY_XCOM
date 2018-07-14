@@ -214,7 +214,9 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 	}
 	bIsReadyToAttack = false;
 	bIsAttack = true;
+
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
+	GunReference->FireToTarget(SelectedAimingInfo.TargetActor);
 }
 
 void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
@@ -325,7 +327,6 @@ void ACustomThirdPerson::Shoot()
 	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
 	float RandomValue = FMath::FRandRange(0, 1);
-	
 
 	//성공
 	if (RandomValue <= AttackSuccessProbability)
@@ -333,7 +334,12 @@ void ACustomThirdPerson::Shoot()
 		AimAt(AimDirection, FName(L"ProjectileToChar"));
 
 		UE_LOG(LogTemp, Warning, L"Prob : %f,  Rand : %f ", AttackSuccessProbability, RandomValue);
-
+		GunReference->SetShootingResult(true, false);
+		/*
+		크리티컬 계산후 
+		GunReference->SetShootingResult(true,false);
+		GunReference->SetShootingResult(false, true);
+		*/
 	}
 	else //실패
 	{
@@ -357,6 +363,7 @@ void ACustomThirdPerson::Shoot()
 			AimAt(AimDirection + FVector(0, 50, 50), FName(L"ProjectileToWall"));
 			UE_LOG(LogTemp, Warning, L"공격 실패 : 허공향해 사격");
 		}
+		GunReference->SetShootingResult(false);
 	}
 
 	float DistanceToTarget = GetDistanceTo(SelectedAimingInfo.TargetActor);
