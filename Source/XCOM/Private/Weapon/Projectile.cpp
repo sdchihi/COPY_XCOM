@@ -34,11 +34,11 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		if (Cast<ADestructibleActor>(OtherActor))
 		{
-			ApplyToDestructibleActor(Hit.Location);
+			//ApplyToDestructibleActor(Hit.Location);
 		}
 		else if (Cast<ACustomThirdPerson>(OtherActor)) 
 		{
-			ApplyToCharacter(OtherActor);
+			//ApplyToCharacter(OtherActor);
 		}
 
 	}
@@ -67,18 +67,14 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 void AProjectile::ApplyToCharacter(AActor* DamagedActor)
 {
 	TSubclassOf<UDamageType> DamageType;
-	
-	if (bApplyRealDamage) 
-	{
-		UGameplayStatics::ApplyDamage(
-			DamagedActor,
-			1,
-			nullptr,
-			this,
-			DamageType
-		);
-	}
-
+	UGameplayStatics::ApplyDamage(
+		DamagedActor,
+		1,
+		nullptr,
+		this,
+		DamageType
+	);
+		
 	Destroy();
 }
 

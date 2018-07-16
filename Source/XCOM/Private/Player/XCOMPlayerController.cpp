@@ -520,10 +520,10 @@ void AXCOMPlayerController::ChangeViewTargetByCharacter(const FVector CharacterL
 * 캐릭터가 죽을때의 모습을 비출 Action Cam 으로 시점을 바꿉니다.
 * @param MurderedCharLocation
 */
-void AXCOMPlayerController::ChangeToDeathCam(const FVector MurderedCharLocation)
-{;
+void AXCOMPlayerController::ChangeToDeathCam(AActor* MurderedActor)
+{
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
-	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedCharLocation); // 수정 필요
+	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedActor); // 수정 필요
 	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드
 	SetViewTarget(ActionCam);
 

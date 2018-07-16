@@ -237,23 +237,26 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 {
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	CurrentHP -= ActualDamage;
-	//if (CurrentHP <= 0) 
-	//{
-	//	//TODO »ç¸Á Event
-	//	UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
-	//	ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
-	//	if (DeadCamDelegate.IsBound()) 
-	//	{
-	//		DeadCamDelegate.Execute(GetActorLocation());
-	//		SkeletalMesh->SetSimulatePhysics(true);
-	//		SkeletalMesh->SetAllBodiesBelowSimulatePhysics(FName("pelvis"), true, true);
-	 
-	//		StartSlowMotion();
+	if (CurrentHP <= 0) 
+	{
+		//TODO »ç¸Á Event
+		//UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
+		//ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
+		if (DeadCamDelegate.IsBound()) 
+		{
+			DeadCamDelegate.Execute(this);
+			/*
+			SkeletalMesh->SetSimulatePhysics(true);
+			SkeletalMesh->SetAllBodiesBelowSimulatePhysics(FName("pelvis"), true, true);
+			*/
+			PlayAnimMontage(TestDeadMontage);
+			StartSlowMotion();
+		}
+		
+		UE_LOG(LogTemp, Warning, L"Dead");
+	}
 
-	//	}
-	//	
-	//	UE_LOG(LogTemp, Warning, L"Dead");
-	//}
+	UE_LOG(LogTemp, Warning, L"Damaged");
 
 	return ActualDamage;
 }
@@ -438,7 +441,6 @@ void ACustomThirdPerson::StartSlowMotion()
 void ACustomThirdPerson::FinishSlowMotion()
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
-
 }
 
 

@@ -18,7 +18,7 @@ class UHUDComponent;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartActionDelegate);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, FVector, CharacterLocation);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, AActor*, TargetActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FAfterMovingDelegate, ACustomThirdPerson*, MovingCharacter);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
@@ -237,13 +237,17 @@ public:
 	void SetWalkingState(EWalkingState WalkingStateToSet);
 
 	bool IsInUnFoggedArea() const;
-
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
 	class UAnimMontage* LeftTurnMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
 	UAnimMontage* RightTurnMontage;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
+	UAnimMontage* TestDeadMontage;
+
 
 protected:
 	

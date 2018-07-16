@@ -131,9 +131,8 @@ private:
 	UFUNCTION()
 	void ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation);
 
-
 	UFUNCTION()
-	void ChangeToDeathCam(const FVector TargetLocation);
+	void ChangeToDeathCam(AActor* MurderedActor);
 
 	UFUNCTION()
 	void ChangeToFrontCam(AActor* TargetActor);

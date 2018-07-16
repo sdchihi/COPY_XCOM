@@ -20,12 +20,14 @@ void AGun::FireToTarget(AActor* TargetActor)
 {
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AGun::ApplyDamageToTarget, TargetActor);
-	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);	// 0.4 Delay 고정
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);	// Delay 2 초
 }
 
 
 void AGun::ApplyDamageToTarget(AActor* TargetActor) 
 {
+	UE_LOG(LogTemp, Warning, L"실행 검사");
+
 	TSubclassOf<UDamageType> DamageType;
 
 	UGameplayStatics::ApplyDamage(

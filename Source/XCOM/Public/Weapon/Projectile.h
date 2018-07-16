@@ -24,6 +24,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
+	void SetProjCollisionChannel(FName NewPresetName);
 
 
 private: 

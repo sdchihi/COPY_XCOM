@@ -54,7 +54,7 @@ void ADestructibleWall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 
 	if (ProjectileActor) {
 		//UGameplayStatics::ApplyPointDamage(OtherActor, ProjectileActor->GetDamage() , GetActorLocation(), HitInfo, nullptr, this, DamageType);
-		UGameplayStatics::ApplyDamage(this, ProjectileActor->GetDamage(), nullptr, OtherActor, DamageType);
+		//UGameplayStatics::ApplyDamage(this, ProjectileActor->GetDamage(), nullptr, OtherActor, DamageType);
 		UE_LOG(LogTemp, Warning, L"Projectile Hit");
 	}
 	else {

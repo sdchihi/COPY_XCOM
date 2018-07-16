@@ -182,7 +182,7 @@ void APlayerPawnInAiming::SetFrontCam(AActor* Actor)
 	SetActorRotation(NewPawnRotation);
 };
 
-// 사격하기 전 준비동작을 정면에서 움직이는 캠으로 촬영할때 사용
+// 사격하기 전 준비동작을 정면에서 움직이는 캠으로 촬영할때 사용 (추적)
 void APlayerPawnInAiming::SetCloseUpCam(AActor* TargetActor, FVector ForwardDirction)
 {
 	SetFocusTarget(TargetActor);
@@ -204,6 +204,25 @@ void APlayerPawnInAiming::SetCloseUpCam(AActor* TargetActor, FVector ForwardDirc
 
 	bCameraMoving = true;
 }
+
+void APlayerPawnInAiming::SetDeathCam(const FVector AimingCharLoc, AActor* MurderedActor)
+{
+	SetFocusTarget(MurderedActor);
+	FVector MurderedCharLocation = MurderedActor->GetActorLocation();
+
+	FVector StraightLineDirection = (AimingCharLoc - MurderedCharLocation).GetSafeNormal();
+
+	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
+	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 200) + (RightDirection * RightDistance);
+
+	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, MurderedCharLocation);
+	SetActorLocation(NewPawnPosition);
+	SetActorRotation(NewPawnRotation);
+
+	bCameraMoving = true;
+};
+
+
 
 
 void APlayerPawnInAiming::StopCameraMoving() 
