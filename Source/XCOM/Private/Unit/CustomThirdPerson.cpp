@@ -237,6 +237,11 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 {
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	CurrentHP -= ActualDamage;
+	if (Damage == 0) 
+	{
+		// 회피 이벤트
+	}
+
 	if (CurrentHP <= 0) 
 	{
 		//TODO 사망 Event
@@ -329,7 +334,8 @@ void ACustomThirdPerson::Shoot()
 {
 	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
-	float RandomValue = FMath::FRandRange(0, 1);
+	//잠시 무조건 성공으로 변경
+	float RandomValue = FMath::FRandRange(0.99, 1);
 
 	//성공
 	if (RandomValue <= AttackSuccessProbability)

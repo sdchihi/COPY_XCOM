@@ -8,18 +8,14 @@
 
 ADestructibleWall::ADestructibleWall() 
 {
-
 	DestructibleCompReference = FindComponentByClass<UDestructibleComponent>();
 	if (DestructibleCompReference) {
 		//DestructibleCompReference->SetSimulatePhysics(true);
 		DestructibleCompReference->OnComponentHit.AddDynamic(this, &ADestructibleWall::OnHit);
 		//DestructibleCompReference->SetNotifyRigidBodyCollision(true); // 확인 필요   Hit Event 발생 여부
 	}
-	
-
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(FName("Box Collision"));
 	BoxCollision->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	
 }
 
 void ADestructibleWall::BeginPlay() {

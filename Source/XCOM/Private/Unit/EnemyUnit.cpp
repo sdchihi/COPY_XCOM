@@ -88,10 +88,12 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 		{
 			PlayAggroEventDelegate.Execute(this);
 		}
-		PlayEmoteMontage(false);
+		if (CurrentHP > 0) 
+		{
+			PlayEmoteMontage(false);
+		}
 	}
 	// 이부분 수정- > 맞고나서 다 끝난 후 이벤트 처리 필요
-
 	return ActualDamage;
 }
 
@@ -136,7 +138,6 @@ void AEnemyUnit::PlayEmoteMontage(bool bRemainingWork = false)
 			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);
 		}
 	}
-
 }
 
 void AEnemyUnit::OnEmoteMontageEnded() 

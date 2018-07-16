@@ -363,3 +363,20 @@ FVector AXCOMGameMode::GetPlayerUnitMiddlePoint()
 
 	return PlayerUnitsMiddlePoint;
 }
+
+bool AXCOMGameMode::HasEnemyUnitEvent()
+{
+	if (EventEnemyUnit) 
+		return true;
+	else 
+		return false;
+}
+
+void AXCOMGameMode::ExecuteEnemyEvent()
+{
+	if (IsValid(EventEnemyUnit)) 
+	{
+		//play Event and..
+		CheckTurnOver(EventEnemyUnit->GetTeamFlag());
+	}
+}

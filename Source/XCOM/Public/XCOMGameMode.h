@@ -85,4 +85,10 @@ private:
 
 	void RenewWaypoint(int8 EnemyGroupNumber);
 
+	AEnemyUnit* EventEnemyUnit;
+
+	bool HasEnemyUnitEvent();
+
+	void ExecuteEnemyEvent();
+
 };
