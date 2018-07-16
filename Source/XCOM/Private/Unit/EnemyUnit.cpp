@@ -35,13 +35,13 @@ void AEnemyUnit::FinishMoving()
 		//거리 안에 적이있어서 확인될경우 어그로 변경 tODO 팀 확인
 		AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
-		if (bFliteredUnit)
+		if (bFliteredUnit) //적이 시야 안에있을때
 		{
 			UE_LOG(LogTemp,Warning,L"발견!")
 			GameMode->ChangeEnemyAggro(Group);
 			bChangeAggro = true;
 		}
-		else 
+		else // 시야안에 없지만 다른 그룹이 전투 상태에 있고,UnFogArea 안에 위치했을때 
 		{
 			if (GameMode->GetEnemysBattleCognition() == true && IsInUnFoggedArea())
 			{
@@ -54,26 +54,19 @@ void AEnemyUnit::FinishMoving()
 
 	if (bChangeAggro) 
 	{
-		FinishMovingAfterMontage();
+		if (RegisterEventDelegate.IsBound())
+		{
+			RegisterEventDelegate.Execute(this);
+		}
 	}
-	else 
-	{
-		Super::FinishMoving();
-	}
-
-
+	Super::FinishMoving();
 }
 
-void AEnemyUnit::FinishMovingAfterMontage() 
-{
-	PlayEmoteMontage(true);
-}
-
-	
 
 float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) 
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	UE_LOG(LogTemp, Warning, L"^데미지 받긴함")
 
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode->GetEnemysBattleCognition() == false) 
@@ -84,13 +77,18 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 	if (bAggro == false) 
 	{
 		GameMode->ChangeEnemyAggro(Group);
-		if (PlayAggroEventDelegate.IsBound())
-		{
-			PlayAggroEventDelegate.Execute(this);
-		}
 		if (CurrentHP > 0) 
 		{
-			PlayEmoteMontage(false);
+			UE_LOG(LogTemp, Warning, L"^등록신청함")
+
+			if (RegisterEventDelegate.IsBound())
+			{
+				RegisterEventDelegate.Execute(this);
+			}
+		}
+		else 
+		{
+			UE_LOG(LogTemp, Warning, L"^HP 바닥났대")
 		}
 	}
 	// 이부분 수정- > 맞고나서 다 끝난 후 이벤트 처리 필요
@@ -114,7 +112,7 @@ void AEnemyUnit::UnHideUnit()
 	HealthBar->SetWidgetVisibility(true);
 }
 
-void AEnemyUnit::PlayEmoteMontage(bool bRemainingWork = false) 
+void AEnemyUnit::PlayEmoteMontage() 
 {
 	if (EmoteMontage) 
 	{
@@ -128,15 +126,12 @@ void AEnemyUnit::PlayEmoteMontage(bool bRemainingWork = false)
 
 		if (PlayAggroEventDelegate.IsBound()) 
 		{
-			PlayAggroEventDelegate.Execute(Cast<AActor>(this));
+			PlayAggroEventDelegate.Execute(this);
 		}
 
-		if (bRemainingWork) 
-		{
-			FTimerHandle UnUsedHandle;
-			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
-			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);
-		}
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);
 	}
 }
 
@@ -144,9 +139,8 @@ void AEnemyUnit::OnEmoteMontageEnded()
 {
 	if (FinishAggroEventDelegate.IsBound()) 
 	{
-		FinishAggroEventDelegate.Execute();
+		FinishAggroEventDelegate.Broadcast();
 	}
-	Super::FinishMoving();
 }
 
 
@@ -157,4 +151,16 @@ void AEnemyUnit::ForceOverTurn()
 	{
 		AfterActionDelegate.Broadcast(GetTeamFlag());
 	}
+}
+
+
+
+void AEnemyUnit::PlayEvent() 
+{
+	PlayEmoteMontage();
+}
+
+void AEnemyUnit::FinishEvent() 
+{
+
 }

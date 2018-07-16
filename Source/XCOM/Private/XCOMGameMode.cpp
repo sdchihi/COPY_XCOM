@@ -10,6 +10,7 @@
 #include "PlayerDetector.h"
 #include "Waypoint.h"
 #include "FogOfWarComponent.h"
+#include "EventExecutor.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -36,7 +37,8 @@ void AXCOMGameMode::BeginPlay()
 		else 
 		{
 			AEnemyUnit* SingleEnemy = Cast<AEnemyUnit>(SingleCharacter);
-			
+			SingleEnemy->FinishAggroEventDelegate.AddUniqueDynamic(this, &AXCOMGameMode::CheckTurnAfterEvent);
+			SingleEnemy->RegisterEventDelegate.BindDynamic(this, &AXCOMGameMode::RegisterEventActor);
 			if (EnemyTeamMap.Contains(SingleEnemy->GetGroupNumber())) 
 			{
 				EnemyTeamMap[SingleEnemy->GetGroupNumber()].Add((SingleEnemy));
@@ -66,6 +68,15 @@ void AXCOMGameMode::BeginPlay()
 */
 void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 {
+	UE_LOG(LogTemp, Warning, L"^턴오버 확인 호출됨");
+
+	if (HasEnemyUnitEvent()) 
+	{
+		TurnBuffer = bIsPlayerTeam;
+		ExecuteEnemyEvent();
+		return;
+	}
+
 	bool bIsEnd = true;
 	if (bIsPlayerTeam) 
 	{
@@ -366,17 +377,49 @@ FVector AXCOMGameMode::GetPlayerUnitMiddlePoint()
 
 bool AXCOMGameMode::HasEnemyUnitEvent()
 {
-	if (EventEnemyUnit) 
+	if (IsValid(EventUnit)) 
+	{
+		UE_LOG(LogTemp, Warning, L"^Evnet  Unit 이씀");
+
 		return true;
+	}
 	else 
+	{
+		UE_LOG(LogTemp, Warning, L"^Evnet  Unit 없음");
+
 		return false;
+	}
 }
 
 void AXCOMGameMode::ExecuteEnemyEvent()
 {
-	if (IsValid(EventEnemyUnit)) 
+	if (IsValid(EventUnit))
 	{
-		//play Event and..
-		CheckTurnOver(EventEnemyUnit->GetTeamFlag());
+		AEnemyUnit* EventExecutor = Cast<AEnemyUnit>(EventUnit);
+		if (EventExecutor) 
+		{
+			UE_LOG(LogTemp, Warning, L"^ Mode 에서 이벤트실행 명령떨어짐")
+
+			EventExecutor->PlayEvent();
+			EventUnit = nullptr;
+		}
 	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"^유효하지않음")
+	}
+}
+
+void AXCOMGameMode::RegisterEventActor(AActor* EventActor) 
+{
+	UE_LOG(LogTemp, Warning, L"^등록됨")
+
+	EventUnit = EventActor;
+}
+
+void AXCOMGameMode::CheckTurnAfterEvent() 
+{
+	UE_LOG(LogTemp, Warning, L"^이것은 완료후 Checkturn Event")
+
+	CheckTurnOver(TurnBuffer);
 }

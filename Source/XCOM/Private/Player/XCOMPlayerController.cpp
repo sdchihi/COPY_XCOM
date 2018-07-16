@@ -95,14 +95,14 @@ void AXCOMPlayerController::Initialize() {
 		SingleThirdPerson->ChangeViewTargetDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCharacter);
 		SingleThirdPerson->DeadCamDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDeathCam);
 		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
-		//SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
+		SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 		if (SingleThirdPerson->GetTeamFlag())
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::FocusNextAvailablePlayerUnit);
 			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
 			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget); // ¿©±â
-			SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
+			//SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 			PlayerCharacters.Add(SingleThirdPerson);
 		}
@@ -110,7 +110,7 @@ void AXCOMPlayerController::Initialize() {
 		{
 			AEnemyUnit* Enemy = Cast<AEnemyUnit>(SingleThirdPerson);
 			Enemy->PlayAggroEventDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToFrontCam);
-			Enemy->FinishAggroEventDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
+			Enemy->FinishAggroEventDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::ChangeToDefaultPawn);
 		}
 	}
 
@@ -290,25 +290,29 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 */
 void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingCharacter) 
 {
-	DisableFocusing();
-	CheckWallAround(MovingCharacter);
-	if (MovingCharacter->bCanAction) 
+	if (MovingCharacter->GetTeamFlag()) 
 	{
-		EnableInput(this);
-		TileManager->ClearAllTiles(true);
-		if (MovingCharacter->GetTeamFlag()) 
+		DisableFocusing();
+		if (MovingCharacter->bCanAction)
 		{
-			ATile* OverlappedTile = GetOverlappedTile(MovingCharacter);
-			if (OverlappedTile == nullptr)
+			EnableInput(this);
+			TileManager->ClearAllTiles(true);
+			if (MovingCharacter->GetTeamFlag())
 			{
-				return;
-			}
-			if (MovingCharacter->bCanAction) 
-			{
-				SetTilesToUseSelectedChararacter(OverlappedTile, MovingCharacter->CurrentMovableStep, MovingCharacter->GetMovableStepPerActionPoint());
+				ATile* OverlappedTile = GetOverlappedTile(MovingCharacter);
+				if (OverlappedTile == nullptr)
+				{
+					return;
+				}
+				if (MovingCharacter->bCanAction)
+				{
+					SetTilesToUseSelectedChararacter(OverlappedTile, MovingCharacter->CurrentMovableStep, MovingCharacter->GetMovableStepPerActionPoint());
+				}
 			}
 		}
 	}
+
+	CheckWallAround(MovingCharacter);
 }
 
 /**

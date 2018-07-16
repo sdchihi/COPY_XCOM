@@ -56,6 +56,8 @@ private:
 	UPROPERTY()
 	AFogOfWarManager* FogOfWar = nullptr;
 
+	bool TurnBuffer = false;
+
 	int32 EnemyTurnOrder = 0;
 
 	bool bEnemyNoticeBattle = false;
@@ -85,10 +87,15 @@ private:
 
 	void RenewWaypoint(int8 EnemyGroupNumber);
 
-	AEnemyUnit* EventEnemyUnit;
+	AActor* EventUnit;
 
 	bool HasEnemyUnitEvent();
 
 	void ExecuteEnemyEvent();
 
+	UFUNCTION()
+	void RegisterEventActor(AActor* EventActor);
+
+	UFUNCTION()
+	void CheckTurnAfterEvent();
 };

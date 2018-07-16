@@ -35,6 +35,7 @@ ACustomThirdPerson::ACustomThirdPerson()
 void ACustomThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
+	CurrentHP = MaxHP;
 
 	CurrentMovableStep = Step;
 
@@ -131,6 +132,11 @@ void ACustomThirdPerson::RotateTowardWall() {
 void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	bIsAttack = false;
 	SetActorLocation(PrevLocation);
+	if (bExecuteDelegate)
+	{
+		ExecuteChangePawnDelegate();
+	}
+
 	if (!bInVisilance) 
 	{
 		UseActionPoint(2);
@@ -144,10 +150,6 @@ void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 		RotateTowardWall();
 	}
 
-	if (bExecuteDelegate) 
-	{
-		ExecuteChangePawnDelegate();
-	}
 }
 
 void ACustomThirdPerson::ExecuteChangePawnDelegate()
@@ -225,6 +227,9 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 	UE_LOG(LogTemp, Warning, L"Use %d Action Point  --  Remaining : %d", PointToUse, RemainingActionPoint);
 	if (RemainingActionPoint <=0) //TODO
 	{
+
+		UE_LOG(LogTemp, Warning, L"^모두 소모했어요");
+
 		bCanAction = false;
 		if (AfterActionDelegate.IsBound())
 		{
