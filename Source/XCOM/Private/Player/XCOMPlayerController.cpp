@@ -494,15 +494,19 @@ void AXCOMPlayerController::ChangeViewTarget(const FVector StartLocation, const 
 */
 void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, bool bPlayBlend = true)
 {
-	if (AimWidget)
+	if (!SelectedCharacter->bIsAttack) 
 	{
-		AimWidget->DetachFromParent();
-		AimWidget->SetVisibility(true);
-		if (TargetActor)
+		if (AimWidget)
 		{
-			AimWidget->AttachTo(TargetActor->GetRootComponent());
+			AimWidget->DetachFromParent();
+			AimWidget->SetVisibility(true);
+			if (TargetActor)
+			{
+				AimWidget->AttachTo(TargetActor->GetRootComponent());
+			}
 		}
 	}
+	
 	else 
 	{
 		UE_LOG(LogTemp, Warning, L"component ¾øÀ½");

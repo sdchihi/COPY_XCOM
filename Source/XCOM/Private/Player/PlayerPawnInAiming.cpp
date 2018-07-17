@@ -222,9 +222,6 @@ void APlayerPawnInAiming::SetDeathCam(const FVector AimingCharLoc, AActor* Murde
 	bCameraMoving = true;
 };
 
-
-
-
 void APlayerPawnInAiming::StopCameraMoving() 
 {
 	bCameraMoving = false;

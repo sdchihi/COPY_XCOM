@@ -211,6 +211,8 @@ float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
 
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
+	bIsReadyToAttack = false;
+	bIsAttack = true;
 	if (StartShootingDelegate.IsBound())
 	{
 		if (SelectedAimingInfo.TargetActor)
@@ -218,8 +220,6 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 			StartShootingDelegate.Execute(SelectedAimingInfo.TargetActor, false);
 		}
 	}
-	bIsReadyToAttack = false;
-	bIsAttack = true;
 
 	GunReference->ProjectileCollisionPresetName = NewCollisionPresetName;
 	GunReference->FireToTarget(SelectedAimingInfo.TargetActor);
@@ -246,10 +246,6 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 {
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	CurrentHP -= ActualDamage;
-	if (Damage == 0) 
-	{
-		// 회피 이벤트
-	}
 
 	if (CurrentHP <= 0) 
 	{
@@ -269,6 +265,15 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 		
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
+	else if (Damage == 0)
+	{
+		bDodge = true;
+	}
+	else 
+	{
+		bGetHit = true;
+	}
+
 
 	UE_LOG(LogTemp, Warning, L"Damaged");
 
@@ -700,3 +705,8 @@ bool ACustomThirdPerson::IsInUnFoggedArea() const
 	return FOWComponent->isActorInTerraIncog;
 }
 
+void ACustomThirdPerson::FinishDodge()  
+{
+	bDodge = false;
+	bGetHit = false;
+}

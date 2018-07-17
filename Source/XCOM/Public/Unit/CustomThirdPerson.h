@@ -102,6 +102,12 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsReadyToAttack = false;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bGetHit = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bDodge = false;
+
 	bool bCanAction = true;
 
 
@@ -247,6 +253,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
 	UAnimMontage* TestDeadMontage;
+
+	UFUNCTION(BlueprintCallable)
+	void FinishDodge();
 
 
 protected:
