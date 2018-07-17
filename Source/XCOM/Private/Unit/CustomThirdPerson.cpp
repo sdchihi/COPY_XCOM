@@ -122,6 +122,8 @@ void ACustomThirdPerson::RotateTowardWall() {
 				break;
 			}
 			SetActorRotation(Direction);
+			UE_LOG(LogTemp, Warning, L"%f ·Î È¸Àü", GetActorRotation().Yaw);
+
 		}
 	}
 }
@@ -131,12 +133,15 @@ void ACustomThirdPerson::RotateTowardWall() {
 */
 void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	bIsAttack = false;
-	SetActorLocation(PrevLocation);
 	if (bExecuteDelegate)
 	{
 		ExecuteChangePawnDelegate();
 	}
 
+	if (bIsCovering) {
+		SetActorLocation(PrevLocation);
+		RotateTowardWall();
+	}
 	if (!bInVisilance) 
 	{
 		UseActionPoint(2);
@@ -145,11 +150,6 @@ void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	{
 		bInVisilance = false;
 	}
-
-	if (bIsCovering) {
-		RotateTowardWall();
-	}
-
 }
 
 void ACustomThirdPerson::ExecuteChangePawnDelegate()
@@ -189,16 +189,21 @@ float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
 	float DeltaYaw = AimYaw - ActorYaw;
 
 	float NewYaw;
-	if ( FMath::Abs(DeltaYaw) <= 180)
+	
+	if (!bIsCovering) 
 	{
-		PlayAnimMontage(LeftTurnMontage);
-		NewYaw = AimYaw;
+		if (FMath::Abs(DeltaYaw) <= 180)
+		{
+			PlayAnimMontage(LeftTurnMontage);
+		}
+		else
+		{
+			PlayAnimMontage(RightTurnMontage);
+		}
 	}
-	else 
-	{
-		PlayAnimMontage(RightTurnMontage);
-		NewYaw = ActorYaw - (360.f - AimYaw);
-	}
+	
+	NewYaw = AimYaw;
+
 
 	return NewYaw;
 }
@@ -206,7 +211,6 @@ float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
 
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
-	PrevLocation = GetActorLocation();
 	if (StartShootingDelegate.IsBound())
 	{
 		if (SelectedAimingInfo.TargetActor)

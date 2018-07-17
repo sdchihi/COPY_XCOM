@@ -106,7 +106,7 @@ void AEnemyUnit::HideUnit()
 
 void AEnemyUnit::UnHideUnit()
 {
-	SetActorHiddenInGame(false);
+	//SetActorHiddenInGame(false);
 	GunReference->SetActorHiddenInGame(false);
 	HealthBar->SetVisibilityLocker(false);
 	HealthBar->SetWidgetVisibility(true);
