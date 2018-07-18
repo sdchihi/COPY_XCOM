@@ -5,9 +5,6 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/HorizontalBox.h"
 
-
-
-
 void UUnitHUD::NativeConstruct()
 {
 
