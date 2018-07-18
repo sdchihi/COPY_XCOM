@@ -19,20 +19,29 @@ struct FAICommandInfo
 {
 	GENERATED_BODY()
 
+	int32 Score;
+
+	FAimingInfo* AimingInfo = nullptr;
+
+	EAction Action;
+
+	FAICommandInfo() 
+	{
+		Score = 0;
+		AimingInfo = nullptr;
+		Action = EAction::None;
+	}
+
+
 	~FAICommandInfo() 
 	{
 		if (AimingInfo != nullptr) 
 		{
+			UE_LOG(LogTemp, Warning, L"Á¦°ÅµÊ")
+
 			delete AimingInfo;
 		}
 	}
-
-	int32 Score;
-
-	FAimingInfo* AimingInfo;
-
-	EAction Action;
-
 
 };
 

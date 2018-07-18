@@ -25,7 +25,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector,
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegateFromChar,const FVector, StartLoc, const FVector, TargetLoc);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FReadyToAttackDelegate, AActor*, TargetActor, FVector, AimDirection);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FStartShootingDelegate, AActor*, ShootingCharacter, bool, bPlayBlend);
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FAnnounceDamageDelegate, AActor* DamagedActor, float Damage);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FAnnounceDamageDelegate, AActor*, DamagedActor, float, Damage);
 
 UENUM(BlueprintType)
 enum class EDirection : uint8

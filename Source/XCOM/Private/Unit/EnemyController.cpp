@@ -154,16 +154,16 @@ void AEnemyController::ScoreToTile(ATile* TargetTile, TArray<FVector> CoverDirec
 	EAction ActionOnTargetTile = DecideActionOnTile(ActionScore);
 
 	int32 TotalScore = ActionScore + GeographicalScore;
-	FAICommandInfo CommandInfo;// = FAICommandInfo(TotalScore, &BestAimingInfo, ActionOnTargetTile);
-	CommandInfo.Action = ActionOnTargetTile;
-	CommandInfo.AimingInfo = new FAimingInfo(BestAimingInfo);
-	CommandInfo.Score = TotalScore;
 
-	TileScoreBoard.Add(TargetTile, CommandInfo);
+	FAICommandInfo* CommandInfo = new FAICommandInfo();
+	CommandInfo->Action = ActionOnTargetTile;
+	CommandInfo->AimingInfo = new FAimingInfo(BestAimingInfo);
+	CommandInfo->Score = TotalScore;
+
+	TileScoreBoard.Add(TargetTile, *CommandInfo);
 
 	int32 Index = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
 	UE_LOG(LogTemp, Warning, L"AI  이동 가능한 타일 index : %d  점수: (지리 점수)%d + (액션 점수)%d = %d", Index, GeographicalScore, ActionScore, TotalScore);
-
 	DebugAimingInfo(TileLocation, TotalScore);
 }
 
@@ -311,7 +311,7 @@ EAction AEnemyController::DecideActionOnTile(int32 ActionScore)
 
 void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& TileScoreBoard)
 {
-	int32 HighestScore = 0;
+	int32 HighestScore = -50000;
 	ATile* HighestScoredTile = nullptr;
 	for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
 	{
@@ -324,7 +324,7 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 
 	int32 TileIndex = TileManager->ConvertVectorToIndex(HighestScoredTile->GetActorLocation());
 
-	if (AimingInfo) 
+	if (AimingInfo != nullptr)
 	{
 		delete AimingInfo;
 	}
@@ -333,12 +333,9 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 	{
 		AimingInfo = new FAimingInfo(*TileScoreBoard[HighestScoredTile].AimingInfo);
 	}
-
-
 	DecideWayToProceedBasedLocation(HighestScoredTile->GetActorLocation());
 	BlackboardComp->SetValue<UBlackboardKeyType_Bool>(RemainingMovementKeyID, true);
 	BlackboardComp->SetValue<UBlackboardKeyType_Enum>(ActionKeyID, static_cast<UBlackboardKeyType_Enum::FDataType>(TileScoreBoard[HighestScoredTile].Action));
-	
 
 	TArray<FVector> Tempor;
 	for (int32 PathIndex : TileManager->GetPathToTile(TileIndex).OnTheWay)
@@ -349,10 +346,13 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 	}
 	PathToTarget = Tempor;
 
-	for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
-	{
-		delete It.Value().AimingInfo;	//힙 영역 청소
-	}
+	//for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
+	//{
+	//	if (HighestScore < It.Value().Score)
+	//	{
+	//		delete It.Value().AimingInfo;	//힙 영역 청소
+	//	}
+	//}
 	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
 }
 

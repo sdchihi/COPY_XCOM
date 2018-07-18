@@ -19,7 +19,7 @@ struct FOrderlyAimingInfo
 		AimingInfo = AimingInfo_;
 	}
 
-	~FOrderlyAimingInfo(ACustomThirdPerson* AimingActor_, FAimingInfo* AimingInfo_)
+	~FOrderlyAimingInfo()
 	{
 		delete AimingInfo;
 	}

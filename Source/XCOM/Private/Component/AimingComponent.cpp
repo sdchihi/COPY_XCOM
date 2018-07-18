@@ -475,7 +475,6 @@ FAimingInfo UAimingComponent::GetBestAimingInfo(const FVector ActorLocation, con
 			BestAimingInfo = AimingInfo;
 		}
 	}
-	AActor::Destroy();
 	return BestAimingInfo;
 };
 

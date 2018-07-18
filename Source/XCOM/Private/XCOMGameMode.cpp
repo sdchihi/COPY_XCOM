@@ -11,7 +11,6 @@
 #include "Waypoint.h"
 #include "FogOfWarComponent.h"
 #include "EventExecutor.h"
-#include "UMG/Public/Blueprint/UserWidget.h"
 #include "FAimingQueue.h"
 
 AXCOMGameMode::AXCOMGameMode()
