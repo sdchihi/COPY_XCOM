@@ -21,6 +21,11 @@ struct FAimingInfo
 {
 	GENERATED_BODY()
 
+	~FAimingInfo() 
+	{
+		UE_LOG(LogTemp, Warning, "TargetActor : %s ÀÌ´ø Aiming Info Á¦°ÅµÊ", *TargetActor->GetName())
+	}
+
 	FVector StartLocation;
 
 	FVector TargetLocation;

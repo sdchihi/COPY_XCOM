@@ -22,6 +22,13 @@ FAimingQueue::FAimingQueue()
 
 FAimingQueue::~FAimingQueue()
 {
+	for (FOrderlyAimingInfo* PendingToKill : Pending) 
+	{
+		if (PendingToKill != nullptr) 
+		{
+			delete PendingToKill;
+		}
+	}
 }
 
 
@@ -125,3 +132,8 @@ bool FAimingQueue::IsPrevTask()
 		return false;
 	}
 }
+
+void FAimingQueue::Destroy() 
+{
+	delete this;
+};

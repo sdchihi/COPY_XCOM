@@ -12,9 +12,15 @@
 #include "FogOfWarComponent.h"
 #include "EventExecutor.h"
 #include "UMG/Public/Blueprint/UserWidget.h"
+#include "FAimingQueue.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
+}
+
+AXCOMGameMode::~AXCOMGameMode()
+{
+	FAimingQueue::Instance().Destroy();
 }
 
 void AXCOMGameMode::BeginPlay()

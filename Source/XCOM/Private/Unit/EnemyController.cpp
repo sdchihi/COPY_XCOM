@@ -351,12 +351,8 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 
 	for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
 	{
-		if (HighestScore < It.Value().Score)
-		{
-			delete It.Value().AimingInfo;
-		}
+		delete It.Value().AimingInfo;	//힙 영역 청소
 	}
-
 	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
 }
 

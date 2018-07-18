@@ -24,7 +24,8 @@ protected:
 
 public:
 	AXCOMGameMode();
-	
+	~AXCOMGameMode();
+
 
 	UFUNCTION()
 	void CheckTurnOver(const bool bIsPlayerTeam);
