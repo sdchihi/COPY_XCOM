@@ -19,6 +19,11 @@ struct FOrderlyAimingInfo
 		AimingInfo = AimingInfo_;
 	}
 
+	~FOrderlyAimingInfo(ACustomThirdPerson* AimingActor_, FAimingInfo* AimingInfo_)
+	{
+		delete AimingInfo;
+	}
+
 };
 
 /**
@@ -32,6 +37,8 @@ public:
 	static void Update();
 
 	static void NextTask();
+
+	static void Destroy();
 
 	static void StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* AimingInfo);
 

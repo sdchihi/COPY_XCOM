@@ -245,6 +245,12 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) 
 {
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	
+	if (AnnounceDamageDelegate.IsBound()) 
+	{
+		AnnounceDamageDelegate.Execute(this, Damage);
+	}
+
 	CurrentHP -= ActualDamage;
 
 	if (CurrentHP <= 0) 

@@ -24,7 +24,8 @@ protected:
 
 public:
 	AXCOMGameMode();
-	
+	~AXCOMGameMode();
+
 
 	UFUNCTION()
 	void CheckTurnOver(const bool bIsPlayerTeam);
@@ -36,6 +37,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Fog of war"))
 	TSubclassOf<AFogOfWarManager> FogOfWarBP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UUserWidget> CombatPopUp;
 
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Fog of war"))
 	bool bGenerateFogOfWar = true;
@@ -53,6 +57,9 @@ public:
 	FVector GetPlayerUnitMiddlePoint();
 
 private:
+	UPROPERTY()
+	UUserWidget* PopUpWidget;
+
 	UPROPERTY()
 	AFogOfWarManager* FogOfWar = nullptr;
 
@@ -98,4 +105,7 @@ private:
 
 	UFUNCTION()
 	void CheckTurnAfterEvent();
+
+	UFUNCTION()
+	void ShowCombatPopUp(AActor* DamagedActor, float Damage);
 };

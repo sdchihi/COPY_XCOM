@@ -19,11 +19,21 @@ struct FAICommandInfo
 {
 	GENERATED_BODY()
 
+	~FAICommandInfo() 
+	{
+		if (AimingInfo != nullptr) 
+		{
+			delete AimingInfo;
+		}
+	}
+
 	int32 Score;
 
 	FAimingInfo* AimingInfo;
 
 	EAction Action;
+
+
 };
 
 /**

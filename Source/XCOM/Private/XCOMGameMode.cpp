@@ -11,12 +11,17 @@
 #include "Waypoint.h"
 #include "FogOfWarComponent.h"
 #include "EventExecutor.h"
+#include "UMG/Public/Blueprint/UserWidget.h"
+#include "FAimingQueue.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
 }
 
-
+AXCOMGameMode::~AXCOMGameMode()
+{
+	FAimingQueue::Instance().Destroy();
+}
 
 void AXCOMGameMode::BeginPlay()
 {
@@ -29,6 +34,7 @@ void AXCOMGameMode::BeginPlay()
 	{
 		ACustomThirdPerson* SingleCharacter = Cast<ACustomThirdPerson>(SingleActor);
 		SingleCharacter->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMGameMode::CheckTurnOver);
+		SingleCharacter->AnnounceDamageDelegate.BindDynamic(this, &AXCOMGameMode::ShowCombatPopUp);
 
 		if (SingleCharacter->GetTeamFlag()) 
 		{
@@ -422,4 +428,9 @@ void AXCOMGameMode::CheckTurnAfterEvent()
 	UE_LOG(LogTemp, Warning, L"^이것은 완료후 Checkturn Event")
 
 	CheckTurnOver(TurnBuffer);
+}
+
+
+void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage) 
+{
 }
