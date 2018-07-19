@@ -506,7 +506,6 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, 
 			}
 		}
 	}
-	
 	else 
 	{
 		UE_LOG(LogTemp, Warning, L"component ¾øÀ½");
@@ -672,5 +671,6 @@ void AXCOMPlayerController::DisableFocusing()
 {
 	bIsFocusing = false;
 	DefaultPlayerPawn->SetActorTickEnabled(true);
+
 }
 

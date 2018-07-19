@@ -12,14 +12,16 @@
 #include "FogOfWarComponent.h"
 #include "EventExecutor.h"
 #include "FAimingQueue.h"
+#include "FloatingWidget.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
+
 }
 
 AXCOMGameMode::~AXCOMGameMode()
 {
-	FAimingQueue::Instance().Destroy();
+	FAimingQueue::Destroy();
 }
 
 void AXCOMGameMode::BeginPlay()
@@ -64,6 +66,14 @@ void AXCOMGameMode::BeginPlay()
 	if (bGenerateFogOfWar) 
 	{
 		SpawnFogOfWar();
+	}
+
+	if (PopUpBlueprint)
+	{
+		PopUp = CreateWidget<UFloatingWidget>(GetWorld(), PopUpBlueprint.Get());
+		PopUp->AddToViewport();
+		PopUp->SetVisibility(ESlateVisibility::Hidden);
+		PopUp->SetDesiredSizeInViewport(FVector2D(180, 50));
 	}
 }
 
@@ -429,7 +439,15 @@ void AXCOMGameMode::CheckTurnAfterEvent()
 	CheckTurnOver(TurnBuffer);
 }
 
-
 void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage) 
 {
+	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
+	FVector TargetLocation = DamagedActor->GetActorLocation() + FVector(0, 0, 100);
+	FVector2D NewWidgetLocation;
+	PlayerController->ProjectWorldLocationToScreen(TargetLocation, NewWidgetLocation);
+	if (PopUp)
+	{
+		PopUp->SetPositionInViewport(NewWidgetLocation);
+		PopUp->ShowCombatInfo(Damage);
+	}
 }

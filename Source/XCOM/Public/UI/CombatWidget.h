@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/CustomUserWidget.h"
 #include "XCOMPlayerController.h"
 #include "CustomThirdPerson.h"
 #include "CombatWidget.generated.h"
@@ -26,7 +26,7 @@ class UCanvasPanel;
  * 
  */
 UCLASS()
-class XCOM_API UCombatWidget : public UUserWidget
+class XCOM_API UCombatWidget : public UCustomUserWidget
 {
 	GENERATED_BODY()
 	
@@ -135,11 +135,4 @@ private:
 
 	UFUNCTION()
 	void StartGrenadeButtonClicked();
-
-	class UWidgetAnimation* GetAnimationByName(FName AnimationName) const;
-
-	TMap<FName, UWidgetAnimation*> AnimationsMap;
-
-	void FillAnimationsMap();
-
 };

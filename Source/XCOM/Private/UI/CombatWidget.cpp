@@ -13,15 +13,12 @@
 #include "CustomButton.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/CanvasPanel.h"
-#include "Components/Image.h"
 #include "WidgetLayoutLibrary.h"
-#include "CanvasPanelSlot.h"
-#include "Animation/WidgetAnimation.h"
-#include "MovieScene.h"
+
+
 
 void UCombatWidget::NativeConstruct()
 {
-	FillAnimationsMap();
 	InitializeInBP();
 	// Call Blueprint Event Construct node
 	Super::NativeConstruct();
@@ -344,11 +341,7 @@ void UCombatWidget::ConstructWidgetMinimum()
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Collapsed);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
-	UWidgetAnimation* Anim = GetAnimationByName(FName("MinimumUIAnim"));
-	if (Anim)
-	{
-		PlayAnimation(Anim);
-	}
+	PlayAnimationByName(FName("MinimumUIAnim"));
 }
 
 void UCombatWidget::ConstructWidgetRequiredForAttack()
@@ -359,11 +352,7 @@ void UCombatWidget::ConstructWidgetRequiredForAttack()
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
-	UWidgetAnimation* Anim = GetAnimationByName(FName("AttackUIAnim"));
-	if (Anim) 
-	{
-		PlayAnimation(Anim);
-	}
+	PlayAnimationByName(FName("AttackUIAnim"));
 }
 
 void UCombatWidget::ConstructWidgetNormal()
@@ -374,51 +363,5 @@ void UCombatWidget::ConstructWidgetNormal()
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Visible);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
-	UWidgetAnimation* Anim = GetAnimationByName(FName("NormalUIAnim"));
-	if (Anim)
-	{
-		PlayAnimation(Anim);
-	}
+	PlayAnimationByName(FName("NormalUIAnim"));
 }
-
-void UCombatWidget::FillAnimationsMap()
-{
-	AnimationsMap.Empty();
-
-	UProperty* Prop = GetClass()->PropertyLink;
-
-	// Run through all properties of this class to find any widget animations
-	while (Prop != nullptr)
-	{
-		// Only interested in object properties
-		if (Prop->GetClass() == UObjectProperty::StaticClass())
-		{
-			UObjectProperty* ObjProp = Cast<UObjectProperty>(Prop);
-
-			// Only want the properties that are widget animations
-			if (ObjProp->PropertyClass == UWidgetAnimation::StaticClass())
-			{
-				UObject* Obj = ObjProp->GetObjectPropertyValue_InContainer(this);
-
-				UWidgetAnimation* WidgetAnim = Cast<UWidgetAnimation>(Obj);
-
-				if (WidgetAnim != nullptr && WidgetAnim->MovieScene != nullptr)
-				{
-					FName AnimName = WidgetAnim->MovieScene->GetFName();
-					AnimationsMap.Add(AnimName, WidgetAnim);
-				}
-			}
-		}
-		Prop = Prop->PropertyLinkNext;
-	}
-}
-
-UWidgetAnimation* UCombatWidget::GetAnimationByName(FName AnimationName) const
-{
-	UWidgetAnimation* const* WidgetAnim = AnimationsMap.Find(AnimationName);
-	if (WidgetAnim)
-	{
-		return *WidgetAnim;
-	}
-	return nullptr;
-};

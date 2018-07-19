@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/CustomUserWidget.h"
 #include "UnitHUD.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class XCOM_API UUnitHUD : public UUserWidget
+class XCOM_API UUnitHUD : public UCustomUserWidget
 {
 	GENERATED_BODY()
 	

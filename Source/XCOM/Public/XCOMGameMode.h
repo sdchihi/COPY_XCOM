@@ -35,11 +35,11 @@ public:
 	UPROPERTY(EditInstanceOnly)
 	TArray<AActor*> PlayerUnitDetectorArray;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UFloatingWidget> PopUpBlueprint;
+
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Fog of war"))
 	TSubclassOf<AFogOfWarManager> FogOfWarBP;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<class UUserWidget> CombatPopUp;
 
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Fog of war"))
 	bool bGenerateFogOfWar = true;
@@ -58,7 +58,7 @@ public:
 
 private:
 	UPROPERTY()
-	UUserWidget* PopUpWidget;
+	UFloatingWidget* PopUp = nullptr;
 
 	UPROPERTY()
 	AFogOfWarManager* FogOfWar = nullptr;

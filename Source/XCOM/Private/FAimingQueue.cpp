@@ -135,5 +135,8 @@ bool FAimingQueue::IsPrevTask()
 
 void FAimingQueue::Destroy() 
 {
-	delete pInstance;
+	if (pInstance != nullptr) 
+	{
+		delete pInstance;
+	}
 };
