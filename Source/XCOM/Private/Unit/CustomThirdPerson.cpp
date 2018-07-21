@@ -20,7 +20,7 @@
 #include "FogOfWarComponent.h"
 #include "Classes/Animation/AnimMontage.h"
 #include "Animation/AnimEnums.h"
-
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -242,9 +242,9 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 	}
 }
 
-float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) 
+float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)		 // DamageCauser의 클래스는 Gun 
 {
-	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, );
 	
 	if (AnnounceDamageDelegate.IsBound()) 
 	{
@@ -255,6 +255,8 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 
 	if (CurrentHP <= 0) 
 	{
+		float NewYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), DamageCauser->GetActorLocation()).Yaw;
+		SetActorRotation(FRotator(0, NewYaw, 0));
 		//TODO 사망 Event
 		//UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
 		//ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
