@@ -97,13 +97,19 @@ private:
 	UPROPERTY()
 	UUserWidget* SumAimingProbBox = nullptr;
 
+	UPROPERTY()
+	UUserWidget* SumCriticalProbBox = nullptr;
 
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
 	
-	void ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT FString& Explanation, OUT float& Percentage);
+	void FillAimingInfo(const FAimingInfo& AimingInfo);
 
-	void FillContnents(const FString& Explanation, const float Percentage);
+	void FillCriticalShotInfo(const FAimingInfo& AimingInfo);
+
+	void FillLeftContnents(const FString& Explanation, const float Percentage);
+
+	void FillRightContents(const FString& Explanation, const float Percentage);
 
 	void FillEnemyList();
 

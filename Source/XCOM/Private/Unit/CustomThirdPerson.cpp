@@ -242,9 +242,11 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 	}
 }
 
-float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)		 // DamageCauser의 클래스는 Gun 
+float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, );
+	UE_LOG(LogTemp, Warning, L"Damaged");
+
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	
 	if (AnnounceDamageDelegate.IsBound()) 
 	{
@@ -283,7 +285,6 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	}
 
 
-	UE_LOG(LogTemp, Warning, L"Damaged");
 
 	return ActualDamage;
 }
@@ -351,45 +352,61 @@ void ACustomThirdPerson::AttackAfterCoverMoving()
 	bIsReadyToAttack = false;
 }
 
-
-void ACustomThirdPerson::Shoot() 
+void ACustomThirdPerson::Shoot()
 {
 	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
+
+	float CriticalChance = SelectedAimingInfo.SumOfCriticalProb();
+	float DodgeChance;
+
+	DecideShootingChance(CriticalChance, DodgeChance);
+
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
-	//잠시 무조건 성공으로 변경
-	float RandomValue = FMath::FRandRange(0.99, 1);
-
+	float result = FMath::FRandRange(0.1, 0.2);
 	//성공
-	if (RandomValue <= AttackSuccessProbability)
-	{
-		AimAt(AimDirection, FName(L"ProjectileToChar"));
 
-		UE_LOG(LogTemp, Warning, L"Prob : %f,  Rand : %f ", AttackSuccessProbability, RandomValue);
-		GunReference->SetShootingResult(true, false);
-		/*
-		크리티컬 계산후 
-		GunReference->SetShootingResult(true,false);
-		GunReference->SetShootingResult(false, true);
-		*/
+	UE_LOG(LogTemp, Warning, L"셔플 결과  : %f ,  Prob 값 :  %f , Critical 값 : %f  Dodge 값 : %f", result, AttackSuccessProbability, CriticalChance, DodgeChance);
+
+	if (result <= AttackSuccessProbability)
+	{
+		float DodgePie = AttackSuccessProbability - DodgeChance;
+		if (DodgePie <= result) 
+		{
+			AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
+			UE_LOG(LogTemp, Warning, L"공격 실패 : Dodge");
+			GunReference->SetShootingResult(false);
+		}
+		else if (result < CriticalChance) 
+		{
+			AimAt(AimDirection, FName(L"ProjectileToChar"));
+			UE_LOG(LogTemp, Warning, L"공격 성공 : Critical Attack");
+			GunReference->SetShootingResult(true, true);
+		}
+		else 
+		{
+			AimAt(AimDirection, FName(L"ProjectileToChar"));
+			UE_LOG(LogTemp, Warning, L"공격 성공 : Normal Attack");
+			GunReference->SetShootingResult(true, false);
+		}
 	}
 	else //실패
 	{
 		if (CheckTargetEnemyCoverState(SelectedAimingInfo.Factor))
 		{
 			//은신중
-			RandomValue = FMath::FRandRange(0, 1);
-			if (RandomValue < 0.5) 
+			float RandomValue = FMath::FRandRange(0, 1);
+			if (RandomValue < 0.5)
 			{
 				AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
 				UE_LOG(LogTemp, Warning, L"공격 실패 : (엄폐) 허공향해 사격");
 			}
-			else 
+			else
 			{
 				AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
 				UE_LOG(LogTemp, Warning, L"공격 실패 : (엄폐)벽을향해 사격");
 			}
 		}
-		else 
+		else
 		{
 			AimAt(AimDirection + FVector(0, 50, 50), FName(L"ProjectileToWall"));
 			UE_LOG(LogTemp, Warning, L"공격 실패 : 허공향해 사격");
@@ -398,7 +415,7 @@ void ACustomThirdPerson::Shoot()
 	}
 
 	float DistanceToTarget = GetDistanceTo(SelectedAimingInfo.TargetActor);
-	if (DistanceToTarget > 700.f) 
+	if (DistanceToTarget > 700.f)
 	{
 		if (ReadyToAttackDelegate.IsBound())
 		{
@@ -406,6 +423,19 @@ void ACustomThirdPerson::Shoot()
 		}
 	}
 }
+
+
+void ACustomThirdPerson::DecideShootingChance(float& CriticalChance, float& DodgeChance)
+{
+	float RemainingChance = SelectedAimingInfo.Probability;
+
+	//DodgeChance = SelectedAimingInfo->TargetActor->GetDodge();
+	DodgeChance = 0.08; // Temp value
+	RemainingChance -= DodgeChance;
+
+	CriticalChance = FMath::Clamp(CriticalChance, 0.f, RemainingChance);
+}
+
 
 
 bool ACustomThirdPerson::CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo)

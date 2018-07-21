@@ -15,15 +15,12 @@
 #include "Components/CanvasPanel.h"
 #include "WidgetLayoutLibrary.h"
 
-
-
 void UCombatWidget::NativeConstruct()
 {
 	InitializeInBP();
 	// Call Blueprint Event Construct node
 	Super::NativeConstruct();
 }
-
 
 void UCombatWidget::InitializeInBP() 
 {
@@ -33,20 +30,19 @@ void UCombatWidget::InitializeInBP()
 	EnemyIconHBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("EnemyListHBox")));
 	MainStartActionButton = Cast<UButton>(GetWidgetFromName(FName("MainActionButton")));
 	SumAimingProbBox = Cast<UUserWidget>(GetWidgetFromName(FName("SumAimingProb")));
+	SumCriticalProbBox = Cast<UUserWidget>(GetWidgetFromName(FName("SumCriticalProb")));
+	UTextBlock* CommentBox = Cast<UTextBlock>(SumCriticalProbBox->GetWidgetFromName(FName("Comment")));
+	CommentBox->SetText(FText::FromString(L"치명타"));
+
 
 	LeftFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("LeftContainer")));
 	RightFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("RightContainer")));
 	CenterFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("CenterContainer")));
 
-	
-
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
 	ConstructWidgetMinimum();
 };
-
-
-
 
 void UCombatWidget::ClearContents(const bool bClearAll)
 {
@@ -69,13 +65,11 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	SelectedCharacterAimingInfo = AimingInfoArray;
 	PossibleActionMap = PossibleActionMapWrapper.PossibleAction;
 
-	FString Explanation;
-	float Percentage; 
-	
 	//Fill Side Contents 
 	if (SelectedCharacterAimingInfo.Num() != 0) 
 	{
-		ConvertToSuitableFormat(SelectedCharacterAimingInfo[0], Explanation, Percentage); 
+		FillAimingInfo(SelectedCharacterAimingInfo[0]);
+		FillCriticalShotInfo(SelectedCharacterAimingInfo[0]);
 	}
 
 	// 상단 Enemy Icon
@@ -83,9 +77,11 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	FillActionButtonList();
 }
 
-void UCombatWidget::ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT FString& Explanation, OUT float& Percentage) 
+void UCombatWidget::FillAimingInfo(const FAimingInfo& AimingInfo) 
 {
 	float SumOfAimingPercentage = 0;
+	FString Explanation;
+	float Percentage;
 	for (auto SingleFactor : AimingInfo.Factor) 
 	{
 		switch (SingleFactor.Key)
@@ -111,14 +107,40 @@ void UCombatWidget::ConvertToSuitableFormat(const FAimingInfo& AimingInfo, OUT F
 		Percentage = SingleFactor.Value * 100;
 		SumOfAimingPercentage += Percentage;
 
-		FillContnents(Explanation, Percentage);
+		FillLeftContnents(Explanation, Percentage);
 	}
-
 	UTextBlock* PercentageText = Cast<UTextBlock>(SumAimingProbBox->GetWidgetFromName(FName("PercentageValue")));
 	PercentageText->SetText(FText::AsNumber(SumOfAimingPercentage));	
 }
 
-void UCombatWidget::FillContnents(const FString& Explanation, const float Percentage)
+void UCombatWidget::FillCriticalShotInfo(const FAimingInfo& AimingInfo) 
+{
+	float SumOfCriticalPercentage = 0;
+	FString Explanation;
+	float Percentage;
+	for (auto SingleCriticalFactor : AimingInfo.CriticalFactor)
+	{
+		switch (SingleCriticalFactor.Key)
+		{
+		case ECriticalFactor::SideAttack:
+			Explanation = L"측면 목표";
+			break;
+		case ECriticalFactor::WeaponAbility:
+			Explanation = L"무기 치명타";
+			break;
+		default:
+			break;
+		}
+		Percentage = SingleCriticalFactor.Value * 100;
+		SumOfCriticalPercentage += Percentage;
+
+		FillRightContents(Explanation, Percentage);
+	}
+	UTextBlock* PercentageText = Cast<UTextBlock>(SumCriticalProbBox->GetWidgetFromName(FName("PercentageValue")));
+	PercentageText->SetText(FText::AsNumber(SumOfCriticalPercentage));
+}
+
+void UCombatWidget::FillLeftContnents(const FString& Explanation, const float Percentage)
 {
 	if (SideContentBoxBlueprint)
 	{
@@ -133,6 +155,20 @@ void UCombatWidget::FillContnents(const FString& Explanation, const float Percen
 	}
 }
 
+//Refactoring 가능
+void UCombatWidget::FillRightContents(const FString& Explanation, const float Percentage) 
+{
+	if (SideContentBoxBlueprint)
+	{
+		UUserWidget* RightContentsBox = CreateWidget<UUserWidget>(GetWorld(), SideContentBoxBlueprint.Get());
+		UTextBlock* CommentText = Cast<UTextBlock>(RightContentsBox->GetWidgetFromName(FName("Comment")));
+		UTextBlock* PercentageText = Cast<UTextBlock>(RightContentsBox->GetWidgetFromName(FName("PercentageValue")));
+		CommentText->SetText(FText::FromString(Explanation));
+		PercentageText->SetText(FText::AsNumber(Percentage));
+
+		RightVBox->AddChild(RightContentsBox);
+	}
+}
 
 void UCombatWidget::FillEnemyList() 
 {
@@ -163,9 +199,8 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	}
 	ClearContents();
 
-	FString Explanation;
-	float Percentage;
-	ConvertToSuitableFormat(SelectedCharacterAimingInfo[ButtonIndex], Explanation, Percentage);
+	FillAimingInfo(SelectedCharacterAimingInfo[ButtonIndex]);
+	FillCriticalShotInfo(SelectedCharacterAimingInfo[ButtonIndex]);
 
 	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetActor, true);
 	TargetEnemyIndex = ButtonIndex;
@@ -229,8 +264,6 @@ void UCombatWidget::FillActionButtonList()
 		}
 	}
 }
-
-
 
 void UCombatWidget::AttackButtonClicked() 
 {

@@ -213,7 +213,7 @@ void APlayerPawnInAiming::SetDeathCam(const FVector AimingCharLoc, AActor* Murde
 	FVector StraightLineDirection = (AimingCharLoc - MurderedCharLocation).GetSafeNormal();
 
 	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
-	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 200) + (RightDirection * RightDistance);
+	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 200) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
 
 	FRotator NewPawnRotation = UKismetMathLibrary::FindLookAtRotation(NewPawnPosition, MurderedCharLocation);
 	SetActorLocation(NewPawnPosition);

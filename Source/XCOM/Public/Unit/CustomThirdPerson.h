@@ -260,6 +260,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FinishDodge();
 
+	AGun& GetGunReference() { return *GunReference; };
 
 protected:
 	
@@ -314,6 +315,8 @@ private:
 	TMap<EAction, bool> PossibleActionMap;
 
 	bool CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo);
+
+	void DecideShootingChance(float& CriticalChance, float& DodgeChance);
 
 	void StartSlowMotion();
 

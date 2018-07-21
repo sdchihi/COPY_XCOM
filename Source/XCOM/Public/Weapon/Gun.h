@@ -35,14 +35,19 @@ public:
 
 	FName ProjectileCollisionPresetName;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	int8 Damage = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	int8 Critical = 0;
 
 	int8 GetDamage() { return  Damage; };
 
+	int8 GetCriticalAbil() { return Critical; };
+
 	void FireToTarget(AActor* TargetActor);
 
-	void SetShootingResult(bool bAimSuccess, bool bCritical = false);
+	void SetShootingResult(bool AimSuccess, bool Critical = false);
 
 private:
 	UStaticMeshComponent* StaticMeshComponentRef = nullptr;

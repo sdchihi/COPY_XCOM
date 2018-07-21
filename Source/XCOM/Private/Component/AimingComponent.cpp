@@ -3,6 +3,7 @@
 #include "CustomThirdPerson.h"
 #include "Classes/Kismet/KismetSystemLibrary.h"
 #include "DestructibleWall.h"
+#include "Gun.h"
 
 UAimingComponent::UAimingComponent()
 {
@@ -50,11 +51,13 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 		if (DetectedPawn)
 		{
 			TMap<EAimingFactor, float> AimingFactor;
-			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover, DetectedPawn, AimingFactor);
+			TMap<ECriticalFactor, float> CriticalFactor;
+
+			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover, DetectedPawn, AimingFactor, CriticalFactor);
 			FVector StartLocation = FilteredHitResult.TraceStart;
 			FVector TargetLocation = DetectedPawn->GetActorLocation();
 			TargetLocationArr.AddUnique(TargetLocation);
-			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, DetectedPawn, AimingFactor));
+			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, DetectedPawn, AimingFactor, CriticalFactor));
 		}
 	}
 
@@ -70,9 +73,11 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 * @param AttackRadius - 조준 가능한 범위
 * @param bIsCover - 실행하는 Actor가 엄폐 상태 여부
 * @param AimingFactor - 조준에 관여하는 외부 요소에 대한 데이터를 반환합니다
+* @param CriticalFactor - 크리티컬에 관여하는 외부 요소에 대한 데이터를 반환합니다.
 * @return 공격 성공 확률을 반환합니다.
 */
-float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor)
+//수정 필요
+float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, float>& CriticalFactor)
 {
 	AimingFactor.Add(EAimingFactor::AimingAbility, 0.8);
 	float FailureRatio = 0;
@@ -111,6 +116,18 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation,
 			UE_LOG(LogTemp, Warning, L"엄폐로 인한 실패 확률 계산 결과 : %f", FailureDueToCover);
 		}
 	}
+
+	float AngleBtwActor = FMath::RadiansToDegrees(acosf(FVector::DotProduct(AimDirection, TargetThirdPerson->GetActorForwardVector())));
+	if (45 < AngleBtwActor)
+	{
+		float CriticalBonus = 20;
+		if (70 < AngleBtwActor) 
+		{
+			CriticalBonus = 40;
+		}
+		CriticalFactor.Add(ECriticalFactor::SideAttack, CriticalBonus);
+	}
+
 	// Todo - 적과의 거리에 따른 실패 확률 상승 ( 수정 필요 )
 	float FailureDueToDistance = (HitResult.Distance * (15 / AttackRadius)) / 100;
 	FailureRatio += FailureDueToDistance;
@@ -172,7 +189,6 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 		float AngleBetweenAimAndWall = 0;
 		if (CoverDirectionState.Value != ECoverInfo::None)
 		{
-
 			switch (CoverDirectionState.Key)
 			{
 			case EDirection::East:
@@ -347,7 +363,10 @@ FRotator UAimingComponent::FindCoverDirection(TPair<EDirection, ECoverInfo> Dire
 * @param TargetLocArr - 타겟의 위치 Array
 */
 void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCaseInfo, TArray<FAimingInfo>& BestCaseArr, const TArray<FVector> TargetLocArr)
-{
+{	
+	ACustomThirdPerson* OwnerActor = Cast<ACustomThirdPerson>(GetOwner());
+	int8 CriticalValue = OwnerActor->GetGunReference().GetCriticalAbil();
+
 	for (FVector TargetLoc : TargetLocArr)
 	{
 		FAimingInfo SingleBestCase;
@@ -362,6 +381,10 @@ void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCas
 					SingleBestCase = SingleCaseInCheck;
 				}
 			}
+		}
+		if (CriticalValue != 0) 
+		{
+			SingleBestCase.CriticalFactor.Add(ECriticalFactor::WeaponAbility, CriticalValue);
 		}
 		BestCaseArr.Add(SingleBestCase);
 	}
@@ -422,8 +445,6 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 	{
 		return false;
 	}
-	//필터링 끝
-
 
 	TArray<FAimingInfo> AimingInfoInAllCase;
 	TArray<FVector> TargetLocationArr;
@@ -434,14 +455,13 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 		if (DetectedPawn)
 		{
 			TMap<EAimingFactor, float> AimingFactor;
-			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover,DetectedPawn, AimingFactor);
+			TMap<ECriticalFactor, float> CriticalFactor;
+
+			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover,DetectedPawn, AimingFactor, CriticalFactor);
 			FVector StartLocation = FilteredHitResult.TraceStart;
 			FVector TargetLocation = DetectedPawn->GetActorLocation();
 			TargetLocationArr.AddUnique(TargetLocation);
-			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, DetectedPawn, AimingFactor));
-
-			//수정필요
-			//DetectedPawn->CustomTimeDilation = 0.05;
+			AimingInfoInAllCase.Add(FAimingInfo(StartLocation, TargetLocation, Probability, DetectedPawn, AimingFactor, CriticalFactor));
 		}
 	}
 	FindBestCaseInAimingInfo(AimingInfoInAllCase, BestCaseArr, TargetLocationArr);

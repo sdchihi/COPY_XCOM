@@ -16,6 +16,15 @@ enum class EAimingFactor : uint8
 	Disatnce
 };
 
+UENUM(BlueprintType)
+enum class ECriticalFactor : uint8
+{
+	WeaponAbility,
+	SideAttack
+};
+
+
+
 USTRUCT()
 struct FAimingInfo
 {
@@ -35,6 +44,8 @@ struct FAimingInfo
 
 	TMap<EAimingFactor, float> Factor;
 
+	TMap<ECriticalFactor, float> CriticalFactor;
+
 	FAimingInfo()
 	{
 		StartLocation = FVector(0, 0, 0);	
@@ -50,7 +61,7 @@ struct FAimingInfo
 		TargetActor = Target;
 	}
 
-	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target,TMap<EAimingFactor, float>& AimingFactor)
+	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target,TMap<EAimingFactor, float>& AimingFactor )
 	{
 		StartLocation = StartLoc;
 		TargetLocation = TargetLoc;
@@ -59,13 +70,35 @@ struct FAimingInfo
 		TargetActor = Target;
 	}
 
+	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, float>& CriticalFactorMap)
+	{
+		StartLocation = StartLoc;
+		TargetLocation = TargetLoc;
+		Probability = SucessProbability;
+		Factor = AimingFactor;
+		TargetActor = Target;
+		CriticalFactor = CriticalFactorMap;
+	}
+
+
 	void Clear() 
 	{
 		StartLocation = FVector(0, 0, 0);
 		TargetLocation = FVector(0, 0, 0);
 		Probability = 0;
 		Factor.Empty();
+		CriticalFactor.Empty();
 		TargetActor = nullptr;
+	}
+
+	float SumOfCriticalProb() 
+	{
+		float Sum = 0;
+		for (auto It = CriticalFactor.CreateConstIterator(); It; ++It)
+		{
+			Sum += It.Value();
+		}
+		return Sum;
 	}
 };
 
@@ -99,7 +132,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor);
+	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, float>& CriticalFactor);
 
 	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo);
 

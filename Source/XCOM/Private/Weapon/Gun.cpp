@@ -26,7 +26,7 @@ void AGun::FireToTarget(AActor* TargetActor)
 
 void AGun::ApplyDamageToTarget(AActor* TargetActor) 
 {
-	UE_LOG(LogTemp, Warning, L"실행 검사");
+	UE_LOG(LogTemp, Warning, L"실행 검사 Target Actor :%s ", *TargetActor->GetName());
 
 	TSubclassOf<UDamageType> DamageType;
 
@@ -39,10 +39,10 @@ void AGun::ApplyDamageToTarget(AActor* TargetActor)
 	);
 }
 
-void AGun::SetShootingResult(bool bAimSuccess, bool bCritical)
+void AGun::SetShootingResult(bool AimSuccess, bool Critical)
 {
-	this->bAimSuccess = bAimSuccess;
-	this->bCritical = bCritical;
+	bAimSuccess = AimSuccess;
+	bCritical = Critical;
 }
 
 
@@ -78,7 +78,7 @@ void AGun::GenerateProjectile()
 
 int8 AGun::CalculateActualDamage() const 
 {
-	if (bAimSuccess) 
+	if (!bAimSuccess) 
 	{
 		return 0;
 	}
