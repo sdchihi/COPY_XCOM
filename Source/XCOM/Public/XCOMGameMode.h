@@ -6,7 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "XCOMGameMode.generated.h"
 
-enum class EDirection : uint8;
+enum class FloatingWidgetState : uint8;
 
 class ACustomThirdPerson;
 class AFogOfWarManager;
@@ -107,5 +107,5 @@ private:
 	void CheckTurnAfterEvent();
 
 	UFUNCTION()
-	void ShowCombatPopUp(AActor* DamagedActor, float Damage);
+	void ShowCombatPopUp(AActor* DamagedActor, float Damage, FloatingWidgetState State);
 };

@@ -27,7 +27,7 @@ class XCOM_API UFloatingWidget : public UCustomUserWidget
 public:
 	virtual	void NativeConstruct() override;
 
-	void ShowCombatInfo(float Damage);
+	void ShowCombatInfo(float Damage, FloatingWidgetState State);
 
 private:
 	UPROPERTY()

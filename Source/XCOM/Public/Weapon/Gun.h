@@ -49,6 +49,8 @@ public:
 
 	void SetShootingResult(bool AimSuccess, bool Critical = false);
 
+	bool IsCriticalAttack() { return bCritical; };
+
 private:
 	UStaticMeshComponent* StaticMeshComponentRef = nullptr;
 	

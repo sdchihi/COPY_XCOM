@@ -21,6 +21,8 @@
 #include "Classes/Animation/AnimMontage.h"
 #include "Animation/AnimEnums.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "FloatingWidget.h"
+
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -244,13 +246,17 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 
 float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, L"Damaged");
-
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	
+	AGun* EnemyGun = Cast<AGun>(DamageCauser);
+	FloatingWidgetState State;
+	if (EnemyGun) 
+	{
+		State = EnemyGun->IsCriticalAttack() ? FloatingWidgetState::Critical : FloatingWidgetState::Damaged;
+	}
+
 	if (AnnounceDamageDelegate.IsBound()) 
 	{
-		AnnounceDamageDelegate.Execute(this, Damage);
+		AnnounceDamageDelegate.Execute(this, Damage, State);
 	}
 
 	CurrentHP -= ActualDamage;

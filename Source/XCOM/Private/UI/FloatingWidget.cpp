@@ -16,20 +16,12 @@ void UFloatingWidget::NativeConstruct()
 	IconImage = Cast<UImage>(GetWidgetFromName(FName("Icon")));	
 }
 
-void UFloatingWidget::ShowCombatInfo(float Damage)
+void UFloatingWidget::ShowCombatInfo(float Damage, FloatingWidgetState State)
 {
-	//SetPositionInViewport(NewWidgetPosition);
-
 	int8 DamageAsInteger = (int8)Damage;
 	SetVisibility(ESlateVisibility::Visible);
-	if (DamageAsInteger == 0)	//회피
-	{
-		ChangePopUpFactor(FloatingWidgetState::Dodge);
-	}
-	else						// 데미지 적용
-	{
-		ChangePopUpFactor(FloatingWidgetState::Damaged, DamageAsInteger);
-	}
+
+	ChangePopUpFactor(State, DamageAsInteger);
 	float EndTime = PlayAnimationByName(FName("PopUp"));
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &UFloatingWidget::PopDown);

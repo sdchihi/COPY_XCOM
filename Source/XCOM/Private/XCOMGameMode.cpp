@@ -439,7 +439,7 @@ void AXCOMGameMode::CheckTurnAfterEvent()
 	CheckTurnOver(TurnBuffer);
 }
 
-void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage) 
+void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage, FloatingWidgetState State)
 {
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	FVector TargetLocation = DamagedActor->GetActorLocation() + FVector(0, 0, 100);
@@ -448,6 +448,6 @@ void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage)
 	if (PopUp)
 	{
 		PopUp->SetPositionInViewport(NewWidgetLocation);
-		PopUp->ShowCombatInfo(Damage);
+		PopUp->ShowCombatInfo(Damage, State);
 	}
 }

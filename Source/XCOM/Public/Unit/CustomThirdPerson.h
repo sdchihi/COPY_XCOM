@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "DestructibleWall.h"
 #include "AimingComponent.h"
+#include "FloatingWidget.h"
 #include "CustomThirdPerson.generated.h"
 
 class AGun;
@@ -15,6 +16,7 @@ class UCameraComponent;
 class UAimingComponent;
 class UTrajectoryComponent;
 class UHUDComponent;
+enum class EDirection : uint8;
 
 DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartActionDelegate);
@@ -25,7 +27,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector,
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegateFromChar,const FVector, StartLoc, const FVector, TargetLoc);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FReadyToAttackDelegate, AActor*, TargetActor, FVector, AimDirection);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FStartShootingDelegate, AActor*, ShootingCharacter, bool, bPlayBlend);
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FAnnounceDamageDelegate, AActor*, DamagedActor, float, Damage);
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FAnnounceDamageDelegate, AActor*, DamagedActor, float, Damage, FloatingWidgetState, State);
 
 UENUM(BlueprintType)
 enum class EDirection : uint8
