@@ -9,7 +9,6 @@
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "TrajectoryComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
-#include "HUDComponent.h"
 #include "Classes/Components/CapsuleComponent.h"
 #include "FAimingQueue.h"
 #include "PawnController.h"
@@ -23,7 +22,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "FloatingWidget.h"
 #include "Grenade.h"
-
+#include "HUDComponent.h"
+#include "UnitHUD.h"
 
 // Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
@@ -33,6 +33,7 @@ ACustomThirdPerson::ACustomThirdPerson()
 	AimingComponent = CreateDefaultSubobject<UAimingComponent>(TEXT("AimingComponent"));
 	TrajectoryComponent = CreateDefaultSubobject<UTrajectoryComponent>(TEXT("TrajectoryComponent"));
 	FOWComponent = CreateDefaultSubobject<UFogOfWarComponent>(TEXT("FogOfWarComponent"));
+
 }
 
 void ACustomThirdPerson::BeginPlay()
@@ -65,8 +66,9 @@ void ACustomThirdPerson::BeginPlay()
 	{
 		GunReference->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform,  FName(L"Gun"));
 	}
+	HUDComponent = FindComponentByClass<UHUDComponent>();
+	HPBar = Cast<UUnitHUD>(HUDComponent->GetHPBarWidgetObj());
 
-	HealthBar = FindComponentByClass<UHUDComponent>();
 	SkeletalMesh = FindComponentByClass<USkeletalMeshComponent>();
 	InitializeTimeline();
 }
@@ -261,6 +263,7 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	}
 
 	CurrentHP -= ActualDamage;
+	HPBar->ReduceHP(ActualDamage);
 
 	if (CurrentHP <= 0) 
 	{
@@ -482,9 +485,9 @@ void ACustomThirdPerson::FinishTrajectory()
 
 void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible) 
 {
-	if (HealthBar) 
+	if (HUDComponent)
 	{
-		HealthBar->SetWidgetVisibility(bVisible);
+		HUDComponent->SetWidgetVisibility(bVisible);
 
 	}
 	else 
@@ -762,7 +765,7 @@ void ACustomThirdPerson::Dead()
 	UCapsuleComponent* RootCollision = Cast<UCapsuleComponent>(GetRootComponent());
 	RootCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	HealthBar->DestroyComponent();
+	//HPBar->DestroyComponent();
 	FOWComponent->DestroyComponent();
 	AimingComponent->DestroyComponent();
 	TrajectoryComponent->DestroyComponent();

@@ -99,8 +99,8 @@ void AEnemyUnit::HideUnit()
 {
 	SetActorHiddenInGame(true);
 	GunReference->SetActorHiddenInGame(true);
-	HealthBar->SetVisibilityLocker(true);
-	HealthBar->SetWidgetVisibility(true);
+	HUDComponent->SetVisibilityLocker(true);
+	HUDComponent->SetWidgetVisibility(true);
 };
 
 
@@ -108,8 +108,8 @@ void AEnemyUnit::UnHideUnit()
 {
 	//SetActorHiddenInGame(false);
 	GunReference->SetActorHiddenInGame(false);
-	HealthBar->SetVisibilityLocker(false);
-	HealthBar->SetWidgetVisibility(true);
+	HUDComponent->SetVisibilityLocker(false);
+	HUDComponent->SetWidgetVisibility(true);
 }
 
 void AEnemyUnit::PlayEmoteMontage() 

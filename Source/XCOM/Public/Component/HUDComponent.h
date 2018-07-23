@@ -29,6 +29,7 @@ public:
 
 	void SetVisibilityLocker(bool bLock);
 
+	UUserWidget* GetHPBarWidgetObj();
 
 private:
 	bool bLockVisibility = false;

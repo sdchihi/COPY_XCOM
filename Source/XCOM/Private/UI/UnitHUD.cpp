@@ -2,8 +2,9 @@
 
 #include "UnitHUD.h"
 #include "CustomThirdPerson.h"
-#include "Components/HorizontalBoxSlot.h"
-#include "Components/HorizontalBox.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+#include "CustomUserWidget.h"
 
 void UUnitHUD::NativeConstruct()
 {
@@ -13,32 +14,41 @@ void UUnitHUD::NativeConstruct()
 
 void UUnitHUD::RegisterActor(ACustomThirdPerson* ActorToSet)
 {
-	HPBarBox = Cast<UHorizontalBox>(GetWidgetFromName(FName("HorizontalHPBox")));
-	
+	GridPannel = Cast<UUniformGridPanel>(GetWidgetFromName(FName("HPGridPannel")));
+	GridPannel->SetSlotPadding(FMargin(2, 2));
+
 	CharacterRef = ActorToSet;
 	InitializeHPBar();
-	
 }
 
 
 void UUnitHUD::InitializeHPBar()
 {
-	FVector2D SizeOfBox = HPBarBox->GetDesiredSize();
-	if (HealthPointBlueprint) 
+	if (HealthPointBlueprint)
 	{
-		for (int i = 0; i < CharacterRef->MaxHP; i++) 
+		for (int i = 0; i < CharacterRef->MaxHP; i++)
 		{
-			UUserWidget* HealthPoint = CreateWidget<UUserWidget>(GetWorld(), HealthPointBlueprint.Get());
+			UCustomUserWidget* HealthPoint = CreateWidget<UCustomUserWidget>(GetWorld(), HealthPointBlueprint.Get());
 
-	
+			UUniformGridSlot* HPSlot = GridPannel->AddChildToUniformGrid(HealthPoint);
+			HPSlot->HorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
+			HPSlot->VerticalAlignment = EVerticalAlignment::VAlign_Fill;
+			HPSlot->SetColumn(i);
 
-			UHorizontalBoxSlot* HPSlot = HPBarBox->AddChildToHorizontalBox(HealthPoint);
-			
-			/*FSlateChildSize Size = FSlateChildSize(ESlateSizeRule::Fill);
-			HPSlot->SetSize(Size);*/
-			UE_LOG(LogTemp, Warning , L"Wiget Ãß°¡")
+			HPWidgetArray.Push(HealthPoint);
 		}
-		UE_LOG(LogTemp, Warning, L"Child : %d", HPBarBox->GetChildrenCount());
-
 	}
 }
+
+void UUnitHUD::ReduceHP(int8 Damage) 
+{
+	for (int i = 0; i < Damage; i++) 
+	{
+		UCustomUserWidget* HPWidget = HPWidgetArray.Pop();
+		if (HPWidget) 
+		{
+			HPWidget->PlayAnimationByName(FName("Damaged"));
+		}
+	}
+}
+

@@ -14,6 +14,7 @@ UHUDComponent::UHUDComponent()
 	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	HPBarWidget->SetDrawSize(FVector2D(250, 20));
 
+
 }
 
 void UHUDComponent::BeginPlay() 
@@ -66,3 +67,8 @@ void UHUDComponent::SetVisibilityLocker(bool bLock)
 {
 	bLockVisibility = bLock;
 }
+
+UUserWidget* UHUDComponent::GetHPBarWidgetObj()
+{ 
+	return HPBarWidget->GetUserWidgetObject(); 
+};

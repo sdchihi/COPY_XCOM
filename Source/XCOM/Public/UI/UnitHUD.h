@@ -25,10 +25,14 @@ public:
 
 	void InitializeHPBar();
 
+	void ReduceHP(int8 Damage);
+
 private:
 	UPROPERTY()
 	ACustomThirdPerson* CharacterRef;
 
 	UPROPERTY()
-	UHorizontalBox* HPBarBox;
+	class UUniformGridPanel* GridPannel;
+
+	TArray <UCustomUserWidget* > HPWidgetArray;
 };

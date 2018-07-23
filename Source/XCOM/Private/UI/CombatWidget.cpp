@@ -374,6 +374,7 @@ void UCombatWidget::ConstructWidgetMinimum()
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Collapsed);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
+
 	PlayAnimationByName(FName("MinimumUIAnim"));
 }
 

@@ -285,7 +285,10 @@ protected:
 	class UFogOfWarComponent* FOWComponent = nullptr;
 
 	UPROPERTY()
-	UHUDComponent* HealthBar = nullptr;
+	class UUnitHUD* HPBar = nullptr;
+
+	UPROPERTY()
+	UHUDComponent* HUDComponent = nullptr;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	AGun* GunReference;

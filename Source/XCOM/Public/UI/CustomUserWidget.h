@@ -17,6 +17,7 @@ class XCOM_API UCustomUserWidget : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	float PlayAnimationByName(FName AnimationName);
 
 protected:
 	TMap<FName, class UWidgetAnimation*> AnimationsMap;
@@ -24,8 +25,6 @@ protected:
 	UWidgetAnimation* GetAnimationByName(FName AnimationName) const;
 
 	void FillAnimationsMap();
-
-	float PlayAnimationByName(FName AnimationName);
 
 private:
 	
