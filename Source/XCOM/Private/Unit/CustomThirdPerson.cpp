@@ -22,6 +22,7 @@
 #include "Animation/AnimEnums.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "FloatingWidget.h"
+#include "Grenade.h"
 
 
 // Sets default values
@@ -753,4 +754,47 @@ void ACustomThirdPerson::FinishDodge()
 {
 	bDodge = false;
 	bGetHit = false;
+}
+
+void ACustomThirdPerson::Dead() 
+{
+	//Ãæµ¹ ²ô°í
+	UCapsuleComponent* RootCollision = Cast<UCapsuleComponent>(GetRootComponent());
+	RootCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	HealthBar->DestroyComponent();
+	FOWComponent->DestroyComponent();
+	AimingComponent->DestroyComponent();
+	TrajectoryComponent->DestroyComponent();
+
+	if(UnitDeadDelegate.IsBound())
+	{
+		UnitDeadDelegate.Broadcast(this);
+	}
+}
+
+void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
+{
+	if (GrenadeBlueprint)
+	{
+		USkeletalMeshComponent* Mesh = FindComponentByClass<USkeletalMeshComponent>();
+		AGrenade* SpawnedGrenade =GetWorld()->SpawnActor<AGrenade>(
+			GrenadeBlueprint,
+			FVector(0, 0, 0),
+			FRotator(0, 0, 0)
+			);
+		SpawnedGrenade->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform, FName(L"Grenade"));
+
+		//float FuncCallDelay = PlayAnimMontage(EmoteMontage);
+
+		FTimerHandle UnUsedHandle;
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::ThrowGrenade, Velocity, SpawnedGrenade);
+		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);
+	}
+}
+
+void ACustomThirdPerson::ThrowGrenade(FVector Velocity, AGrenade* Grenade)
+{
+	Grenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	Grenade->SetGrenadeVelocity(Velocity);
 }

@@ -21,6 +21,23 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly)
+	int8 Damage;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ExplosionRadius;
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	class UParticleSystem* ExplosionParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	class USoundCue* ExplosionSound;
+
+	void SetGrenadeVelocity(FVector Velocity);
+
 protected:
 
 private:
@@ -30,8 +47,5 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	USphereComponent* SphereCollision;
 
-
-
-	
-	
+	void Explode();
 };

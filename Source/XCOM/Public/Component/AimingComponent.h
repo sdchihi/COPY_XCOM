@@ -44,7 +44,7 @@ struct FAimingInfo
 
 	TMap<EAimingFactor, float> Factor;
 
-	TMap<ECriticalFactor, float> CriticalFactor;
+	TMap<ECriticalFactor, int8> CriticalFactor;
 
 	FAimingInfo()
 	{
@@ -70,7 +70,7 @@ struct FAimingInfo
 		TargetActor = Target;
 	}
 
-	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, float>& CriticalFactorMap)
+	FAimingInfo(FVector StartLoc, FVector TargetLoc, float SucessProbability, AActor* Target, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, int8>& CriticalFactorMap)
 	{
 		StartLocation = StartLoc;
 		TargetLocation = TargetLoc;
@@ -98,7 +98,7 @@ struct FAimingInfo
 		{
 			Sum += It.Value();
 		}
-		return Sum;
+		return Sum / 100;
 	}
 };
 
@@ -132,7 +132,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, float>& CriticalFactor);
+	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, int8>& CriticalFactor);
 
 	float CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo);
 

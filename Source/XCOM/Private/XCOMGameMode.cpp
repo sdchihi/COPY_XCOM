@@ -16,7 +16,6 @@
 
 AXCOMGameMode::AXCOMGameMode()
 {
-
 }
 
 AXCOMGameMode::~AXCOMGameMode()
@@ -450,4 +449,10 @@ void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage, Floating
 		PopUp->SetPositionInViewport(NewWidgetLocation);
 		PopUp->ShowCombatInfo(Damage, State);
 	}
+}
+
+void AXCOMGameMode::UnRegisterUnit(ACustomThirdPerson* Unit)
+{
+	PlayerCharacters.Remove(Unit);
+	EnemyCharacters.Remove(Unit);
 }

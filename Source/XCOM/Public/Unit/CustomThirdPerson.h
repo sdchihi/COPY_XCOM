@@ -28,6 +28,7 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegateFromChar,const FVect
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FReadyToAttackDelegate, AActor*, TargetActor, FVector, AimDirection);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FStartShootingDelegate, AActor*, ShootingCharacter, bool, bPlayBlend);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FAnnounceDamageDelegate, AActor*, DamagedActor, float, Damage, FloatingWidgetState, State);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnitDeadDelegate, ACustomThirdPerson*, DeadUnit);
 
 UENUM(BlueprintType)
 enum class EDirection : uint8
@@ -84,8 +85,12 @@ public:
 
 	TMap<EDirection, ECoverInfo> CoverDirectionMap;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<AGun> GunBlueprint;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<class AGrenade> GrenadeBlueprint;
 
 	//void CheckAttackPotential(APawn* TargetPawn);
 
@@ -148,6 +153,8 @@ public:
 	FStartShootingDelegate StartShootingDelegate;
 
 	FAnnounceDamageDelegate AnnounceDamageDelegate;
+
+	FUnitDeadDelegate UnitDeadDelegate;
 
 	void InformVisilanceSuccess(const FVector StartLocation, const FVector TargetLocation);
 
@@ -264,6 +271,8 @@ public:
 
 	AGun& GetGunReference() { return *GunReference; };
 
+	void PrepareThrowGrenade(FVector Velocity);
+
 protected:
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -280,6 +289,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	AGun* GunReference;
+
 
 private:
 	UPROPERTY()
@@ -351,5 +361,9 @@ private:
 	float Speed = 0;
 
 	void ChangeTimelineFactor();
+
+	void Dead();
+
+	void ThrowGrenade(FVector Velocity, AGrenade* Grenade);
 
 };

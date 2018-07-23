@@ -17,21 +17,25 @@ void UUnitHUD::RegisterActor(ACustomThirdPerson* ActorToSet)
 	
 	CharacterRef = ActorToSet;
 	InitializeHPBar();
+	
 }
 
 
 void UUnitHUD::InitializeHPBar()
 {
+	FVector2D SizeOfBox = HPBarBox->GetDesiredSize();
 	if (HealthPointBlueprint) 
 	{
 		for (int i = 0; i < CharacterRef->MaxHP; i++) 
 		{
 			UUserWidget* HealthPoint = CreateWidget<UUserWidget>(GetWorld(), HealthPointBlueprint.Get());
 
+	
+
 			UHorizontalBoxSlot* HPSlot = HPBarBox->AddChildToHorizontalBox(HealthPoint);
 			
-			FSlateChildSize Size = FSlateChildSize(ESlateSizeRule::Fill);
-			HPSlot->SetSize(Size);
+			/*FSlateChildSize Size = FSlateChildSize(ESlateSizeRule::Fill);
+			HPSlot->SetSize(Size);*/
 			UE_LOG(LogTemp, Warning , L"Wiget Ãß°¡")
 		}
 		UE_LOG(LogTemp, Warning, L"Child : %d", HPBarBox->GetChildrenCount());

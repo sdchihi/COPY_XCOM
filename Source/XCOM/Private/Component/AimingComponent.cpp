@@ -51,7 +51,7 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 		if (DetectedPawn)
 		{
 			TMap<EAimingFactor, float> AimingFactor;
-			TMap<ECriticalFactor, float> CriticalFactor;
+			TMap<ECriticalFactor, int8> CriticalFactor;
 
 			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover, DetectedPawn, AimingFactor, CriticalFactor);
 			FVector StartLocation = FilteredHitResult.TraceStart;
@@ -77,7 +77,7 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 * @return 공격 성공 확률을 반환합니다.
 */
 //수정 필요
-float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, float>& CriticalFactor)
+float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, int8>& CriticalFactor)
 {
 	AimingFactor.Add(EAimingFactor::AimingAbility, 0.8);
 	float FailureRatio = 0;
@@ -120,7 +120,7 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation,
 	float AngleBtwActor = FMath::RadiansToDegrees(acosf(FVector::DotProduct(AimDirection, TargetThirdPerson->GetActorForwardVector())));
 	if (45 < AngleBtwActor)
 	{
-		float CriticalBonus = 20;
+		int8 CriticalBonus = 20;
 		if (70 < AngleBtwActor) 
 		{
 			CriticalBonus = 40;
@@ -455,7 +455,7 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 		if (DetectedPawn)
 		{
 			TMap<EAimingFactor, float> AimingFactor;
-			TMap<ECriticalFactor, float> CriticalFactor;
+			TMap<ECriticalFactor, int8> CriticalFactor;
 
 			float Probability = CalculateAttackSuccessRatio(ActorLocation, FilteredHitResult, AttackRadius, bIsCover,DetectedPawn, AimingFactor, CriticalFactor);
 			FVector StartLocation = FilteredHitResult.TraceStart;

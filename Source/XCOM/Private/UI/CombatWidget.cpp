@@ -110,7 +110,7 @@ void UCombatWidget::FillAimingInfo(const FAimingInfo& AimingInfo)
 		FillLeftContnents(Explanation, Percentage);
 	}
 	UTextBlock* PercentageText = Cast<UTextBlock>(SumAimingProbBox->GetWidgetFromName(FName("PercentageValue")));
-	PercentageText->SetText(FText::AsNumber(SumOfAimingPercentage));	
+	PercentageText->SetText(FText::AsNumber((int8)SumOfAimingPercentage));	
 }
 
 void UCombatWidget::FillCriticalShotInfo(const FAimingInfo& AimingInfo) 

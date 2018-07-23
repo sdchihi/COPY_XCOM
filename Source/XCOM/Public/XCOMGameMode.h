@@ -108,4 +108,8 @@ private:
 
 	UFUNCTION()
 	void ShowCombatPopUp(AActor* DamagedActor, float Damage, FloatingWidgetState State);
+
+	UFUNCTION()
+	void UnRegisterUnit(ACustomThirdPerson* Unit);
+
 };

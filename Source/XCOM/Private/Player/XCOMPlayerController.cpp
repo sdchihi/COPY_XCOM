@@ -193,10 +193,16 @@ void AXCOMPlayerController::OnClick()
 			SelectedCharacter->MoveToTargetTile(&Tempor, ActionPointToUse);
 			
 		}
-		else
+		else 
 		{
-			//TODO 타일과 캐릭터가 아닌 obj 클릭시 처리
+			UE_LOG(LogTemp, Warning, L" %s Is Clicked", *TraceResult.GetActor()->GetName());
+
+		//1	TraceResult.GetActor()->ReceiveActorOnClicked();
 		}
+		//else
+		//{
+		//	//TODO 타일과 캐릭터가 아닌 obj 클릭시 처리
+		//}
 	}
 }
 

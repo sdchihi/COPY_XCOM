@@ -34,6 +34,12 @@ public:
 
 	AActor* ImpactRangeActor = nullptr;
 
+	UFUNCTION()
+	void ConfirmedExplosionArea(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
+
+	UFUNCTION()
+	void TestFunc(AActor* TouchedActor, FKey ButtonPressed);
+
 
 private:
 
@@ -63,8 +69,7 @@ private:
 	UFUNCTION()
 	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UFUNCTION()
-	void ConfirmedExplosionArea(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
+
 
 
 	void SpawnImapactRangeActor();

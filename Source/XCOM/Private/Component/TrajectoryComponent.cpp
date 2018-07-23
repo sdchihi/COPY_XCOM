@@ -4,6 +4,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "CustomThirdPerson.h"
 
 UTrajectoryComponent::UTrajectoryComponent() 
 {
@@ -43,7 +45,6 @@ void UTrajectoryComponent::DrawProjectileTrajectory()
 	{
 		ImpactRangeActor->SetActorLocation(MousePointHitResult.ImpactPoint);
 	}
-	
 	*/
 	
 	int32 PointCount= FMath::FloorToInt(PathLifeTime / TimeInterval);
@@ -132,15 +133,16 @@ void UTrajectoryComponent::SpawnImapactRangeActor()
 			FVector(0, 0, 0),
 			FRotator(0, 0, 0)
 			);
-
-		USphereComponent* SphereCollision = Cast<USphereComponent>(ImpactRangeActor->GetRootComponent());
+		USphereComponent* SphereCollision = ImpactRangeActor->FindComponentByClass<USphereComponent>();
+		UStaticMeshComponent* Mesh = ImpactRangeActor->FindComponentByClass<UStaticMeshComponent>();
 		if (SphereCollision) 
 		{
 			UE_LOG(LogTemp, Warning, L"캐스팅 성공")
-			SphereCollision->bGenerateOverlapEvents = true;
-			SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &UTrajectoryComponent::OnOverlapBegin);
-			SphereCollision->OnComponentEndOverlap.AddDynamic(this, &UTrajectoryComponent::EndOverlap);
-			SphereCollision->OnClicked.AddDynamic(this, &UTrajectoryComponent::ConfirmedExplosionArea);
+			//SphereCollision->bGenerateOverlapEvents = true;
+			//SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &UTrajectoryComponent::OnOverlapBegin);
+			//SphereCollision->OnComponentEndOverlap.AddDynamic(this, &UTrajectoryComponent::EndOverlap);
+			ImpactRangeActor->OnClicked.AddDynamic(this, &UTrajectoryComponent::TestFunc);
+				//Mesh->OnClicked.AddDynamic(this, &UTrajectoryComponent::ConfirmedExplosionArea);
 		}
 	}
 }
@@ -149,7 +151,7 @@ void UTrajectoryComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 {
 	if (OtherActor)
 	{
-	//	UE_LOG(LogTemp, Warning, L"%s is in imapact range", *OtherActor->GetName());
+		//UE_LOG(LogTemp, Warning, L"%s is in imapact range", *OtherActor->GetName());
 	}
 }
 
@@ -157,7 +159,7 @@ void UTrajectoryComponent::EndOverlap(UPrimitiveComponent* OverlappedComponent, 
 {
 	if (OtherActor)
 	{
-		//	UE_LOG(LogTemp, Warning, L"%s is in imapact range", *OtherActor->GetName());
+		//UE_LOG(LogTemp, Warning, L"%s is in imapact range", *OtherActor->GetName());
 	}
 }
 
@@ -165,7 +167,21 @@ void UTrajectoryComponent::ConfirmedExplosionArea(UPrimitiveComponent* TouchedCo
 {
 	FinishDraw();
 	UE_LOG(LogTemp, Warning, L"수류타안 발사");
+	ACustomThirdPerson* Owner = Cast<ACustomThirdPerson>(GetOwner());
+	if (Owner) 
+	{
+		Owner->PrepareThrowGrenade(InitialVelocity);
+	}
 }
 
-
+void UTrajectoryComponent::TestFunc(AActor* TouchedActor, FKey ButtonPressed)
+{
+	FinishDraw();
+	UE_LOG(LogTemp, Warning, L"수류타안 발사");
+	ACustomThirdPerson* Owner = Cast<ACustomThirdPerson>(GetOwner());
+	if (Owner)
+	{
+		Owner->PrepareThrowGrenade(InitialVelocity);
+	}
+}
 
