@@ -278,8 +278,6 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 			StartSlowMotion();
 		}
 		Dead();
-
-		HPBar->ReduceHP(ActualDamage);
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
 	else if ( ActualDamage == 0)
