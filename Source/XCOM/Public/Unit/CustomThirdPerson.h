@@ -92,6 +92,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FVector GetHeadLocation();
+
 	EDirection CoverDirection = EDirection::None;
 	
 	UPROPERTY(BlueprintReadOnly)
@@ -378,5 +380,7 @@ private:
 	void Dead();
 
 	void ThrowGrenade(FVector Velocity, AGrenade* Grenade);
+
+	FVector GetWrongDirection();
 
 };

@@ -373,7 +373,7 @@ void ACustomThirdPerson::Shoot()
 	DecideShootingChance(CriticalChance, DodgeChance);
 
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
-	float result = FMath::FRandRange(0.1, 0.2);
+	float result = FMath::FRandRange(0.8, 0.9);
 	//성공
 
 	UE_LOG(LogTemp, Warning, L"셔플 결과  : %f ,  Prob 값 :  %f , Critical 값 : %f  Dodge 값 : %f", result, AttackSuccessProbability, CriticalChance, DodgeChance);
@@ -383,7 +383,7 @@ void ACustomThirdPerson::Shoot()
 		float DodgePie = AttackSuccessProbability - DodgeChance;
 		if (DodgePie <= result) 
 		{
-			AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
+			AimAt(GetWrongDirection(), FName(L"ProjectileToWall"));
 			UE_LOG(LogTemp, Warning, L"공격 실패 : Dodge");
 			GunReference->SetShootingResult(false);
 		}
@@ -408,18 +408,18 @@ void ACustomThirdPerson::Shoot()
 			float RandomValue = FMath::FRandRange(0, 1);
 			if (RandomValue < 0.5)
 			{
-				AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
+				AimAt(GetWrongDirection(), FName(L"ProjectileToWall"));
 				UE_LOG(LogTemp, Warning, L"공격 실패 : (엄폐) 허공향해 사격");
 			}
 			else
 			{
-				AimAt(AimDirection + FVector(0, 80, 150), FName(L"ProjectileToWall"));
+				AimAt(GetWrongDirection(), FName(L"ProjectileToWall"));
 				UE_LOG(LogTemp, Warning, L"공격 실패 : (엄폐)벽을향해 사격");
 			}
 		}
 		else
 		{
-			AimAt(AimDirection + FVector(0, 50, 50), FName(L"ProjectileToWall"));
+			AimAt(GetWrongDirection(), FName(L"ProjectileToWall"));
 			UE_LOG(LogTemp, Warning, L"공격 실패 : 허공향해 사격");
 		}
 		GunReference->SetShootingResult(false);
@@ -799,4 +799,18 @@ void ACustomThirdPerson::ThrowGrenade(FVector Velocity, AGrenade* Grenade)
 {
 	Grenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	Grenade->SetGrenadeVelocity(Velocity);
+}
+
+FVector ACustomThirdPerson::GetWrongDirection()
+{
+	ACustomThirdPerson* TargetUnit = Cast<ACustomThirdPerson>(SelectedAimingInfo.TargetActor);
+	FVector WrongLocation = TargetUnit->GetHeadLocation() + FVector(100, 150, 100);
+	FVector WrongDirection = WrongLocation - GetActorLocation();
+
+	return WrongDirection;
+}
+
+FVector ACustomThirdPerson::GetHeadLocation() 
+{
+	return SkeletalMesh->GetBoneLocation(FName("head"), EBoneSpaces::WorldSpace);
 }

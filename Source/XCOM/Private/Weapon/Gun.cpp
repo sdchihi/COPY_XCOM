@@ -84,7 +84,7 @@ int8 AGun::CalculateActualDamage() const
 {
 	if (!bAimSuccess) 
 	{
-		return 0;
+		return 0.5;
 	}
 
 	int8 Devation = Damage / 5;
