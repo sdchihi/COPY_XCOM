@@ -543,6 +543,7 @@ void AEnemyController::OrderStartVigilance()
 
 	ControlledPawn->BindVigilanceEvent(GameMode->GetTeamMemeber(PlayersUnitTeamFlag));
 	ControlledPawn->bInVisilance = true;
+	ControlledPawn->AnnounceVisilance();
 	ControlledPawn->UseActionPoint(2);
 	UE_LOG(LogTemp, Warning, L"Enemy 경계 시작");
 }

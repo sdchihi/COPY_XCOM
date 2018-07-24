@@ -263,10 +263,6 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 		State = EnemyGun->IsCriticalAttack() ? FloatingWidgetState::Critical : FloatingWidgetState::Damaged;
 	}
 
-	if (AnnounceDamageDelegate.IsBound()) 
-	{
-		AnnounceDamageDelegate.Execute(this, ActualDamage, State);
-	}	// ÆË¾÷Ã¢ ¶ß°ÔÇÏ°í..
 
 	CurrentHP -= ActualDamage;	// HP Á¶Á¤
 
@@ -294,6 +290,7 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	else if ( ActualDamage == 0)
 	{
 		UnitState = EUnitState::Dodge;
+		State = FloatingWidgetState::Dodge;
 	}
 	else 
 	{
@@ -301,9 +298,13 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 		HPBar->ReduceHP(ActualDamage);
 	}
 
-	UE_LOG(LogTemp, Warning, L"½ÇÇà °Ë»ç 2 : %f ", ActualDamage);
+	if (AnnounceDamageDelegate.IsBound())
+	{
+		AnnounceDamageDelegate.Execute(this, ActualDamage, State);
+	}	// ÆË¾÷Ã¢ ¶ß°ÔÇÏ°í..
 
-	return 1;
+
+	return ActualDamage;
 }
 
 void ACustomThirdPerson::RestoreActionPoint()
@@ -819,4 +820,12 @@ FVector ACustomThirdPerson::GetWrongDirection()
 FVector ACustomThirdPerson::GetHeadLocation() 
 {
 	return SkeletalMesh->GetBoneLocation(FName("head"), EBoneSpaces::WorldSpace);
+}
+
+void ACustomThirdPerson::AnnounceVisilance()  
+{
+	if (AnnounceDamageDelegate.IsBound())
+	{
+		AnnounceDamageDelegate.Execute(this, 0, FloatingWidgetState::Visilance);
+	}	
 }

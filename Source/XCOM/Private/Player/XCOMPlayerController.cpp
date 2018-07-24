@@ -656,6 +656,7 @@ void AXCOMPlayerController::OrderStartVigilance()
 
 	SelectedCharacter->BindVigilanceEvent(GameMode->GetTeamMemeber(OppositeTeamFlag));
 	SelectedCharacter->bInVisilance = true;
+	SelectedCharacter->AnnounceVisilance();
 	SelectedCharacter->UseActionPoint(2);
 	UE_LOG(LogTemp, Warning, L"경계 시작");
 }
