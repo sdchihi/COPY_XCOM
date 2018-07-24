@@ -1,6 +1,7 @@
 #include "FogOfWarManager.h"
 #include "Public/RHI.h"
 #include "AFogOfWarWorker.h"
+#include "CustomThirdPerson.h"
 
 AFogOfWarManager::AFogOfWarManager(const FObjectInitializer &FOI) : Super(FOI)
 {
@@ -153,6 +154,17 @@ void AFogOfWarManager::OnFowTextureUpdated_Implementation(UTexture2D* currentTex
 
 void AFogOfWarManager::RegisterFowActor(AActor* Actor) {
 	FowActors.Add(Actor);
+
+	ACustomThirdPerson* Unit = Cast<ACustomThirdPerson>(Actor);
+	if (Unit) 
+	{
+		Unit->UnitDeadDelegate.AddUniqueDynamic(this ,&AFogOfWarManager::UnregisterFowActor);
+	}
+}
+
+void AFogOfWarManager::UnregisterFowActor(ACustomThirdPerson* Actor) 
+{
+	FowActors.Remove(Actor);
 }
 
 bool AFogOfWarManager::GetIsBlurEnabled() {

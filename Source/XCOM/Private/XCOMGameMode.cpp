@@ -35,6 +35,7 @@ void AXCOMGameMode::BeginPlay()
 		ACustomThirdPerson* SingleCharacter = Cast<ACustomThirdPerson>(SingleActor);
 		SingleCharacter->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMGameMode::CheckTurnOver);
 		SingleCharacter->AnnounceDamageDelegate.BindDynamic(this, &AXCOMGameMode::ShowCombatPopUp);
+		SingleCharacter->UnitDeadDelegate.AddUniqueDynamic(this, &AXCOMGameMode::UnRegisterUnit);
 
 		if (SingleCharacter->GetTeamFlag()) 
 		{
@@ -228,7 +229,6 @@ void AXCOMGameMode::StartBotActivity()
 	}
 	else 
 	{
-		
 		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;
 	}

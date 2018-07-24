@@ -270,21 +270,16 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	{
 		float NewYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), DamageCauser->GetActorLocation()).Yaw;
 		SetActorRotation(FRotator(0, NewYaw, 0));
-		//TODO 사망 Event
-		//UCapsuleComponent* ActorCollsion = FindComponentByClass<UCapsuleComponent>();
-		//ActorCollsion->SetCollisionProfileName(FName("Ragdoll"));
+		UnitState = EUnitState::Dead;
 		if (DeadCamDelegate.IsBound()) 
 		{
 			DeadCamDelegate.Execute(this);
-			/*
-			SkeletalMesh->SetSimulatePhysics(true);
-			SkeletalMesh->SetAllBodiesBelowSimulatePhysics(FName("pelvis"), true, true);
-			*/
-			PlayAnimMontage(TestDeadMontage);
+			//PlayAnimMontage(TestDeadMontage);
 			StartSlowMotion();
 		}
-		HPBar->ReduceHP(ActualDamage);
+		Dead();
 
+		HPBar->ReduceHP(ActualDamage);
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
 	else if ( ActualDamage == 0)
@@ -380,7 +375,7 @@ void ACustomThirdPerson::Shoot()
 	DecideShootingChance(CriticalChance, DodgeChance);
 
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
-	float result = FMath::FRandRange(0.8, 0.9);
+	float result = FMath::FRandRange(0, AttackSuccessProbability);
 	//성공
 
 	UE_LOG(LogTemp, Warning, L"셔플 결과  : %f ,  Prob 값 :  %f , Critical 값 : %f  Dodge 값 : %f", result, AttackSuccessProbability, CriticalChance, DodgeChance);

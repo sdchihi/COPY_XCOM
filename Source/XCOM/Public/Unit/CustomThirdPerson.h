@@ -270,9 +270,6 @@ public:
 	UAnimMontage* RightTurnMontage;
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
-	UAnimMontage* TestDeadMontage;
-
 	UFUNCTION(BlueprintCallable)
 	void FinishDodge();
 

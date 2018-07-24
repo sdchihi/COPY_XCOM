@@ -116,6 +116,8 @@ public:
 	bool IsInCognitionArea(FVector Location);
 
 private:
+	UFUNCTION()
+	void UnregisterFowActor(class ACustomThirdPerson* Actor);
 
 	void UpdateFowTexture();
 
