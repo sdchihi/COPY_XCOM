@@ -162,5 +162,6 @@ private:
 	UFUNCTION()
 	void AfterCharacterMoving(ACustomThirdPerson* MovingCharacter);
 
-	
+	void SetAiminigWidgetFactor(ACustomThirdPerson* TargetUnit);
+
 };

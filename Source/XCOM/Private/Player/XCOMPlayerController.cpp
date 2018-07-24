@@ -15,6 +15,10 @@
 #include "XCOMGameMode.h"
 #include "Components/WidgetComponent.h"
 #include "EnemyUnit.h"
+#include "Public/Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
+
+
 
 AXCOMPlayerController::AXCOMPlayerController() 
 {
@@ -500,16 +504,17 @@ void AXCOMPlayerController::ChangeViewTarget(const FVector StartLocation, const 
 */
 void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, bool bPlayBlend = true)
 {
+	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
+
 	if (!SelectedCharacter->bIsAttack) 
 	{
-		if (AimWidget)
+		ACustomThirdPerson* TargetUnit = Cast<ACustomThirdPerson>(TargetActor);
+		AimWidget->DetachFromParent();
+		AimWidget->SetVisibility(true);
+		if (TargetActor)
 		{
-			AimWidget->DetachFromParent();
-			AimWidget->SetVisibility(true);
-			if (TargetActor)
-			{
-				AimWidget->AttachTo(TargetActor->GetRootComponent());
-			}
+			AimWidget->AttachTo(TargetActor->GetRootComponent());
+			SetAiminigWidgetFactor(TargetUnit);
 		}
 	}
 	else 
@@ -517,7 +522,6 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, 
 		UE_LOG(LogTemp, Warning, L"component 없음");
 	}
 	
-	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
 }
 
 /**
@@ -680,3 +684,16 @@ void AXCOMPlayerController::DisableFocusing()
 
 }
 
+void AXCOMPlayerController::SetAiminigWidgetFactor(ACustomThirdPerson* TargetUnit)
+{
+	FAimingInfo TargetAimingInfo = TargetUnit->GetSelectedAimingInfo();
+	TargetUnit->SetHealthBarVisibility(true);;
+
+	UTextBlock* PercentageBox = Cast<UTextBlock>(AimWidget->GetUserWidgetObject()->GetWidgetFromName(FName("Percentage")));
+	FString TempString;
+	TempString.AppendInt((int32)(TargetAimingInfo.Probability*100));
+	TempString.AppendChar('%');
+	UE_LOG(LogTemp, Warning, L"%f 이다", TargetAimingInfo.Probability);
+
+	PercentageBox->SetText(FText::FromString(TempString));
+}

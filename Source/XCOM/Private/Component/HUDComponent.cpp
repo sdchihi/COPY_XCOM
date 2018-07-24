@@ -22,7 +22,6 @@ void UHUDComponent::BeginPlay()
 	Super::BeginPlay();
 	this->SetAbsolute(false, true, false);
 
-
 	if (HUDWidgetBlueprint) {
 		HPBarWidget->SetWidgetClass(HUDWidgetBlueprint);
 		HPBarWidget->InitWidget();

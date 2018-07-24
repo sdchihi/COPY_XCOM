@@ -488,7 +488,6 @@ void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible)
 	if (HUDComponent)
 	{
 		HUDComponent->SetWidgetVisibility(bVisible);
-
 	}
 	else 
 	{

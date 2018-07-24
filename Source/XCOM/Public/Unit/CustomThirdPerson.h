@@ -184,6 +184,9 @@ public:
 
 	TArray<FAimingInfo>& GetAimingInfo() { return AimingInfo; };
 
+	FAimingInfo GetSelectedAimingInfo() { return SelectedAimingInfo; };
+
+
 	UPROPERTY(BlueprintReadOnly)
 	FAimingInfo SelectedAimingInfo;
 
