@@ -17,9 +17,6 @@ class XCOM_API UUnitHUD : public UCustomUserWidget
 public:
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UUserWidget> HealthPointBlueprint;
-
 	UFUNCTION(BlueprintCallable)
 	void RegisterActor(class ACustomThirdPerson* ActorToSet);
 
@@ -34,5 +31,13 @@ private:
 	UPROPERTY()
 	class UUniformGridPanel* GridPannel;
 
+	UPROPERTY()
+	class UImage* TeamImage;
+
 	TArray <UCustomUserWidget* > HPWidgetArray;
+
+	void SetTeamIconImage();
+
+	UClass* GetHPClass(bool bIsPlayerTeam);
+
 };

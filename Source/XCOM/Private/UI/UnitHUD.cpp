@@ -5,6 +5,8 @@
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
 #include "CustomUserWidget.h"
+#include "Components/Image.h"
+#include "Classes/Engine/Texture2D.h"
 
 void UUnitHUD::NativeConstruct()
 {
@@ -16,19 +18,23 @@ void UUnitHUD::RegisterActor(ACustomThirdPerson* ActorToSet)
 {
 	GridPannel = Cast<UUniformGridPanel>(GetWidgetFromName(FName("HPGridPannel")));
 	GridPannel->SetSlotPadding(FMargin(2, 2));
+	TeamImage = Cast<UImage>(GetWidgetFromName(FName("TeamIcon")));
 
 	CharacterRef = ActorToSet;
+
+	SetTeamIconImage();
 	InitializeHPBar();
 }
 
 
 void UUnitHUD::InitializeHPBar()
 {
-	if (HealthPointBlueprint)
+	UClass* HPClass = GetHPClass(CharacterRef->GetTeamFlag());
+	if (HPClass) 
 	{
 		for (int i = 0; i < CharacterRef->MaxHP; i++)
 		{
-			UCustomUserWidget* HealthPoint = CreateWidget<UCustomUserWidget>(GetWorld(), HealthPointBlueprint.Get());
+			UCustomUserWidget* HealthPoint = CreateWidget<UCustomUserWidget>(GetWorld(), HPClass);
 
 			UUniformGridSlot* HPSlot = GridPannel->AddChildToUniformGrid(HealthPoint);
 			HPSlot->HorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
@@ -37,6 +43,10 @@ void UUnitHUD::InitializeHPBar()
 
 			HPWidgetArray.Push(HealthPoint);
 		}
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, L"HPClass 로딩 실패");
 	}
 }
 
@@ -52,3 +62,35 @@ void UUnitHUD::ReduceHP(int8 Damage)
 	}
 }
 
+void UUnitHUD::SetTeamIconImage()
+{
+	FSlateBrush IconBrush;
+	FString ImagePath;
+	if (CharacterRef->GetTeamFlag())
+	{
+		ImagePath = "/Game/Texture/PlayerUnitIcon.PlayerUnitIcon";
+	}
+	else 
+	{
+		ImagePath = "/Game/Texture/EnemyHUDIcon.EnemyHUDIcon";
+	}
+
+	UTexture2D* IconTexture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), NULL, *(ImagePath)));
+	IconBrush.SetResourceObject(IconTexture);
+	TeamImage->SetBrush(IconBrush);
+}
+
+UClass* UUnitHUD::GetHPClass(bool bIsPlayerTeam)
+{
+	FStringClassReference HPClassRef;
+	if (bIsPlayerTeam) 
+	{
+		HPClassRef.SetPath(TEXT("/Game/UI/BP_PlayerHealthPoint.BP_PlayerHealthPoint_C"));
+	}
+	else 
+	{
+		HPClassRef.SetPath(TEXT("/Game/UI/BP_EnemyHealthPoint.BP_EnemyHealthPoint_C"));
+	}
+
+	return HPClassRef.TryLoadClass<UCustomUserWidget>();
+}

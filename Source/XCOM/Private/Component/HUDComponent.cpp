@@ -12,7 +12,7 @@ UHUDComponent::UHUDComponent()
 	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HP Bar"));
 	HPBarWidget->SetupAttachment(this, USpringArmComponent::SocketName);
 	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	HPBarWidget->SetDrawSize(FVector2D(250, 20));
+	HPBarWidget->SetDrawSize(FVector2D(250, 40));
 
 
 }
