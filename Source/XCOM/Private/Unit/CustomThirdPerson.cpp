@@ -137,7 +137,8 @@ void ACustomThirdPerson::RotateTowardWall() {
 * 공격이 끝난 후 델리게이트 실행, Flag 변환
 */
 void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
-	bIsAttack = false;
+	UnitState = EUnitState::Idle;
+
 	if (bExecuteDelegate)
 	{
 		ExecuteChangePawnDelegate();
@@ -216,8 +217,7 @@ float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
 
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
-	bIsReadyToAttack = false;
-	bIsAttack = true;
+	UnitState = EUnitState::Attack;
 	if (StartShootingDelegate.IsBound())
 	{
 		if (SelectedAimingInfo.TargetActor)
@@ -287,11 +287,11 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	}
 	else if (Damage == 0)
 	{
-		bDodge = true;
+		UnitState = EUnitState::Dodge;
 	}
 	else 
 	{
-		bGetHit = true;
+		UnitState = EUnitState::GetHit;
 	}
 
 
@@ -339,7 +339,8 @@ void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAim
 
 void ACustomThirdPerson::CoverUpAndAttack(const FAimingInfo TargetAimingInfo) 
 {
-	bIsReadyToAttack = true;
+	UnitState = EUnitState::ReadyToAttack;
+
 	PrevLocation = GetActorLocation();
 	bool bHaveToMove = !TargetAimingInfo.StartLocation.Equals(GetActorLocation());
 	if (bHaveToMove)
@@ -359,7 +360,6 @@ void ACustomThirdPerson::AttackAfterCoverMoving()
 	Shoot();
 
 	MovingDirectionDuringCover = EDirection::None;
-	bIsReadyToAttack = false;
 }
 
 void ACustomThirdPerson::Shoot()
@@ -754,8 +754,7 @@ bool ACustomThirdPerson::IsInUnFoggedArea() const
 
 void ACustomThirdPerson::FinishDodge()  
 {
-	bDodge = false;
-	bGetHit = false;
+	UnitState = EUnitState::Idle;
 }
 
 void ACustomThirdPerson::Dead() 

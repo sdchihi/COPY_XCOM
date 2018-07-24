@@ -506,7 +506,7 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, 
 {
 	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
 
-	if (!SelectedCharacter->bIsAttack) 
+	if (SelectedCharacter->GetUnitState() != EUnitState::Attack)
 	{
 		ACustomThirdPerson* TargetUnit = Cast<ACustomThirdPerson>(TargetActor);
 		AimWidget->DetachFromParent();

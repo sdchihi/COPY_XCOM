@@ -31,6 +31,19 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FAnnounceDamageDelegate, AActor*, DamagedAc
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnitDeadDelegate, ACustomThirdPerson*, DeadUnit);
 
 UENUM(BlueprintType)
+enum class EUnitState : uint8
+{
+	Idle,
+	ReadyToAttack,
+	Attack,
+	GetHit,
+	Dodge,
+	Dead
+};
+
+
+
+UENUM(BlueprintType)
 enum class EDirection : uint8
 {
 	South,
@@ -56,6 +69,7 @@ enum class EWalkingState : uint8
 	Running,
 	Walk 
 };
+
 
 
 UCLASS()
@@ -102,19 +116,7 @@ public:
 	bool bIsCovering = false;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsAttack = false;
-
-	UPROPERTY(BlueprintReadOnly)
 	bool bInVisilance = false;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bIsReadyToAttack = false;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bGetHit = false;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bDodge = false;
 
 	bool bCanAction = true;
 
@@ -276,6 +278,11 @@ public:
 
 	void PrepareThrowGrenade(FVector Velocity);
 
+	EUnitState GetUnitState() { return UnitState; };
+
+	UPROPERTY(BlueprintReadOnly)
+	EUnitState UnitState = EUnitState::Idle;
+
 protected:
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
@@ -296,10 +303,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	AGun* GunReference;
 
-
 private:
 	UPROPERTY()
 	UAimingComponent* AimingComponent = nullptr;
+
 	
 	UPROPERTY(EditDefaultsOnly)
 	UTrajectoryComponent* TrajectoryComponent = nullptr;

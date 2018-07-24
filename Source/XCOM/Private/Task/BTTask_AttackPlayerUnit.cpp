@@ -35,7 +35,7 @@ void UBTTask_AttackPlayerUnit::TickTask(UBehaviorTreeComponent& OwnerComp, uint8
 {
 	AEnemyController* BotController = Cast<AEnemyController>(OwnerComp.GetAIOwner());
 	ACustomThirdPerson* ControlledUnit = BotController ? Cast<ACustomThirdPerson>(BotController->GetPawn()) : nullptr;
-	if (!ControlledUnit->bIsAttack && !ControlledUnit->bIsReadyToAttack)
+	if (ControlledUnit->GetUnitState() == EUnitState::Idle)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
