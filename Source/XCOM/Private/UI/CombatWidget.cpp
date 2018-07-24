@@ -374,7 +374,6 @@ void UCombatWidget::ConstructWidgetMinimum()
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Collapsed);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
-
 	PlayAnimationByName(FName("MinimumUIAnim"));
 }
 
@@ -398,4 +397,14 @@ void UCombatWidget::ConstructWidgetNormal()
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
 	PlayAnimationByName(FName("NormalUIAnim"));
+}
+
+
+void UCombatWidget::HideAllWidget()
+{
+	LeftFrame->SetVisibility(ESlateVisibility::Collapsed);
+	RightFrame->SetVisibility(ESlateVisibility::Collapsed);
+	CenterFrame->SetVisibility(ESlateVisibility::Collapsed);
+	EnemyIconHBox->SetVisibility(ESlateVisibility::Collapsed);
+	CenterActionHBox->SetVisibility(ESlateVisibility::Collapsed);
 }

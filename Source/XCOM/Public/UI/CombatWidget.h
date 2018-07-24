@@ -58,7 +58,7 @@ public:
 
 	void ConstructWidgetNormal();
 
-
+	void HideAllWidget();
 protected:
 
 private:

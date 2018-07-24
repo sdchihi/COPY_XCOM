@@ -698,3 +698,9 @@ void AXCOMPlayerController::SetAiminigWidgetFactor(ACustomThirdPerson* TargetUni
 
 	PercentageBox->SetText(FText::FromString(TempString));
 }
+
+void AXCOMPlayerController::FinishPlayerTurn() 
+{
+	TileManager->ClearAllTiles(true);
+	CombatWidget->HideAllWidget();
+}

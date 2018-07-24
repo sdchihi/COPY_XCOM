@@ -63,6 +63,10 @@ public:
 
 	void SetFocusedActor(AActor& abc) { FocusedActor = &abc; };
 
+	void FinishPlayerTurn();
+
+	UFUNCTION(BlueprintCallable)
+	void FocusNextAvailablePlayerUnit(bool bTeam);
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -103,8 +107,7 @@ private:
 
 	void SwitchCharacter(ACustomThirdPerson* TargetCharacter);
 
-	UFUNCTION(BlueprintCallable)
-	void FocusNextAvailablePlayerUnit(bool bTeam);
+	
 
 
 	void CheckWallAround(ACustomThirdPerson* TargetCharacter);

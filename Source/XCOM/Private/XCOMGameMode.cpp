@@ -125,11 +125,11 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 		if (bIsPlayerTeam) 
 		{
 			DisableInput(PlayerController);
+			PlayerController->FinishPlayerTurn();
 			UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버 - > AI측 턴 시작");
 			RestoreTeamActionPoint(EnemyCharacters);
 			SetEnemysPatrolLocation();
 			StartBotActivity();
-
 		}
 		else 
 		{
@@ -138,6 +138,7 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			EnableInput(PlayerController);
 			UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
 			RestoreTeamActionPoint(PlayerCharacters);
+			PlayerController->FocusNextAvailablePlayerUnit(true);
 			EnemyTurnOrder = 0;
 		}
 		//Todo  AI를 활성시키던지 Player쪽을 활성화하던지 둘중 하나를 수행
