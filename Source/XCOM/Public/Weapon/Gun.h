@@ -70,6 +70,6 @@ private:
 
 	bool bCritical;
 
-	int8 CalculateActualDamage() const;
+	float CalculateActualDamage() const;
 };
 

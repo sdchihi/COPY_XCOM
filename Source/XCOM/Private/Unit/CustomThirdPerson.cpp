@@ -250,7 +250,12 @@ void ACustomThirdPerson::UseActionPoint(int32 PointToUse)
 
 float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (ActualDamage < 1) 
+	{
+		ActualDamage = 0;
+	}
+
 	AGun* EnemyGun = Cast<AGun>(DamageCauser);
 	FloatingWidgetState State;
 	if (EnemyGun) 
@@ -260,13 +265,12 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 
 	if (AnnounceDamageDelegate.IsBound()) 
 	{
-		AnnounceDamageDelegate.Execute(this, Damage, State);
-	}
+		AnnounceDamageDelegate.Execute(this, ActualDamage, State);
+	}	// 팝업창 뜨게하고..
 
-	CurrentHP -= ActualDamage;
-	HPBar->ReduceHP(ActualDamage);
+	CurrentHP -= ActualDamage;	// HP 조정
 
-	if (CurrentHP <= 0) 
+	if (CurrentHP <= 0) // 사망처리
 	{
 		float NewYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), DamageCauser->GetActorLocation()).Yaw;
 		SetActorRotation(FRotator(0, NewYaw, 0));
@@ -283,21 +287,23 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 			PlayAnimMontage(TestDeadMontage);
 			StartSlowMotion();
 		}
-		
+		HPBar->ReduceHP(ActualDamage);
+
 		UE_LOG(LogTemp, Warning, L"Dead");
 	}
-	else if (Damage == 0)
+	else if ( ActualDamage == 0)
 	{
 		UnitState = EUnitState::Dodge;
 	}
 	else 
 	{
 		UnitState = EUnitState::GetHit;
+		HPBar->ReduceHP(ActualDamage);
 	}
 
+	UE_LOG(LogTemp, Warning, L"실행 검사 2 : %f ", ActualDamage);
 
-
-	return ActualDamage;
+	return 1;
 }
 
 void ACustomThirdPerson::RestoreActionPoint()
