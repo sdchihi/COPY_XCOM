@@ -18,9 +18,12 @@ void AGun::BeginPlay() {
 
 void AGun::FireToTarget(AActor* TargetActor) 
 {
+	float Distance = FVector::Dist2D(Owner->GetActorLocation(), TargetActor->GetActorLocation());
+	float Delay = Distance / ProjectileSpeed;
+
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AGun::ApplyDamageToTarget, TargetActor);
-	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);	// Delay 2 초
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, Delay, false);	// 거리에 따른 Delay후 데미지 적용
 }
 
 
@@ -63,6 +66,7 @@ void AGun::GenerateProjectile()
 		
 		ProjectileRef->SetProjCollisionChannel(ProjectileCollisionPresetName);
 		ProjectileRef->SetLifeSpan(2);
+
 
 	}
 

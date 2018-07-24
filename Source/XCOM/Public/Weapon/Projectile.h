@@ -26,7 +26,7 @@ public:
 
 	void SetProjCollisionChannel(FName NewPresetName);
 
-
+	void SetProjectileSpeed(float Speed);
 private: 
 	//UProjectileMovementComponent* ProjectileMovementComponent;
 	UStaticMeshComponent* Mesh = nullptr;

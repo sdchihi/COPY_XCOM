@@ -86,3 +86,8 @@ void AProjectile::SetProjCollisionChannel(FName NewPresetName)
 		Mesh->SetCollisionProfileName(NewPresetName);
 	}
 }
+
+void AProjectile::SetProjectileSpeed(float Speed)
+{
+	ProjectileMovementComponent->InitialSpeed = Speed;
+}

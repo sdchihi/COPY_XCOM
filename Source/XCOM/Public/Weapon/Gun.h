@@ -27,8 +27,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UArrowComponent* FirePos;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<AProjectile> ProejctileBlueprint;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	float ProjectileSpeed = 2000.f;
 
 	UFUNCTION(BlueprintCallable)
 	void GenerateProjectile();
@@ -51,9 +54,12 @@ public:
 
 	bool IsCriticalAttack() { return bCritical; };
 
+	void SetOwner(AActor* OwnerToSet) { Owner = OwnerToSet; };
 private:
 	UStaticMeshComponent* StaticMeshComponentRef = nullptr;
 	
+	AActor* Owner = nullptr;
+
 	//0 ~ 5
 	int32 FiringRotOrder = 0;
 

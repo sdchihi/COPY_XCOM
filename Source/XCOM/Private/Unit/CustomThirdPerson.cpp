@@ -60,6 +60,7 @@ void ACustomThirdPerson::BeginPlay()
 		FVector(0,0,0),
 		FRotator(0, 0, 0)
 		);
+	GunReference->SetOwner(this);
 
 	USkeletalMeshComponent* Mesh = FindComponentByClass<USkeletalMeshComponent>();
 	if (Mesh) 
