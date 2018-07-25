@@ -798,7 +798,9 @@ void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
 void ACustomThirdPerson::ThrowGrenade(FVector Velocity, AGrenade* Grenade)
 {
 	Grenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	Grenade->EnablePhysics();
 	Grenade->SetGrenadeVelocity(Velocity);
+	UE_LOG(LogTemp, Warning, L"Grenade Velocity : %s", *Velocity.ToString());
 }
 
 FVector ACustomThirdPerson::GetWrongDirection()

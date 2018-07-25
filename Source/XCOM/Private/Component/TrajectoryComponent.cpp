@@ -181,7 +181,7 @@ void UTrajectoryComponent::TestFunc(AActor* TouchedActor, FKey ButtonPressed)
 	ACustomThirdPerson* Owner = Cast<ACustomThirdPerson>(GetOwner());
 	if (Owner)
 	{
-		Owner->PrepareThrowGrenade(InitialVelocity);
+		Owner->PrepareThrowGrenade(InitialLocalVelocity);
 	}
 }
 

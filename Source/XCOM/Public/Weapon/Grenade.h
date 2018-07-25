@@ -37,7 +37,8 @@ public:
 	class USoundCue* ExplosionSound;
 
 	void SetGrenadeVelocity(FVector Velocity);
-
+	
+	void EnablePhysics();
 protected:
 
 private:
