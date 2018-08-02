@@ -175,7 +175,7 @@ void AXCOMPlayerController::OnClick()
 				return;
 			}
 
-			if (TargetTile->GetTileVisibility() == false)
+			if (TargetTile->bCanMove == false)
 			{
 				UE_LOG(LogTemp, Warning, L"Can not be moved there");
 				return;
@@ -296,15 +296,12 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		if (Tile->bCanMoveWithOneAct) 
 		{
-			//Tile->SelectCloseTileMaterial();
 			CloseTileTrans.Add(Tile->GetTransform());
 		}
 		else 
 		{
-			//Tile->SelectDistantTileMaterial();
 			DistantTileTrans.Add(Tile->GetTransform());
 		}
-		//TileMesh->SetVisibility(true);
 	}
 	TileIndicator->IndicateActiveTiles(CloseTileTrans, DistantTileTrans);
 }

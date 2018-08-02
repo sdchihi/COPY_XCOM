@@ -28,6 +28,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class ACoveringChecker> CoveringCheckerBlueprint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class APathIndicator> PathIndicatorBlueprint;
+
 	virtual void Tick(float DeltaTime) override;
 
 	void GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility,int32 MovableStepsPerAct, TArray<ATile*>& AvailableTiles);
@@ -48,7 +51,7 @@ public:
 
 	int32 GetGridXLength() { return x; }
 
-	void SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, const int32 NumberOfTimes, const bool bVisibility);
+	void SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, const bool bVisibility);
 
 
 	ATile* GetOverlappedTile(APawn* Pawn);
@@ -62,6 +65,8 @@ public:
 private:
 	// º¯¼ö
 	ACoveringChecker* CoveringChecker = nullptr;
+
+	APathIndicator* PathIndicator = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 TileSize = 100;

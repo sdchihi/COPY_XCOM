@@ -9,6 +9,7 @@
 #include "Tile.h"
 #include "DestructibleWall.h"
 #include "CoveringChecker.h"
+#include "PathIndicator.h"
 
 ATileManager::ATileManager()
 {
@@ -29,6 +30,15 @@ void ATileManager::BeginPlay()
 	{
 		CoveringChecker = GetWorld()->SpawnActor<ACoveringChecker>(
 			CoveringCheckerBlueprint,
+			FVector(0, 0, 0),
+			FRotator(0, 0, 0)
+			);
+	}
+
+	if (PathIndicatorBlueprint)
+	{
+		PathIndicator = GetWorld()->SpawnActor<APathIndicator>(
+			PathIndicatorBlueprint,
 			FVector(0, 0, 0),
 			FRotator(0, 0, 0)
 			);
@@ -246,10 +256,10 @@ void ATileManager::ClearAllTiles(const bool bClearAll) {
 
 		for (AActor* Tile : ChildTiles)
 		{
-			UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 			UDecalComponent* Decal = Tile->FindComponentByClass<UDecalComponent>();
-			TileMesh->SetVisibility(false);
 			Decal->SetVisibility(false);
+			ATile* ActorAsTile = Cast<ATile>(Tile);
+			ActorAsTile->bCanMove = false;
 		}
 	}
 	else 
@@ -308,11 +318,13 @@ TArray<ATile*> ATileManager::FindPath(const int32 StartingIndex, const int32 Mov
 			{
 				TargetTile->bCanMoveWithOneAct = false;
 				AvailableTiles.Add(TargetTile);
+				TargetTile->bCanMove = true;
 			}
 			else if (PathLength <= MovableStepsPerAct)
 			{
 				TargetTile->bCanMoveWithOneAct = true;
 				AvailableTiles.Add(TargetTile);
+				TargetTile->bCanMove = true;
 			}
 		}
 		ClearAllTiles();
@@ -397,12 +409,12 @@ void ATileManager::UpdateOneCardinalPath(const int32 CurrentIndex, const int32 C
 	if (CardinalPathIndex == (CurrentIndex + x)) 
 	{
 		RowNumber = 1;
-		PathDecalDirection = 270;
+		PathDecalDirection = 90;
 	}
 	else if (CardinalPathIndex == (CurrentIndex - x)) 
 	{
 		RowNumber = -1;
-		PathDecalDirection = 90;
+		PathDecalDirection = 270;
 	}
 	else 
 	{
@@ -410,11 +422,11 @@ void ATileManager::UpdateOneCardinalPath(const int32 CurrentIndex, const int32 C
 
 		if (CardinalPathIndex == (CurrentIndex + 1)) 
 		{
-			PathDecalDirection = 180;
+			PathDecalDirection = 0;
 		}
 		else if(CardinalPathIndex == (CurrentIndex -1)) 
 		{
-			PathDecalDirection = 0;
+			PathDecalDirection = 180;
 		}
 	}
 	
@@ -488,28 +500,28 @@ void ATileManager::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 D
 		FromCurrentToDiagonal = 1;
 		RowDifference = -x;
 		CollumDifference = -1;
-		PathDecalDirection = 225;
+		PathDecalDirection = 45;
 	}
 	else if (DiagonalPathIndex == NorthWestIndex) 
 	{
 		FromCurrentToDiagonal = 1;
 		RowDifference = -x;
 		CollumDifference = 1;
-		PathDecalDirection = 315;
+		PathDecalDirection = 135;
 	}
 	else if (DiagonalPathIndex == SouthEastIndex) 
 	{
 		FromCurrentToDiagonal = -1;
 		RowDifference = x;
 		CollumDifference = -1;
-		PathDecalDirection = 135;
+		PathDecalDirection = 315;
 	}
 	else if (DiagonalPathIndex == SouthWestIndex) 
 	{
 		FromCurrentToDiagonal = -1;
 		RowDifference = x;
 		CollumDifference = 1;
-		PathDecalDirection = 45;
+		PathDecalDirection = 225;
 	}
 	else {
 		UE_LOG(LogTemp, Warning, L"잘못된 Diagonal Index");
@@ -585,32 +597,52 @@ int32 ATileManager::FindMinCostFIndex() {
 /**
 * 타일위에 나타나는 화살표 Decal 방향을 변경하고, 가시성을 제어합니다.
 * @param PathInfo - Key : 타일(key)에서 다음 타일로  이동방향(value)을 갖고있는 Map
-* @param NumberOfTimes - 함수 반복 횟수
 * @param bVisibility - Decal을 보일지 말지 결정합니다.
 */
-void ATileManager::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo, const int32 NumberOfTimes, const bool bVisibility) {
+void ATileManager::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo , const bool bVisibility)
+{
+	if (bVisibility == false) 
+	{
+		PathIndicator->ClearAllTile();
+		return;
+	}
+
+	TArray<FTransform> PathIndicatorTransformArr;
 	TArray<AActor*> ChildActors;
 	GetAttachedActors(ChildActors);
-
+	
+	//PathIndicator
 	for (auto OnePathInfo : PathInfo) 
 	{
+		
 		int32 TargetTileIndex = OnePathInfo.Key;
-		//UE_LOG(LogTemp, Warning, L"Decal Tile Index : %d , Yaw : %f", TargetTileIndex, OnePathInfo.Value);
-
 		ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
-		Tile->SetDecalVisibility(bVisibility);
+
+		FTransform TempTransform = FTransform(FRotator(0, OnePathInfo.Value, 0), Tile->GetActorLocation() + FVector(0,0,40));
+
+		/*Tile->SetDecalVisibility(bVisibility);
 		if (bVisibility) {
 			Tile->SetDecalRotationYaw(OnePathInfo.Value);
-		}
+		}*/
+		PathIndicatorTransformArr.Add(TempTransform);
 	}
+	PathIndicator->IndicateDirection(PathIndicatorTransformArr);
 }
 
 
 void ATileManager::MouseOnTile(UPrimitiveComponent* OverlappedComponent) {
-	FVector ActorLocation = OverlappedComponent->GetOwner()->GetActorLocation();
+	ATile* OverlappedTile = Cast<ATile>(OverlappedComponent->GetOwner());
+	if (!OverlappedTile) { return; };
+	FVector ActorLocation = OverlappedTile->GetActorLocation();
+	
+	if (OverlappedTile->bCanMove) 
+	{
+		
+	}
+
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
-	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), true);
+	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap,  true);
 	MakingCoverNotice(TileIndex);
 
 };
@@ -620,7 +652,8 @@ void ATileManager::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
 	CoveringChecker->ClearAllCoverNotice();
-	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, PathArr[TileIndex].OnTheWay.Num(), false);
+
+	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, false);
 };
 
 

@@ -57,6 +57,7 @@ public:
 
 	void SelectDistantTileMaterial();
 
+	bool bCanMove = false;
 protected:
 	
 
