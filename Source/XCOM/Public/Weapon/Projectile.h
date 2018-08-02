@@ -27,6 +27,10 @@ public:
 	void SetProjCollisionChannel(FName NewPresetName);
 
 	void SetProjectileSpeed(float Speed);
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	class UParticleSystem* ExplosionParticle;
+
 private: 
 	//UProjectileMovementComponent* ProjectileMovementComponent;
 	UStaticMeshComponent* Mesh = nullptr;
@@ -35,7 +39,5 @@ private:
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 	void ApplyToDestructibleActor(const FVector HitLocation);
-
-	void ApplyToCharacter(AActor* DamagedActor);
 
 };

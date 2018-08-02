@@ -36,16 +36,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		{
 			//ApplyToDestructibleActor(Hit.Location);
 		}
-		else if (Cast<ACustomThirdPerson>(OtherActor)) 
-		{
-			//ApplyToCharacter(OtherActor);
-		}
-
 	}
-	
-	//UE_LOG(LogTemp, Warning, L"Hit Obj name : %s", *OtherActor->GetName());
-	//Todo - 파티클 생성 및 삭제 후 Destroy
-	//Destroy();
+	UParticleSystemComponent* TempExplosion = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorTransform());
+
+	Destroy();
 }
 
 void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
@@ -64,19 +58,6 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 	Destroy();
 }
 
-void AProjectile::ApplyToCharacter(AActor* DamagedActor)
-{
-	TSubclassOf<UDamageType> DamageType;
-	UGameplayStatics::ApplyDamage(
-		DamagedActor,
-		1,
-		nullptr,
-		this,
-		DamageType
-	);
-		
-	Destroy();
-}
 
 void AProjectile::SetProjCollisionChannel(FName NewPresetName)
 {

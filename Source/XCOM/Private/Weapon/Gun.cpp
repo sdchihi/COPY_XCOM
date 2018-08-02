@@ -29,10 +29,6 @@ void AGun::FireToTarget(AActor* TargetActor)
 
 void AGun::ApplyDamageToTarget(AActor* TargetActor) 
 {
-	UE_LOG(LogTemp, Warning, L"실행 검사 Target Actor :%s ", *TargetActor->GetName());
-
-	UE_LOG(LogTemp, Warning, L"실행 검사2 %f ", CalculateActualDamage());
-
 	TSubclassOf<UDamageType> DamageType;
 
 	UGameplayStatics::ApplyDamage(
@@ -42,7 +38,6 @@ void AGun::ApplyDamageToTarget(AActor* TargetActor)
 		this,
 		DamageType
 	);
-
 }
 
 void AGun::SetShootingResult(bool AimSuccess, bool Critical)

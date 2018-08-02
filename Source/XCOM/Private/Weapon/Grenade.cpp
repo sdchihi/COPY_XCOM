@@ -5,8 +5,6 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
 
-
-
 AGrenade::AGrenade()
 {
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(FName(L"Sphere Collision"));
