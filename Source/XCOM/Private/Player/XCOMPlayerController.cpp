@@ -17,7 +17,7 @@
 #include "EnemyUnit.h"
 #include "Public/Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-
+#include "ActiveTileIndicator.h"
 
 
 AXCOMPlayerController::AXCOMPlayerController() 
@@ -130,6 +130,15 @@ void AXCOMPlayerController::Initialize() {
 			CombatWidget->StartVisilianceDelegate.BindDynamic(this, &AXCOMPlayerController::OrderStartVigilance);
 		}
 		bShowMouseCursor = true;
+	}
+
+	if (TileIndicatorBlueprint) 
+	{
+		TileIndicator = GetWorld()->SpawnActor<AActiveTileIndicator>(
+			TileIndicatorBlueprint,
+			FVector(0, 0, 0),
+			FRotator(0, 0, 0)
+			);
 	}
 
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -279,19 +288,25 @@ void AXCOMPlayerController::SetTilesToUseSelectedChararacter(ATile* OverlappedTi
 	TArray<ATile*> TilesInRange;
 	TileManager->GetAvailableTiles(OverlappedTile, MovingAbility, MovableStepPerAct, TilesInRange);
 
+	TArray<FTransform> DistantTileTrans;
+	TArray<FTransform> CloseTileTrans;
+
 	for (ATile* Tile : TilesInRange)
 	{
 		UStaticMeshComponent* TileMesh = Cast<UStaticMeshComponent>(Tile->GetRootComponent());
 		if (Tile->bCanMoveWithOneAct) 
 		{
-			Tile->SelectCloseTileMaterial();
+			//Tile->SelectCloseTileMaterial();
+			CloseTileTrans.Add(Tile->GetTransform());
 		}
 		else 
 		{
-			Tile->SelectDistantTileMaterial();
+			//Tile->SelectDistantTileMaterial();
+			DistantTileTrans.Add(Tile->GetTransform());
 		}
-		TileMesh->SetVisibility(true);
+		//TileMesh->SetVisibility(true);
 	}
+	TileIndicator->IndicateActiveTiles(CloseTileTrans, DistantTileTrans);
 }
 
 /**

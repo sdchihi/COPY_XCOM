@@ -52,7 +52,7 @@ public:
 	TSubclassOf<class UCombatWidget> CombatWidgetBlueprint;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class ACoveringChecker> CoveringCheckerBlueprint;
+	TSubclassOf<class AActiveTileIndicator> TileIndicatorBlueprint;
 
 	// Variable to hold the widget After Creating it.
 	UCombatWidget* CombatWidget;
@@ -79,6 +79,8 @@ private:
 	UPROPERTY()
 	AActor* FocusedActor;
 
+	AActiveTileIndicator* TileIndicator;
+
 	//º¯¼ö
 	int32 CharacterSwitchIndex = 1;
 
@@ -88,8 +90,6 @@ private:
 	TArray<ACustomThirdPerson*> PlayerCharacters;
 
 	ACustomThirdPerson* SelectedCharacter= nullptr;
-
-	ACoveringChecker* CoveringChecker = nullptr;
 
 	APlayerPawnInAiming* PawnInAimingSituation[2];
 
