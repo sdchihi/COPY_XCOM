@@ -68,6 +68,8 @@ private:
 
 	APathIndicator* PathIndicator = nullptr;
 
+	TArray<ATile*> ChildTiles;
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 TileSize = 100;
 

@@ -2,53 +2,24 @@
 
 #include "Tile.h"
 #include "Classes/Components/DecalComponent.h"
-
+#include "Classes/Components/BoxComponent.h"
 
 
 ATile::ATile() 
 {
+	
+	Collision = CreateDefaultSubobject<UBoxComponent>(FName(L"BoxCollision"));
+	
 }
 
 void ATile::BeginPlay()
 {
+	PrimaryActorTick.bCanEverTick = false;
+
 	Super::BeginPlay();
-
-	DecalComponent = FindComponentByClass<UDecalComponent>();
-	TileMesh = Cast<UStaticMeshComponent>(RootComponent);
 };
 
-
-
-
-void ATile::SetDecalVisibility(const bool Visibility) 
+void ATile::SetTileSize(float Size) 
 {
-	DecalComponent->SetVisibility(Visibility);
-}
-
-
-
-void ATile::SetDecalRotationYaw(const float Yaw) 
-{
-	FRotator NewDecalRotation = DecalComponent->GetComponentRotation();
-	NewDecalRotation.Yaw = Yaw;
-	NewDecalRotation.Roll = 0;
-
-	DecalComponent->SetRelativeRotation(FRotator(90.f,Yaw,0.f));
-};
-
-bool ATile::GetTileVisibility() 
-{
-	return TileMesh->IsVisible();
-}
-
-void ATile::SelectCloseTileMaterial()
-{
-	if (!CloseTileMat) { return; }
-	TileMesh->SetMaterial(0, CloseTileMat);
-}
-
-void ATile::SelectDistantTileMaterial() 
-{
-	if (!DistantTileMat) { return; }
-	TileMesh->SetMaterial(0, DistantTileMat);
+	Collision->SetBoxExtent(FVector(Size, Size, 50));
 }

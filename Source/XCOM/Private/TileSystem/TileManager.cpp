@@ -10,6 +10,7 @@
 #include "DestructibleWall.h"
 #include "CoveringChecker.h"
 #include "PathIndicator.h"
+#include "Classes/Components/BoxComponent.h"
 
 ATileManager::ATileManager()
 {
@@ -24,7 +25,6 @@ ATileManager::ATileManager()
 void ATileManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
 	if (CoveringCheckerBlueprint)
 	{
@@ -59,23 +59,22 @@ void ATileManager::BeginPlay()
 			FRotator(0,0,0)
 			);
 
-		if (!TileActor) {
-			UE_LOG(LogTemp, Warning, L"Wall BP 지정 필요");
-			return;
-		}
+		TileActor->SetTileSize(TileSize / 2);
 		TileActor->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
-		UStaticMeshComponent* ActorMeshComponent = TileActor->FindComponentByClass<UStaticMeshComponent>();
+		UBoxComponent* TileCollision = TileActor->GetCollision();
 		
 		// Delegate 지정
-		ActorMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ATileManager::OnOverlapBegin);
-		ActorMeshComponent->OnComponentEndOverlap.AddDynamic(this, &ATileManager::EndTileOverlap);
-		ActorMeshComponent->OnBeginCursorOver.AddDynamic(this, &ATileManager::MouseOnTile);
-		ActorMeshComponent->OnEndCursorOver.AddDynamic(this,& ATileManager::EndMouseOnTile);
+		TileCollision->OnComponentBeginOverlap.AddDynamic(this, &ATileManager::OnOverlapBegin);
+		TileCollision->OnComponentEndOverlap.AddDynamic(this, &ATileManager::EndTileOverlap);
+		TileCollision->OnBeginCursorOver.AddDynamic(this, &ATileManager::MouseOnTile);
+		TileCollision->OnEndCursorOver.AddDynamic(this,& ATileManager::EndMouseOnTile);
+
 		//Path 정보를 담는 Array 초기화
 		PathArr.Add(Path());
 
 		//Path 갱신
 		FindingWallOnTile(TileActor);
+		ChildTiles.Add(TileActor);
 	}
 }
 
@@ -191,9 +190,6 @@ void ATileManager::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbil
 {
 	TileIndexInRange.Empty();
 	int OverlappedTileIndex = ConvertVectorToIndex(StartingTile->GetActorLocation());
-	
-	TArray<AActor*> ChildActors;
-	GetAttachedActors(ChildActors);
 
 	for (int32 i = MovingAbility; i >= -MovingAbility; i--) 
 	{
@@ -219,7 +215,8 @@ void ATileManager::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbil
 			{
 				continue;
 			}
-			ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]);
+			ATile* TargetTile = ChildTiles[TargetIndex];
+
 			TileIndexInRange.Add(TargetIndex);
 			UE_LOG(LogTemp, Warning , L"범위 내 타일들 %d", TargetIndex)
 		}	
@@ -244,9 +241,6 @@ bool ATileManager::IsSameLine(const int32 OverlappedTileIndex, const int RowNumb
 * @param bClearAll - Path정보까지 모두 지울지 결정하는 변수
 */
 void ATileManager::ClearAllTiles(const bool bClearAll) {
-	TArray<AActor*> ChildTiles;
-	GetAttachedActors(ChildTiles);
-
 	if (bClearAll) 
 	{
 		for (Path& path : PathArr) 
@@ -256,10 +250,9 @@ void ATileManager::ClearAllTiles(const bool bClearAll) {
 
 		for (AActor* Tile : ChildTiles)
 		{
-			UDecalComponent* Decal = Tile->FindComponentByClass<UDecalComponent>();
-			Decal->SetVisibility(false);
 			ATile* ActorAsTile = Cast<ATile>(Tile);
 			ActorAsTile->bCanMove = false;
+			
 		}
 	}
 	else 
@@ -298,8 +291,7 @@ int32 ATileManager::ComputeManhattanDistance(const int32 StartIndex, const int32
 TArray<ATile*> ATileManager::FindPath(const int32 StartingIndex, const int32 MovingAbility, int32 MovableStepsPerAct, TArray<int32> TileIndexInRange)
 {
 	TArray<ATile*> AvailableTiles;
-	TArray<AActor*> ChildActors;
-	GetAttachedActors(ChildActors);
+
 
 	ClosedList.Add(StartingIndex);
 	for (int32 TargetIndex : TileIndexInRange)
@@ -313,7 +305,7 @@ TArray<ATile*> ATileManager::FindPath(const int32 StartingIndex, const int32 Mov
 			/*for (int i = 0; i < PathLenght; i++) {
 				UE_LOG(LogTemp, Warning, L"%d", PathArr[TargetIndex].OnTheWay[i]);
 			}*/
-			ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetIndex - 1]);
+			ATile* TargetTile = ChildTiles[TargetIndex];
 			if (MovableStepsPerAct < PathLength && PathLength <= MovingAbility)
 			{
 				TargetTile->bCanMoveWithOneAct = false;
@@ -608,22 +600,16 @@ void ATileManager::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo , const 
 	}
 
 	TArray<FTransform> PathIndicatorTransformArr;
-	TArray<AActor*> ChildActors;
-	GetAttachedActors(ChildActors);
+
 	
 	//PathIndicator
 	for (auto OnePathInfo : PathInfo) 
 	{
-		
 		int32 TargetTileIndex = OnePathInfo.Key;
-		ATile* Tile = Cast<ATile>(ChildActors[ChildActors.Num() - TargetTileIndex - 1]);
+		ATile* Tile = ChildTiles[TargetTileIndex];
 
 		FTransform TempTransform = FTransform(FRotator(0, OnePathInfo.Value, 0), Tile->GetActorLocation() + FVector(0,0,40));
 
-		/*Tile->SetDecalVisibility(bVisibility);
-		if (bVisibility) {
-			Tile->SetDecalRotationYaw(OnePathInfo.Value);
-		}*/
 		PathIndicatorTransformArr.Add(TempTransform);
 	}
 	PathIndicator->IndicateDirection(PathIndicatorTransformArr);
@@ -634,17 +620,13 @@ void ATileManager::MouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 	ATile* OverlappedTile = Cast<ATile>(OverlappedComponent->GetOwner());
 	if (!OverlappedTile) { return; };
 	FVector ActorLocation = OverlappedTile->GetActorLocation();
-	
-	if (OverlappedTile->bCanMove) 
-	{
-		
-	}
-
 	int32 TileIndex = ConvertVectorToIndex(ActorLocation);
 
-	SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap,  true);
+	if (OverlappedTile->bCanMove) 
+	{
+		SetDecalVisibilityOnTile(PathArr[TileIndex].OnTheWayMap, true);
+	}
 	MakingCoverNotice(TileIndex);
-
 };
 
 void ATileManager::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
@@ -659,7 +641,6 @@ void ATileManager::EndMouseOnTile(UPrimitiveComponent* OverlappedComponent) {
 
 ATile* ATileManager::GetOverlappedTile(APawn* Pawn)
 {
-
 	TArray<AActor*> OverlappedTileArray;
 	Pawn->GetOverlappingActors(OverlappedTileArray);
 	if (OverlappedTileArray.Num() == 0) { return nullptr; }
@@ -737,22 +718,19 @@ void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
 		}
 	}
 	CoveringChecker->MakingCoverNotice(AvailableTilesLocation, TileSize);
-
 }
 
 
 bool ATileManager::CheckAvailability(int32 TileIndex)  
 {
 	bool bAvailability;
-	TArray<AActor*> ChildActors;
-	GetAttachedActors(ChildActors);
 
 	if (!CheckWithinBounds(TileIndex)) 
 	{
 		return false;
 	}
-	ATile* TargetTile = Cast<ATile>(ChildActors[ChildActors.Num() - TileIndex - 1]);
-	bAvailability = TargetTile->GetTileVisibility();
+	ATile* TargetTile = ChildTiles[TileIndex];
+	bAvailability = TargetTile->bCanMove;
 
 	return bAvailability;
 }
