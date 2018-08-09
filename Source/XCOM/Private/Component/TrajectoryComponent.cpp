@@ -139,10 +139,11 @@ void UTrajectoryComponent::SpawnImapactRangeActor()
 		{
 			UE_LOG(LogTemp, Warning, L"캐스팅 성공")
 			//SphereCollision->bGenerateOverlapEvents = true;
-			//SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &UTrajectoryComponent::OnOverlapBegin);
-			//SphereCollision->OnComponentEndOverlap.AddDynamic(this, &UTrajectoryComponent::EndOverlap);
-			ImpactRangeActor->OnClicked.AddDynamic(this, &UTrajectoryComponent::TestFunc);
-				//Mesh->OnClicked.AddDynamic(this, &UTrajectoryComponent::ConfirmedExplosionArea);
+			SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &UTrajectoryComponent::OnOverlapBegin);
+			SphereCollision->OnComponentEndOverlap.AddDynamic(this, &UTrajectoryComponent::EndOverlap);
+			SphereCollision->OnClicked.AddUniqueDynamic(this, &UTrajectoryComponent::ConfirmedExplosionArea);
+			
+			Mesh->OnClicked.AddDynamic(this, &UTrajectoryComponent::ConfirmedExplosionArea);
 		}
 	}
 }
@@ -173,6 +174,7 @@ void UTrajectoryComponent::ConfirmedExplosionArea(UPrimitiveComponent* TouchedCo
 		Owner->PrepareThrowGrenade(InitialVelocity);
 	}
 }
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FComponentOnClickedSignature, UPrimitiveComponent*, TouchedComponent , FKey, ButtonPressed);
 
 void UTrajectoryComponent::TestFunc(AActor* TouchedActor, FKey ButtonPressed)
 {

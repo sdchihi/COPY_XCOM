@@ -38,14 +38,14 @@ public:
 
 	void SetGrenadeVelocity(FVector Velocity);
 
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* SphereCollision;
+
 protected:
 
 private:
-	UPROPERTY(EditDefaultsOnly)
-	UProjectileMovementComponent* ProjectileComponent;
+	UStaticMeshComponent* Mesh = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
-	USphereComponent* SphereCollision;
 
 	void Explode();
 };

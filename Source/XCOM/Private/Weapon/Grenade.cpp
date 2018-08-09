@@ -2,6 +2,7 @@
 
 #include "Grenade.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Classes/Kismet/GameplayStatics.h"
 
@@ -9,14 +10,7 @@ AGrenade::AGrenade()
 {
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(FName(L"Sphere Collision"));
 	SphereCollision->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-
-	ProjectileComponent = CreateDefaultSubobject<UProjectileMovementComponent>(FName("Projectile Movement Component"));
-
-	ProjectileComponent->InitialSpeed = 0;
-	ProjectileComponent->MaxSpeed = 0;
-	ProjectileComponent->Velocity = FVector(0, 0, 0);
-	ProjectileComponent->Bounciness = 0.2;
-
+	Mesh = Cast<UStaticMeshComponent>(GetRootComponent());
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrenade::OnOverlapBegin);
 }
 
@@ -52,5 +46,6 @@ void AGrenade::Explode()
 
 void AGrenade::SetGrenadeVelocity(FVector Velocity)
 {
-	ProjectileComponent->SetVelocityInLocalSpace(Velocity);
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetPhysicsLinearVelocity(Velocity);
 }

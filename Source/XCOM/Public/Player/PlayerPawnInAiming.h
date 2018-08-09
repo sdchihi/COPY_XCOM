@@ -39,7 +39,6 @@ public:
 
 	void SetDeathCam(const FVector AimingCharLoc, AActor* MurderedActor);
 
-
 	void SetCloseUpCam(AActor* TargetActor, FVector ForwardDirction);
 
 	void SetFrontCam(AActor* Actor);

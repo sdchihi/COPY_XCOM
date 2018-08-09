@@ -269,7 +269,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage")
 	UAnimMontage* RightTurnMontage;
 
-
 	UFUNCTION(BlueprintCallable)
 	void FinishDodge();
 
