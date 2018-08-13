@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/StaticMeshActor.h"
+#include "GameFramework/Actor.h"
 #include "Grenade.generated.h"
 
 class UProjectileMovementComponent;
@@ -12,7 +12,7 @@ class USphereComponent;
  * 
  */
 UCLASS()
-class XCOM_API AGrenade : public AStaticMeshActor
+class XCOM_API AGrenade : public AActor
 {
 	GENERATED_BODY()
 	
@@ -41,10 +41,15 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* SphereCollision;
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* Mesh = nullptr;
+
+	UFUNCTION()
+	void TestOnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 protected:
 
 private:
-	UStaticMeshComponent* Mesh = nullptr;
 
 
 	void Explode();

@@ -788,10 +788,14 @@ void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
 		SpawnedGrenade->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform, FName(L"Grenade"));
 
 		//float FuncCallDelay = PlayAnimMontage(EmoteMontage);
+		SetActorRotation(FRotator(0, Velocity.Rotation().Yaw, 0));
 
+		//임시로 사용 - Montage 연결 후 변경
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::ThrowGrenade, Velocity, SpawnedGrenade);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);
+
+		UseActionPointAfterDelay(5.f, 2);
 	}
 }
 
@@ -799,6 +803,9 @@ void ACustomThirdPerson::ThrowGrenade(FVector Velocity, AGrenade* Grenade)
 {
 	Grenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	Grenade->SetGrenadeVelocity(Velocity);
+	UE_LOG(LogTemp, Warning, L"%s 는 수류탄 Velocity", *Velocity.ToString());
+	
+
 }
 
 FVector ACustomThirdPerson::GetWrongDirection()
@@ -821,4 +828,11 @@ void ACustomThirdPerson::AnnounceVisilance()
 	{
 		AnnounceDamageDelegate.Execute(this, 0, FloatingWidgetState::Visilance);
 	}	
+}
+
+void ACustomThirdPerson::UseActionPointAfterDelay(float Time, int32 Point)
+{
+	FTimerHandle UnUsedHandle;
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::UseActionPoint, Point);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, Time, false);
 }

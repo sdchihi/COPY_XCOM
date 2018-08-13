@@ -80,7 +80,6 @@ struct FAimingInfo
 		CriticalFactor = CriticalFactorMap;
 	}
 
-
 	void Clear() 
 	{
 		StartLocation = FVector(0, 0, 0);

@@ -32,7 +32,6 @@ void APawnController::BindVigilanceEvent(const TArray<ACustomThirdPerson*> Oppos
 
 void APawnController::WatchOut(const FVector TargetLocation) 
 {
-
 	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
 	if (ControlledPawn)
 	{

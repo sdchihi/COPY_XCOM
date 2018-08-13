@@ -85,6 +85,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void UseActionPointAfterDelay(float Time, int32 Point);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -180,6 +182,7 @@ public:
 
 	int32 GetStep() { return Step; };
 
+	UFUNCTION()
 	void UseActionPoint(int32 PointToUse);
 
 	void RestoreActionPoint();
