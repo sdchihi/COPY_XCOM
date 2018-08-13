@@ -715,4 +715,19 @@ void AXCOMPlayerController::FinishPlayerTurn()
 {
 	TileManager->ClearAllTiles(true);
 	CombatWidget->HideAllWidget();
+	TileIndicator->ClearAllTile();
+}
+
+
+void AXCOMPlayerController::HideTileIdicator() 
+{
+	TileIndicator->SetTileVisibility(false);
+}
+
+void AXCOMPlayerController::ShowTileIdicator() 
+{
+	if (TileIndicator) 
+	{
+		TileIndicator->SetTileVisibility(true);
+	}
 }

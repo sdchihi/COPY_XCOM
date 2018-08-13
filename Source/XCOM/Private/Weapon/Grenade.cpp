@@ -10,8 +10,7 @@ AGrenade::AGrenade()
 {
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(FName(L"Sphere Collision"));
 	SetRootComponent(SphereCollision);
-	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrenade::OnOverlapBegin);
-	SphereCollision->OnComponentHit.AddDynamic(this, &AGrenade::TestOnHit);
+	SphereCollision->OnComponentHit.AddDynamic(this, &AGrenade::OnHit);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(L"Static Mesh"));
 	Mesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
@@ -47,7 +46,7 @@ void AGrenade::SetGrenadeVelocity(FVector Velocity)
 	SphereCollision->SetPhysicsLinearVelocity(Velocity);
 }
 
-void AGrenade::TestOnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) 
+void AGrenade::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	UE_LOG(LogTemp, Warning, L"Grenade - OnHit");
 	Explode();

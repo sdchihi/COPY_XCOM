@@ -39,7 +39,7 @@ void UCombatWidget::InitializeInBP()
 	RightFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("RightContainer")));
 	CenterFrame = Cast<UCanvasPanel>(GetWidgetFromName(FName("CenterContainer")));
 
-	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	PlayerController = Cast<AXCOMPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->DeleverInfoDelegate.BindDynamic(this, &UCombatWidget::Renew);
 	ConstructWidgetMinimum();
 };
@@ -375,6 +375,7 @@ void UCombatWidget::ConstructWidgetMinimum()
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
 	PlayAnimationByName(FName("MinimumUIAnim"));
+	PlayerController->ShowTileIdicator();
 }
 
 void UCombatWidget::ConstructWidgetRequiredForAttack()
@@ -386,6 +387,7 @@ void UCombatWidget::ConstructWidgetRequiredForAttack()
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
 	PlayAnimationByName(FName("AttackUIAnim"));
+	PlayerController->HideTileIdicator();
 }
 
 void UCombatWidget::ConstructWidgetNormal()
@@ -397,6 +399,7 @@ void UCombatWidget::ConstructWidgetNormal()
 	CenterActionHBox->SetVisibility(ESlateVisibility::Visible);
 
 	PlayAnimationByName(FName("NormalUIAnim"));
+	PlayerController->HideTileIdicator();
 }
 
 
@@ -407,4 +410,7 @@ void UCombatWidget::HideAllWidget()
 	CenterFrame->SetVisibility(ESlateVisibility::Collapsed);
 	EnemyIconHBox->SetVisibility(ESlateVisibility::Collapsed);
 	CenterActionHBox->SetVisibility(ESlateVisibility::Collapsed);
+
+	PlayerController->HideTileIdicator();
+
 }

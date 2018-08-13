@@ -62,6 +62,8 @@ public:
 protected:
 
 private:
+	class AXCOMPlayerController* PlayerController;
+
 	int32 TargetEnemyIndex = 0;
 
 	void ClearContents(const bool bClearAll = false);

@@ -24,6 +24,8 @@ public:
 	void ClearAllTile();
 
 	void IndicateActiveTiles(TArray<FTransform> CloseTileTransArray, TArray<FTransform> DistantTileTransArray);
+
+	void SetTileVisibility(bool Visible);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

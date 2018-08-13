@@ -68,6 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FocusNextAvailablePlayerUnit(bool bTeam);
 
+	void HideTileIdicator();
+
+	void ShowTileIdicator();
+
 protected:
 	virtual void SetupInputComponent() override;
 

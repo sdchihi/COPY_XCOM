@@ -44,4 +44,8 @@ void AActiveTileIndicator::IndicateActiveTiles(TArray<FTransform> CloseTileTrans
 	}
 }
 
-
+void AActiveTileIndicator::SetTileVisibility(bool Visible) 
+{
+	DistantTileMsh->SetVisibility(Visible);
+	CloseTileMesh->SetVisibility(Visible);
+}
