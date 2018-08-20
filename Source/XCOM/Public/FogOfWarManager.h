@@ -72,9 +72,6 @@ public:
 	UPROPERTY()
 	TArray<bool> UnfoggedData;
 
-	UPROPERTY()
-	TArray<bool> CurrentlyInSight;
-
 	//Temp array for horizontal blur pass
 	UPROPERTY()
 	TArray<uint8> HorizontalBlurData;

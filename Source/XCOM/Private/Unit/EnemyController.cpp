@@ -523,7 +523,7 @@ bool AEnemyController::CheckTargetLocation(FVector TargetLocation)
 	{
 		UE_LOG(LogTemp, Warning, L"추적 가능");
 	}
-	else 
+	else
 	{
 		UE_LOG(LogTemp, Warning, L"추적 불가");
 	}

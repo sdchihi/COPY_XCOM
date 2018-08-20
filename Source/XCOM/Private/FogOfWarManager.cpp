@@ -3,8 +3,9 @@
 #include "AFogOfWarWorker.h"
 #include "CustomThirdPerson.h"
 
-AFogOfWarManager::AFogOfWarManager(const FObjectInitializer &FOI) : Super(FOI)
-{
+
+// Sets default values
+AFogOfWarManager::AFogOfWarManager(const FObjectInitializer &FOI) : Super(FOI) {
 	PrimaryActorTick.bCanEverTick = true;
 	textureRegions = new FUpdateTextureRegion2D(0, 0, 0, 0, TextureSize, TextureSize);
 
@@ -28,22 +29,22 @@ AFogOfWarManager::AFogOfWarManager(const FObjectInitializer &FOI) : Super(FOI)
 	blurKernel[14] = 0.000489f;
 }
 
-AFogOfWarManager::~AFogOfWarManager()
-{
+AFogOfWarManager::~AFogOfWarManager() {
 	if (FowThread) {
 		FowThread->ShutDown();
 	}
 }
 
-void AFogOfWarManager::BeginPlay()
-{
+void AFogOfWarManager::BeginPlay() {
 	Super::BeginPlay();
 	bIsDoneBlending = true;
 	AFogOfWarManager::StartFOWTextureUpdate();
+	//I commented this to remove the player from the FOW
+	//RegisterFowActor(GetWorld()->GetFirstPlayerController()->GetPawn());
+
 }
 
-void AFogOfWarManager::Tick(float DeltaSeconds)
-{
+void AFogOfWarManager::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 	if (FOWTexture && LastFOWTexture && bHasFOWTextureUpdate && bIsDoneBlending) {
 		LastFOWTexture->UpdateResource();
@@ -57,100 +58,26 @@ void AFogOfWarManager::Tick(float DeltaSeconds)
 	}
 }
 
-void AFogOfWarManager::StartFOWTextureUpdate()
-{
+void AFogOfWarManager::StartFOWTextureUpdate() {
 	if (!FOWTexture) {
 		FOWTexture = UTexture2D::CreateTransient(TextureSize, TextureSize);
 		LastFOWTexture = UTexture2D::CreateTransient(TextureSize, TextureSize);
 		int arraySize = TextureSize * TextureSize;
-		TextureData.Init(FColor(FowMaskColor, FowMaskColor, FowMaskColor, 255), arraySize);
-		LastFrameTextureData.Init(FColor(FowMaskColor, FowMaskColor, FowMaskColor, 255), arraySize);
+		TextureData.Init(FColor(0, 0, 0, 255), arraySize);
+		LastFrameTextureData.Init(FColor(0, 0, 0, 255), arraySize);
 		HorizontalBlurData.Init(0, arraySize);
-		UnfoggedData.Init(true , arraySize);
-		CurrentlyInSight.Init(false, arraySize);
+		UnfoggedData.Init(false, arraySize);
 		FowThread = new AFogOfWarWorker(this);
 	}
 
 
-	//
-	if (GetIsTextureFileEnabled()) {
-
-		if (!TextureInFile) {
-
-			UE_LOG(LogTemp, Error, TEXT("Missing texture in LevelInfo, please load the mask!"));
-			return;
-		}
-		if (TextureInFile != nullptr) {
-
-			int TextureInFileSize = TextureInFile->GetSizeX();
-			TextureInFileData.Init(FColor(1, 1, 1, 255), TextureInFileSize * TextureInFileSize);
-			//init TArray
-			//TextureInFileData.Init(FColor(0, 0, 0, 255), arraySize * arraySize);//init TArray, use this in unified version
-			//The operation from Texture File ->to-> TArray of FColors
-
-			UE_LOG(LogTemp, Warning, TEXT("Texture in file is :  %d  pixels wide"), TextureInFileSize);
-
-			//Force texture compression to vectorDispl , https://wiki.unrealengine.com/Procedural_Materials
-
-			//TODO here you need to add a halt or a warning to prevent the loading of textures that don´t meet the criteria
-			//no mipmaps, compression to vector Displacement
-			//i could check the compression settings, but they are in enum form
-
-			//template<class TEnum>
-			//class TEnumAsByte TextureCompressionStatus = TextureInFile->CompressionSettings;
-
-
-
-			FTexture2DMipMap& Mip = TextureInFile->PlatformData->Mips[0];
-			void* Data = Mip.BulkData.Lock(LOCK_READ_WRITE);
-			uint8* raw = NULL;
-			raw = (uint8*)Data;
-			FColor pixel = FColor(0, 0, 0, 255);//used for spliting the data stored in raw form
-
-			for (int y = 0; y < TextureInFileSize; y++) {
-				//data in the raw var is serialized i think ;)
-				//so a pixel is four consecutive numbers e.g 0,0,0,255
-				//and the following code split the values in single components and store them in a FColor
-				for (int x = 0; x < TextureInFileSize; x++) {
-					pixel.B = raw[4 * (TextureInFileSize * y + x) + 0];
-					pixel.G = raw[4 * (TextureInFileSize * y + x) + 1];
-					pixel.R = raw[4 * (TextureInFileSize * y + x) + 2];
-					TextureInFileData[x + y * TextureInFileSize] = FColor((uint8)pixel.R, (uint8)pixel.G, (uint8)pixel.B, 255);
-
-					//ToDo: IMPORTANT, YOU NEED TO THINK WHAT HAPPENS IF THE TEXTURE IN FILE HAS A DIFFERRENT SIZE THAN BOOL UNFOGGEDDATA, THIS IS COULD
-					//CAUSE AN OUT OF BOUNDS ARRAY, OR SOMETHING
-
-					//Here we are writing to the UnfoggedData Array the values that are already unveiled, from the texture file
-					if (pixel.B >= 100) {
-						UnfoggedData[x + y * TextureInFileSize] = true;
-					}
-
-				}
-				//FColor Colorcito = TextureInFileData[y ];
-				//UE_LOG(LogTemp, Warning, TEXT("TArray in y:  %d is :  %s"), y , *Colorcito.ToString());
-			}
-
-			//FColor Colorcito = TextureInFileData[524288];
-			//UE_LOG(LogTemp, Warning, TEXT("TArray in 524288 is :  %s"), *Colorcito.ToString());
-
-			Mip.BulkData.Unlock();
-			TextureInFile->UpdateResource();
-		}
-
-
-		if (FOWTexture) {
-
-			TextureData = TextureInFileData;
-			LastFrameTextureData = TextureInFileData;
-			//Missing the TArray<bool> for unfogged data, do this
-		}
-
-	}
 }
 
 void AFogOfWarManager::OnFowTextureUpdated_Implementation(UTexture2D* currentTexture, UTexture2D* lastTexture) {
 	//Handle in blueprint
 }
+
+
 
 void AFogOfWarManager::RegisterFowActor(AActor* Actor) {
 	FowActors.Add(Actor);
@@ -158,13 +85,8 @@ void AFogOfWarManager::RegisterFowActor(AActor* Actor) {
 	ACustomThirdPerson* Unit = Cast<ACustomThirdPerson>(Actor);
 	if (Unit) 
 	{
-		Unit->UnitDeadDelegate.AddUniqueDynamic(this ,&AFogOfWarManager::UnregisterFowActor);
+		Unit->UnitDeadDelegate.AddUniqueDynamic(this, &AFogOfWarManager::UnregisterFowActor);
 	}
-}
-
-void AFogOfWarManager::UnregisterFowActor(ACustomThirdPerson* Actor) 
-{
-	FowActors.Remove(Actor);
 }
 
 bool AFogOfWarManager::GetIsBlurEnabled() {
@@ -228,10 +150,10 @@ void AFogOfWarManager::UpdateTextureRegions(UTexture2D* Texture, int32 MipIndex,
 			FMemory::Free(RegionData->SrcData);
 		}
 		delete RegionData;
-			}
-		);
+			});
 	}
 }
+
 
 bool AFogOfWarManager::IsInCognitionArea(FVector Location) 
 {
@@ -241,8 +163,12 @@ bool AFogOfWarManager::IsInCognitionArea(FVector Location)
 	}
 	else 
 	{
-		UE_LOG(LogTemp,Warning, L"½ÇÆÐ¾Ö")
 		return false;
 	}
+}
 
+void AFogOfWarManager::UnregisterFowActor(class ACustomThirdPerson* Actor) 
+{
+	FowActors.Remove(Actor);
+	return;
 }
