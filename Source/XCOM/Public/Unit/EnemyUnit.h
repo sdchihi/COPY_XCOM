@@ -49,16 +49,19 @@ public:
 
 	void FinishEvent();
 
+	UPROPERTY(VisibleAnywhere)
+	int8 Group;
+
 
 protected:
 	virtual void FinishMoving() override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
+	virtual void Dead() override;
+
 private:
-	UPROPERTY(EditDefaultsOnly)
-	int8 Group;
-	
+
 	void PlayEmoteMontage();
 
 

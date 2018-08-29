@@ -13,6 +13,7 @@
 #include "EventExecutor.h"
 #include "FAimingQueue.h"
 #include "FloatingWidget.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 AXCOMGameMode::AXCOMGameMode()
 {
@@ -59,7 +60,11 @@ void AXCOMGameMode::BeginPlay()
 			EnemyCharacters.Add(SingleCharacter);
 		}
 	}
-	InitializeWaypointMap();
+
+	FTimerHandle UnUsedHandle;
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMGameMode::InitializeWaypointMap);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);
+
 
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	PlayerController->HealthBarVisiblityDelegate.BindDynamic(this, &AXCOMGameMode::SetVisibleAllHealthBar);
@@ -125,25 +130,47 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 
 		if (bIsPlayerTeam) 
 		{
-			DisableInput(PlayerController);
-			PlayerController->FinishPlayerTurn();
-			UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버 - > AI측 턴 시작");
-			RestoreTeamActionPoint(EnemyCharacters);
-			SetEnemysPatrolLocation();
-			StartBotActivity();
+			PlayerTurnOver();
 		}
 		else 
 		{
-			PlayerController->DisableFocusing();
-
-			EnableInput(PlayerController);
-			UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
-			RestoreTeamActionPoint(PlayerCharacters);
-			PlayerController->FocusNextAvailablePlayerUnit(true);
-			EnemyTurnOrder = 0;
+			FTimerHandle UnUsedHandle;
+			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMGameMode::EnemyTurnOver);
+			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);
 		}
 		//Todo  AI를 활성시키던지 Player쪽을 활성화하던지 둘중 하나를 수행
 	}
+}
+
+
+void AXCOMGameMode::PlayerTurnOver() 
+{
+	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!PlayerController) { return; }
+
+	DisableInput(PlayerController);
+	PlayerController->FinishPlayerTurn();
+	UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버 - > AI측 턴 시작");
+	RestoreTeamActionPoint(EnemyCharacters);
+	SetEnemysPatrolLocation();
+	EnemyTurnOrder = 0;
+	StartBotActivity();
+}
+
+void AXCOMGameMode::EnemyTurnOver()
+{
+	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!PlayerController) { return; }
+
+	PlayerController->DisableFocusing();
+
+	EnableInput(PlayerController);
+	UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
+	// TODO
+	RestoreTeamActionPoint(PlayerCharacters);
+
+	PlayerController->FocusNextAvailablePlayerUnit(true);
+
 }
 
 
@@ -220,6 +247,8 @@ TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 
 void AXCOMGameMode::StartBotActivity() 
 {
+	if (EnemyTurnOrder >= EnemyCharacters.Num()) { return; };
+
 	ACustomThirdPerson* EnemyChar = EnemyCharacters[EnemyTurnOrder];
 	AEnemyController* EnemyController = EnemyChar ? Cast<AEnemyController>(EnemyChar->GetController()) : nullptr;
 	if (!EnemyController) 
@@ -229,8 +258,8 @@ void AXCOMGameMode::StartBotActivity()
 	}
 	else 
 	{
-		EnemyController->StartBehaviorTreeFromDefault();
 		EnemyTurnOrder++;
+		EnemyController->StartBehaviorTreeFromDefault();
 	}
 }
 
@@ -445,7 +474,7 @@ void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage, Floating
 	FVector TargetLocation = DamagedActor->GetActorLocation() + FVector(0, 0, 100);
 	FVector2D NewWidgetLocation;
 	PlayerController->ProjectWorldLocationToScreen(TargetLocation, NewWidgetLocation);
-	if (PopUp)
+	if (PopUp && !DamagedActor->bHidden)
 	{
 		PopUp->SetPositionInViewport(NewWidgetLocation);
 		PopUp->ShowCombatInfo(Damage, State);
@@ -455,5 +484,10 @@ void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage, Floating
 void AXCOMGameMode::UnRegisterUnit(ACustomThirdPerson* Unit)
 {
 	PlayerCharacters.Remove(Unit);
-	EnemyCharacters.Remove(Unit);
+
+	if (EnemyCharacters.Find(Unit)) 
+	{
+		EnemyTurnOrder--;
+		EnemyCharacters.RemoveSwap(Unit);
+	}
 }

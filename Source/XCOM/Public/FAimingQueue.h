@@ -62,7 +62,7 @@ private:
 
 
 	FAimingQueue();
-	~FAimingQueue();
+	//~FAimingQueue();
 	static bool IsPrevTask();
 	
 };

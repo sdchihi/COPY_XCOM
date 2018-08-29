@@ -26,11 +26,11 @@ void UFogOfWarComponent::SetActorInTerraInCog(bool bCanCognize)
 	{
 		if (bCanCognize) 
 		{
-			//EnemyUnit->UnHideUnit();
+			EnemyUnit->HideUnit();
 		}
 		else 
 		{
-			//EnemyUnit->HideUnit();
+			EnemyUnit->UnHideUnit();
 		}
 	}
 	isActorInTerraIncog = bCanCognize;

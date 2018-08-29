@@ -262,23 +262,20 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	{
 		State = EnemyGun->IsCriticalAttack() ? FloatingWidgetState::Critical : FloatingWidgetState::Damaged;
 	}
-
-
 	CurrentHP -= ActualDamage;	// HP Á¶Á¤
 
 	if (CurrentHP <= 0) // »ç¸ÁÃ³¸®
 	{
 		float NewYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), DamageCauser->GetActorLocation()).Yaw;
 		SetActorRotation(FRotator(0, NewYaw, 0));
-		UnitState = EUnitState::Dead;
+		Dead();
+
 		if (DeadCamDelegate.IsBound()) 
 		{
 			DeadCamDelegate.Execute(this);
 			//PlayAnimMontage(TestDeadMontage);
 			StartSlowMotion();
 		}
-		Dead();
-		UE_LOG(LogTemp, Warning, L"Dead");
 	}
 	else if ( ActualDamage == 0)
 	{
@@ -499,6 +496,7 @@ void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible)
 
 void ACustomThirdPerson::StartSlowMotion()
 {
+	CustomTimeDilation = 1;
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(),0.3);
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::FinishSlowMotion);
@@ -760,6 +758,18 @@ void ACustomThirdPerson::FinishDodge()
 
 void ACustomThirdPerson::Dead() 
 {
+	MovingTimeline->Stop();
+	UnitState = EUnitState::Dead;
+	DestroyUnnecessaryComponents();
+
+	if(UnitDeadDelegate.IsBound())
+	{
+		UnitDeadDelegate.Broadcast(this);
+	}
+}
+
+void ACustomThirdPerson::DestroyUnnecessaryComponents() 
+{
 	//Ãæµ¹ ²ô°í
 	UCapsuleComponent* RootCollision = Cast<UCapsuleComponent>(GetRootComponent());
 	RootCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -768,12 +778,8 @@ void ACustomThirdPerson::Dead()
 	FOWComponent->DestroyComponent();
 	AimingComponent->DestroyComponent();
 	TrajectoryComponent->DestroyComponent();
-
-	if(UnitDeadDelegate.IsBound())
-	{
-		UnitDeadDelegate.Broadcast(this);
-	}
 }
+
 
 void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
 {
@@ -835,4 +841,20 @@ void ACustomThirdPerson::UseActionPointAfterDelay(float Time, int32 Point)
 	FTimerHandle UnUsedHandle;
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::UseActionPoint, Point);
 	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, Time, false);
+}
+
+bool ACustomThirdPerson::IsDead() 
+{
+	return (CurrentHP <= 0);
+}
+
+
+void ACustomThirdPerson::AfterDeadAnimation() 
+{
+	if (Speed > 0) 
+	{
+		UseActionPoint(3);  // Turn³Ñ±è
+		UE_LOG(LogTemp, Warning, L"AfterDeadAnimation ½ÇÇà");
+
+	}
 }

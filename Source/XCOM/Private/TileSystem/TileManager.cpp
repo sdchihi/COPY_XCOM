@@ -44,6 +44,10 @@ void ATileManager::BeginPlay()
 			);
 	}
 
+	PathArr.Reserve(x*y);
+
+	ChildTiles.Reserve(x*y);
+
 	for (int i = 0; i < (x*y); i++) 
 	{
 		int collum = i % x;

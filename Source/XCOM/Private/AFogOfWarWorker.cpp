@@ -120,8 +120,8 @@ void AFogOfWarWorker::UpdateFowTexture() {
 
 							if (isWriteTerraIncog) {
 								Manager->UnfoggedData[x + y * Manager->TextureSize] = true;
+								currentlyInSight.Add(FVector2D(x, y));
 							}
-							currentlyInSight.Add(FVector2D(x, y));
 						}
 					}
 				}
@@ -134,11 +134,11 @@ void AFogOfWarWorker::UpdateFowTexture() {
 		if (bCheckActorInTerraIncog) {
 			//if the current position textureSpacePosXY in the UnfoggedData bool array is false the actor is in the Terra Incognita
 			if (Manager->UnfoggedData[textureSpacePos.X + textureSpacePos.Y * Manager->TextureSize] == false) {
-				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->isActorInTerraIncog = true;
+				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(true);
 
 			}
 			else {
-				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->isActorInTerraIncog = false;
+				(*Itr)->FindComponentByClass<UFogOfWarComponent>()->SetActorInTerraInCog(false);
 			}
 		}
 	}

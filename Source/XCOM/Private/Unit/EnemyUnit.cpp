@@ -7,6 +7,7 @@
 #include "Classes/Animation/AnimMontage.h"
 #include "Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Public/TimerManager.h"
+#include "EnemyController.h"
 
 AEnemyUnit::AEnemyUnit() 
 {
@@ -98,18 +99,25 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 void AEnemyUnit::HideUnit()
 {
 	SetActorHiddenInGame(true);
-	GunReference->SetActorHiddenInGame(true);
-	HUDComponent->SetVisibilityLocker(true);
-	HUDComponent->SetWidgetVisibility(true);
+	if (GunReference) 
+	{
+		GunReference->SetActorHiddenInGame(true);
+	}
+	////HUDComponent->SetVisibilityLocker(true);
+	SetHealthBarVisibility(false);
 };
 
 
 void AEnemyUnit::UnHideUnit()
 {
-	//SetActorHiddenInGame(false);
-	GunReference->SetActorHiddenInGame(false);
-	HUDComponent->SetVisibilityLocker(false);
-	HUDComponent->SetWidgetVisibility(true);
+	SetActorHiddenInGame(false);
+	if (GunReference)
+	{
+		GunReference->SetActorHiddenInGame(false);
+	}
+	////HUDComponent->SetVisibilityLocker(false);
+	SetHealthBarVisibility(true);
+	////LeftFrame->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void AEnemyUnit::PlayEmoteMontage() 
@@ -163,4 +171,12 @@ void AEnemyUnit::PlayEvent()
 void AEnemyUnit::FinishEvent() 
 {
 
+}
+
+void AEnemyUnit::Dead() 
+{
+	Super::Dead();
+	
+	AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
+	EnemyController->StopBehaviorTree();
 }

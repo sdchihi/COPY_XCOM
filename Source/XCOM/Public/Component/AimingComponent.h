@@ -30,10 +30,6 @@ struct FAimingInfo
 {
 	GENERATED_BODY()
 
-	~FAimingInfo() 
-	{
-	}
-
 	FVector StartLocation;
 
 	FVector TargetLocation;

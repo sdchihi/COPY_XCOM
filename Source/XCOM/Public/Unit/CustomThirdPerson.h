@@ -87,6 +87,8 @@ protected:
 
 	void UseActionPointAfterDelay(float Time, int32 Point);
 
+	UFUNCTION(BlueprintCallable)
+	void AfterDeadAnimation();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -130,6 +132,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int CurrentHP;
+
+	bool IsDead();
 
 	UPROPERTY(EditDefaultsOnly)
 	float AttackRadius = 1000;
@@ -286,6 +290,8 @@ public:
 
 	void AnnounceVisilance();
 	 
+	UPROPERTY()
+	UHUDComponent* HUDComponent = nullptr;
 
 protected:
 	
@@ -301,11 +307,10 @@ protected:
 	UPROPERTY()
 	class UUnitHUD* HPBar = nullptr;
 
-	UPROPERTY()
-	UHUDComponent* HUDComponent = nullptr;
-
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	AGun* GunReference;
+
+	virtual void Dead();
 
 private:
 	UPROPERTY()
@@ -379,10 +384,11 @@ private:
 
 	void ChangeTimelineFactor();
 
-	void Dead();
 
 	void ThrowGrenade(FVector Velocity, AGrenade* Grenade);
 
 	FVector GetWrongDirection();
+
+	void DestroyUnnecessaryComponents();
 
 };

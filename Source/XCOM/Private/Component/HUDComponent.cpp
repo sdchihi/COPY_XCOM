@@ -14,7 +14,6 @@ UHUDComponent::UHUDComponent()
 	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	HPBarWidget->SetDrawSize(FVector2D(250, 40));
 
-
 }
 
 void UHUDComponent::BeginPlay() 
@@ -25,6 +24,7 @@ void UHUDComponent::BeginPlay()
 	if (HUDWidgetBlueprint) {
 		HPBarWidget->SetWidgetClass(HUDWidgetBlueprint);
 		HPBarWidget->InitWidget();
+		
 	}
 	else{
 		UE_LOG(LogTemp, Warning, L"Please Regist Widget Class");
@@ -56,10 +56,7 @@ void UHUDComponent::ControlSpringArmLength(const float Length)
 
 void UHUDComponent::SetWidgetVisibility(const bool bVisiblity) 
 {
-	if (!bLockVisibility) 
-	{
-		HPBarWidget->SetVisibility(bVisiblity);
-	}
+	HPBarWidget->SetVisibility(bVisiblity);
 }
 
 void UHUDComponent::SetVisibilityLocker(bool bLock) 

@@ -79,6 +79,7 @@ private:
 	
 	TMap<int8, AWaypoint*> WaypointMap;
 
+	UFUNCTION()
 	void RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characters);
 
 	UFUNCTION()
@@ -111,5 +112,11 @@ private:
 
 	UFUNCTION()
 	void UnRegisterUnit(ACustomThirdPerson* Unit);
+
+	UFUNCTION()
+	void PlayerTurnOver();
+
+
+	void EnemyTurnOver();
 
 };

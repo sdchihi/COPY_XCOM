@@ -19,17 +19,17 @@ FAimingQueue::FAimingQueue()
 	Head = 0;
 	Tail = 0;
 }
-
-FAimingQueue::~FAimingQueue()
-{
-	for (FOrderlyAimingInfo* PendingToKill : Pending) 
-	{
-		if (PendingToKill != nullptr) 
-		{
-			delete PendingToKill;
-		}
-	}
-}
+//
+//FAimingQueue::~FAimingQueue()
+//{
+//	/*for (FOrderlyAimingInfo* PendingToKill : Pending) 
+//	{
+//		if (PendingToKill != nullptr && PendingToKill->AimingActor)
+//		{
+//			delete PendingToKill;
+//		}
+//	}*/
+//}
 
 
 FAimingQueue& FAimingQueue::Instance() 
@@ -48,8 +48,13 @@ void FAimingQueue::Update()
 	ACustomThirdPerson* AimingCharacter = FAimingQueue::Pending[FAimingQueue::Head]->AimingActor;
 	FAimingInfo* CurrentAimingInfo = FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo;
 	ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(CurrentAimingInfo->TargetActor);
+	UE_LOG(LogTemp, Warning, L"包蔓  Update  Head - %d      Tail - %d ", FAimingQueue::Head, FAimingQueue::Tail)
+	UE_LOG(LogTemp, Warning, L"包蔓  Update2  林眉 - %s       鸥百 - %s ", *AimingCharacter->GetName(), *AimedCharcater->GetName())
+
 	if (!IsValid(AimedCharcater))
 	{
+		UE_LOG(LogTemp, Warning, L"包蔓3  辆丰")
+
 		return;
 	}
 	AEnemyController* EnemyController = Cast<AEnemyController>(AimedCharcater->GetController());
@@ -80,23 +85,22 @@ void FAimingQueue::StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* Aim
 	int32 Temp_Tail = FAimingQueue::Tail;
 	FAimingQueue::Pending[Temp_Tail] =new FOrderlyAimingInfo(AimingActor, AimingInfo);
 
-	if (FAimingQueue::Head == FAimingQueue::Tail)
+	FAimingQueue::Tail = (FAimingQueue::Tail + 1) % MaxPending;
+	if (Temp_Head == Temp_Tail)
 	{
-		FAimingQueue::Tail = (FAimingQueue::Tail + 1) % MaxPending;
 		FAimingQueue::Update();
-	}
-	else 
-	{
-		FAimingQueue::Tail = (FAimingQueue::Tail + 1) % MaxPending;
+
+		UE_LOG(LogTemp, Warning, L"包蔓  StartAiming Head - %d      Tail - %d ", FAimingQueue::Head, FAimingQueue::Tail)
 	}
 }
 
 void FAimingQueue::NextTask() 
 {
+	ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor);
+
 	if (IsPrevTask()) // Finish Task
 	{
 		LastShootingActor->ExecuteChangePawnDelegate();//
-		ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor);
 		if (IsValid(AimedCharcater)) 
 		{
 			AimedCharcater->CustomTimeDilation = 1;
@@ -111,7 +115,14 @@ void FAimingQueue::NextTask()
 	else 
 	{
 		FAimingQueue::Head = (FAimingQueue::Head + 1) % MaxPending;
-		FAimingQueue::Update();
+		if (AimedCharcater->IsDead())
+		{
+			NextTask();
+		}
+		else 
+		{
+			FAimingQueue::Update();
+		}
 	}
 }
 

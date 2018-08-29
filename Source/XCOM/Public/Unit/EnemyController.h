@@ -161,4 +161,7 @@ private:
 
 	void DecideWayToProceedBasedLocation(FVector TargetLocation);
 
+	UFUNCTION()
+	void ControlledUnitDead(ACustomThirdPerson* ControlledUnit);
+
 };

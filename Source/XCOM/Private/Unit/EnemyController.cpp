@@ -37,11 +37,22 @@ void AEnemyController::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileManager::StaticClass(), FoundActors);
 	TileManager = Cast<ATileManager>(FoundActors[0]);
 
+	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
+	ControlledPawn->UnitDeadDelegate.AddUniqueDynamic(this, &AEnemyController::ControlledUnitDead);
+
 	if (PatrolBehavior) 
 	{
 		SelectedBehavior = PatrolBehavior;
 	}
 }
+
+void AEnemyController::ControlledUnitDead(ACustomThirdPerson* ControlledUnit)
+{
+	UE_LOG(LogTemp, Warning, L"ControlledUnitDead");
+
+	StopBehaviorTree();
+}
+
 
 void AEnemyController::Possess(APawn* InPawn) 
 {
@@ -545,7 +556,6 @@ void AEnemyController::OrderStartVigilance()
 	ControlledPawn->bInVisilance = true;
 	ControlledPawn->AnnounceVisilance();
 	ControlledPawn->UseActionPoint(2);
-	UE_LOG(LogTemp, Warning, L"Enemy 경계 시작");
 }
 
 void AEnemyController::DecideWayToProceedBasedLocation(FVector TargetLocation) 
@@ -559,9 +569,13 @@ void AEnemyController::DecideWayToProceedBasedLocation(FVector TargetLocation)
 
 		PlayerController->EnableFocusing(ControlledPawn, false);
 		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(FormalProceedKeyID, true);
+		UE_LOG(LogTemp, Warning, L"Formal ");
+
 	}
 	else 
 	{
 		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(FormalProceedKeyID, false);
+		UE_LOG(LogTemp, Warning, L"Informal");
 	}
+	
 }

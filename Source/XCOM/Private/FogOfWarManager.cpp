@@ -66,7 +66,7 @@ void AFogOfWarManager::StartFOWTextureUpdate() {
 		TextureData.Init(FColor(0, 0, 0, 255), arraySize);
 		LastFrameTextureData.Init(FColor(0, 0, 0, 255), arraySize);
 		HorizontalBlurData.Init(0, arraySize);
-		UnfoggedData.Init(false, arraySize);
+		UnfoggedData.Init(true, arraySize);
 		FowThread = new AFogOfWarWorker(this);
 	}
 
