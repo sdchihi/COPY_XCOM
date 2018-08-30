@@ -54,8 +54,10 @@ void AGun::GenerateProjectile()
 {
 	FRotator FireRotation[6] = { FRotator(0, 0, 0), FRotator(2, 0, 0),FRotator(0.5, 1.5, 0) ,FRotator(-1, 1, 0), FRotator(-1, -1, 0), FRotator(0.5, -1.5, 0) };
 	AProjectile* ProjectileRef = nullptr;
-	if (ProejctileBlueprint)
+	if (ProejctileBlueprint && CameraShake != nullptr)
 	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(CameraShake, 1.0f);
+
 		ProjectileRef = GetWorld()->SpawnActor<AProjectile>(
 			ProejctileBlueprint,
 			FirePos->GetComponentLocation(),

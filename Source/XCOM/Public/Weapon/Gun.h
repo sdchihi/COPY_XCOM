@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	int8 Critical = 0;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UCameraShake> CameraShake;
+
 	int8 GetDamage() { return  Damage; };
 
 	int8 GetCriticalAbil() { return Critical; };

@@ -19,12 +19,12 @@ FAimingQueue::FAimingQueue()
 	Head = 0;
 	Tail = 0;
 }
-//
+
 //FAimingQueue::~FAimingQueue()
 //{
-//	/*for (FOrderlyAimingInfo* PendingToKill : Pending) 
+//	/*for (auto PendingToKill : FAimingQueue::Pending)
 //	{
-//		if (PendingToKill != nullptr && PendingToKill->AimingActor)
+//		if (PendingToKill != nullptr && sizeof(PendingToKill) == sizeof(FOrderlyAimingInfo))
 //		{
 //			delete PendingToKill;
 //		}
