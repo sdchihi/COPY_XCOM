@@ -774,7 +774,9 @@ void ACustomThirdPerson::DestroyUnnecessaryComponents()
 	UCapsuleComponent* RootCollision = Cast<UCapsuleComponent>(GetRootComponent());
 	RootCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	//HPBar->DestroyComponent();
+	HPBar->DestroyHPBar();
+	HPBar->RemoveFromParent();
+	HPBar->SetVisibility(ESlateVisibility::Hidden);
 	FOWComponent->DestroyComponent();
 	AimingComponent->DestroyComponent();
 	TrajectoryComponent->DestroyComponent();

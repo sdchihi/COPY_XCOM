@@ -24,6 +24,8 @@ public:
 
 	void ReduceHP(int8 Damage);
 
+	void DestroyHPBar();
+
 private:
 	UPROPERTY()
 	ACustomThirdPerson* CharacterRef;
@@ -33,6 +35,9 @@ private:
 
 	UPROPERTY()
 	class UImage* TeamImage;
+
+	UPROPERTY()
+	UImage* Background;
 
 	TArray <UCustomUserWidget* > HPWidgetArray;
 

@@ -133,7 +133,11 @@ private:
 	void ChangeViewTarget(const FVector StartLocation, const FVector TargetLocation, bool bPlayBlend);
 
 	UFUNCTION()
-	void ChangeViewTargetByCombatWidget(AActor* TargetActor , bool bPlayBlend);
+	void ChangeViewTargetByCombatWidget(AActor* TargetActor, bool bPlayBlend, int8 InfoIndex);
+	
+	UFUNCTION()
+	void ChangeViewTargetByCombatWidgetWithoutAim(AActor* TargetActor, bool bPlayBlend);
+
 
 	UFUNCTION()
 	void ChangeViewTargetByCharacter(const FVector CharacterLocation, const FVector TargetLocation);
@@ -169,6 +173,6 @@ private:
 	UFUNCTION()
 	void AfterCharacterMoving(ACustomThirdPerson* MovingCharacter);
 
-	void SetAiminigWidgetFactor(ACustomThirdPerson* TargetUnit);
+	void SetAiminigWidgetFactor(ACustomThirdPerson* AiminigUnit, ACustomThirdPerson* AimedUnit, int8 InfoIndex);
 
 };

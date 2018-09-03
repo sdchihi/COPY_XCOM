@@ -24,7 +24,7 @@ void UFogOfWarComponent::SetActorInTerraInCog(bool bCanCognize)
 	AEnemyUnit* EnemyUnit = Cast<AEnemyUnit>(GetOwner());
 	if (EnemyUnit)
 	{
-		if (bCanCognize) 
+		if (bCanCognize)
 		{
 			EnemyUnit->HideUnit();
 		}

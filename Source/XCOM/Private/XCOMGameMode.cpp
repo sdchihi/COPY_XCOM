@@ -147,11 +147,11 @@ void AXCOMGameMode::PlayerTurnOver()
 {
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (!PlayerController) { return; }
+	RestoreTeamActionPoint(EnemyCharacters);
 
 	DisableInput(PlayerController);
 	PlayerController->FinishPlayerTurn();
 	UE_LOG(LogTemp, Warning, L"플레이어측 턴 오버 - > AI측 턴 시작");
-	RestoreTeamActionPoint(EnemyCharacters);
 	SetEnemysPatrolLocation();
 	EnemyTurnOrder = 0;
 	StartBotActivity();

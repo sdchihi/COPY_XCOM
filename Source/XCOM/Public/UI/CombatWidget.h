@@ -9,7 +9,7 @@
 #include "CombatWidget.generated.h"
 
 
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegate, AActor*, TargetActor, bool, bPlayBlend);
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FChangeViewTargetDelegate, AActor*, TargetActor, bool, bPlayBlend, int8, InfoIndex);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FStartAttackDelegate, const int32, TargetEnemyIndex);
 DECLARE_DYNAMIC_DELEGATE(FStartTrajectoryDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartAmbushDelegate);

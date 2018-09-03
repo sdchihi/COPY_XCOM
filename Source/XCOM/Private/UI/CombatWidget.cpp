@@ -202,7 +202,7 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	FillAimingInfo(SelectedCharacterAimingInfo[ButtonIndex]);
 	FillCriticalShotInfo(SelectedCharacterAimingInfo[ButtonIndex]);
 
-	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetActor, true);
+	ChangeViewTargetDelegate.Execute(SelectedCharacterAimingInfo[ButtonIndex].TargetActor, true, ButtonIndex);
 	TargetEnemyIndex = ButtonIndex;
 }
 
@@ -348,7 +348,6 @@ void UCombatWidget::StartVigilanceButtonClicked()
 	{
 		StartVisilianceDelegate.Execute();
 		UE_LOG(LogTemp, Warning, L"경계 시작2");
-
 	}
 }
 

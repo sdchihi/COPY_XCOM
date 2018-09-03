@@ -7,7 +7,7 @@
 #include "CustomUserWidget.h"
 #include "Components/Image.h"
 #include "Classes/Engine/Texture2D.h"
-
+#include "Components/CanvasPanel.h"
 void UUnitHUD::NativeConstruct()
 {
 
@@ -16,9 +16,11 @@ void UUnitHUD::NativeConstruct()
 
 void UUnitHUD::RegisterActor(ACustomThirdPerson* ActorToSet)
 {
+
 	GridPannel = Cast<UUniformGridPanel>(GetWidgetFromName(FName("HPGridPannel")));
 	GridPannel->SetSlotPadding(FMargin(2, 2));
 	TeamImage = Cast<UImage>(GetWidgetFromName(FName("TeamIcon")));
+	Background = Cast<UImage>(GetWidgetFromName(FName("BackgroundImage")));
 
 	CharacterRef = ActorToSet;
 
@@ -93,4 +95,17 @@ UClass* UUnitHUD::GetHPClass(bool bIsPlayerTeam)
 	}
 
 	return HPClassRef.TryLoadClass<UCustomUserWidget>();
+}
+
+void UUnitHUD::DestroyHPBar() 
+{
+	for (auto HealthPointWidget : HPWidgetArray) 
+	{
+		HealthPointWidget->RemoveFromParent();
+	}
+	TeamImage->RemoveFromParent();
+	Background->SetVisibility(ESlateVisibility::Hidden);
+	GridPannel->RemoveFromParent();
+	Background->RemoveFromParent();
+
 }

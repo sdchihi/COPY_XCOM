@@ -105,7 +105,7 @@ void AXCOMPlayerController::Initialize() {
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::FocusNextAvailablePlayerUnit);
 			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
-			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidget); // 여기
+			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidgetWithoutAim);
 			//SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 			PlayerCharacters.Add(SingleThirdPerson);
@@ -511,10 +511,12 @@ void AXCOMPlayerController::ChangeViewTarget(const FVector StartLocation, const 
 }
 
 /**
-* Combat Widget에 의해 Action Cam 시점으로 부드럽게 이동합니다.
+* Combat Widget에 의해 Action Cam 시점으로 부드럽게 이동합니다. (AimWidget이 표시됩니다.)
 * @param TagetActor
+* @param bPlayBlend 카메라의 블렌드 여부
+* @param InfoIndex 사용하게될 유닛의 AiminigInfo Index
 */
-void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, bool bPlayBlend = true)
+void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, bool bPlayBlend , int8 InfoIndex)
 {
 	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
 
@@ -526,15 +528,22 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidget(AActor* TargetActor, 
 		if (TargetActor)
 		{
 			AimWidget->AttachTo(TargetActor->GetRootComponent());
-			SetAiminigWidgetFactor(TargetUnit);
+			SetAiminigWidgetFactor(SelectedCharacter, TargetUnit, InfoIndex);
 		}
 	}
-	else 
-	{
-		UE_LOG(LogTemp, Warning, L"component 없음");
-	}
-	
 }
+
+/**
+* Combat Widget에 의해 Action Cam 시점으로 부드럽게 이동합니다.
+* @param TagetActor
+* @param bPlayBlend 카메라의 블렌드 여부
+*/
+void AXCOMPlayerController::ChangeViewTargetByCombatWidgetWithoutAim(AActor* TargetActor, bool bPlayBlend = true)
+{
+	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
+}
+
+
 
 /**
 * 캐릭터에 의해 Action Cam 시점으로 부드럽게 이동합니다. ( 사격 후 )
@@ -697,10 +706,10 @@ void AXCOMPlayerController::DisableFocusing()
 
 }
 
-void AXCOMPlayerController::SetAiminigWidgetFactor(ACustomThirdPerson* TargetUnit)
+void AXCOMPlayerController::SetAiminigWidgetFactor(ACustomThirdPerson* AiminigUnit, ACustomThirdPerson* AimedUnit, int8 InfoIndex)
 {
-	FAimingInfo TargetAimingInfo = TargetUnit->GetSelectedAimingInfo();
-	TargetUnit->SetHealthBarVisibility(true);;
+	FAimingInfo TargetAimingInfo = AiminigUnit->GetAimingInfo()[InfoIndex];
+	AimedUnit->SetHealthBarVisibility(true);;
 
 	UTextBlock* PercentageBox = Cast<UTextBlock>(AimWidget->GetUserWidgetObject()->GetWidgetFromName(FName("Percentage")));
 	FString TempString;
