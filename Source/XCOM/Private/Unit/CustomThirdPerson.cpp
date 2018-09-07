@@ -320,7 +320,6 @@ void ACustomThirdPerson::AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex
 void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAimingInfo)
 {
 	SelectedAimingInfo = TargetAimingInfo;
-	// 컨트롤러쪽에 .. StartAction
 	if (StartActionDelegate.IsBound()) 
 	{
 		StartActionDelegate.Execute();

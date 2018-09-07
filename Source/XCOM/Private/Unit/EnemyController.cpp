@@ -384,6 +384,8 @@ void AEnemyController::ShootToPlayerUnit()
 	{
 		return;
 	}
+	ControlledPawn->InformVisilanceSuccess(ControlledPawn->GetActorLocation(), AimingInfo->TargetLocation);
+
 	ControlledPawn->AttackEnemyAccrodingToState(*AimingInfo);
 	UE_LOG(LogTemp, Warning, L"%s 에서 적이 사격시작", *AimingInfo->StartLocation.ToString())
 }
