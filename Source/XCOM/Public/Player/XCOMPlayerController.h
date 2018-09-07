@@ -72,6 +72,8 @@ public:
 
 	void ShowTileIdicator();
 
+	void SelectCharacter(ACustomThirdPerson* Unit) { SelectedCharacter = Unit; };
+
 protected:
 	virtual void SetupInputComponent() override;
 

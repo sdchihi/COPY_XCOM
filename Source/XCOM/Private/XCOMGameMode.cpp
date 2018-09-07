@@ -248,6 +248,7 @@ TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 void AXCOMGameMode::StartBotActivity() 
 {
 	if (EnemyTurnOrder >= EnemyCharacters.Num()) { return; };
+	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 
 	ACustomThirdPerson* EnemyChar = EnemyCharacters[EnemyTurnOrder];
 	AEnemyController* EnemyController = EnemyChar ? Cast<AEnemyController>(EnemyChar->GetController()) : nullptr;
@@ -259,6 +260,7 @@ void AXCOMGameMode::StartBotActivity()
 	else 
 	{
 		EnemyTurnOrder++;
+		PlayerController->SelectCharacter(EnemyChar);
 		EnemyController->StartBehaviorTreeFromDefault();
 	}
 }

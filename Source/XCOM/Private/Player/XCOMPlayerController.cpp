@@ -101,11 +101,11 @@ void AXCOMPlayerController::Initialize() {
 		SingleThirdPerson->StartActionDelegate.BindDynamic(this, &AXCOMPlayerController::SetInvisibleCombatWidget);
 		SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
+		SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
+		SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidgetWithoutAim);
 		if (SingleThirdPerson->GetTeamFlag())
 		{
 			SingleThirdPerson->AfterActionDelegate.AddUniqueDynamic(this, &AXCOMPlayerController::FocusNextAvailablePlayerUnit);
-			SingleThirdPerson->ReadyToAttackDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeToCloseUpCam);
-			SingleThirdPerson->StartShootingDelegate.BindDynamic(this, &AXCOMPlayerController::ChangeViewTargetByCombatWidgetWithoutAim);
 			//SingleThirdPerson->AfterMovingDelegate.BindDynamic(this, &AXCOMPlayerController::AfterCharacterMoving);
 
 			PlayerCharacters.Add(SingleThirdPerson);
@@ -257,7 +257,7 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 		}
 
 		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
-		SelectedCharacter = TargetCharacter;
+		SelectCharacter(TargetCharacter);
 		SelectedCharacter->ScanEnemy();
 
 		SetTilesToUseSelectedChararacter(OverlappedTile, SelectedCharacter->CurrentMovableStep, SelectedCharacter->GetMovableStepPerActionPoint());
@@ -421,7 +421,7 @@ bool AXCOMPlayerController::CheckClickedCharacterTeam(ACustomThirdPerson* Clicke
 {
 	if (!SelectedCharacter) 
 	{ 
-		SelectedCharacter = ClickedCharacter;
+		SelectCharacter(ClickedCharacter);
 		return true; 
 	}
 
