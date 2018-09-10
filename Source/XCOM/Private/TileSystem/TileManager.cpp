@@ -119,8 +119,8 @@ void ATileManager::EndTileOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 }
 
 /**
-* 타일위에 Wall이 있는지 확인.. 
-* TODO
+* 타일위에 Wall Actor를 확인합니다.
+* @parma TileActor - Tile Actor Pointer
 */
 void ATileManager::FindingWallOnTile(ATile* TileActor) 
 {
@@ -144,8 +144,6 @@ void ATileManager::FindingWallOnTile(ATile* TileActor)
 			PathArr[OverlappedTileIndex].bWall = true;
 		}
 		int32 OverlappedTileIndex = ConvertVectorToIndex(OverlappedActor[0]->GetActorLocation());
-
-		UE_LOG(LogTemp, Warning, L"%d Wall On Tile!", OverlappedTileIndex);
 	}
 }
 
@@ -384,7 +382,6 @@ void ATileManager::UpdateCardinalPath(const int32 CurrentIndex, const int32 Targ
 	int32 SouthIndex = CurrentIndex - x;
 	int32 NorthIndex = CurrentIndex + x;
 
-
 	UpdateOneCardinalPath(CurrentIndex, EastIndex, TargetIndex);
 	UpdateOneCardinalPath(CurrentIndex, WestIndex, TargetIndex);
 	UpdateOneCardinalPath(CurrentIndex, SouthIndex, TargetIndex);
@@ -534,7 +531,6 @@ void ATileManager::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 D
 	if (CheckWithinBounds(DiagonalPathIndex) && IsSameLine(CurrentIndex, FromCurrentToDiagonal, DiagonalPathIndex) && TileIndexInRange.Contains(DiagonalPathIndex + RowDifference) &&
 		TileIndexInRange.Contains(DiagonalPathIndex + CollumDifference) && !ClosedList.Contains(DiagonalPathIndex) && !PathArr[DiagonalPathIndex].bWall && !PathArr[DiagonalPathIndex].bPawn)
 	{
-
 		//이미 OpenList 에 존재하는 Tile일경우 갱신 여부
 		if (OpenList.Contains(DiagonalPathIndex))
 		{
@@ -604,9 +600,6 @@ void ATileManager::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo , const 
 	}
 
 	TArray<FTransform> PathIndicatorTransformArr;
-
-	
-	//PathIndicator
 	for (auto OnePathInfo : PathInfo) 
 	{
 		int32 TargetTileIndex = OnePathInfo.Key;
@@ -655,6 +648,12 @@ ATile* ATileManager::GetOverlappedTile(APawn* Pawn)
 	return Tile;
 }
 
+/**
+* 타일 주변으로 사방향에 벽이 있는지 여부를 확인합니다.
+* @param TileLocation - 타일의 위치
+* @param CoverDirectionArr - 엄폐 방향을 담고있는 배열입니다. 
+* @return 주변에 벽이 있는지 여부
+*/
 bool ATileManager::CheckWallAround(const FVector TileLocation, TArray<FVector>& CoverDirectionArr) 
 {
 	int32 TileIndex = ConvertVectorToIndex(TileLocation);
@@ -677,6 +676,12 @@ bool ATileManager::CheckWallAround(const FVector TileLocation, TArray<FVector>& 
 	return bWallAround;
 }
 
+/**
+* 타일 주변에 벽이 있는지 여부를 확인합니다.
+* @param TileIndex - 타일의 Index
+* @param CardinalIndex - 확인할 Cardinal 방향에 있는 타일의 Index
+* @param CoverDirectionArr - 엄폐 방향을 담고있는 배열입니다. 
+*/
 void ATileManager::CheckWallAroundOneDirection(const int32 TileIndex, const int CardinalIndex, TArray<FVector>& CoverDirectionArr)
 {
 	int32 RowNumber = 0;
@@ -705,6 +710,10 @@ void ATileManager::CheckWallAroundOneDirection(const int32 TileIndex, const int 
 	}
 }
 
+/**
+* 엄폐할수 있는 벽에 엄폐 Mesh를 생성합니다.
+* @param OriginTileIndex - 벽이 있는 타일의 인덱스
+*/
 void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
 {
 	TArray<FVector> AvailableTilesLocation;
@@ -724,7 +733,11 @@ void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
 	CoveringChecker->MakingCoverNotice(AvailableTilesLocation, TileSize);
 }
 
-
+/**
+* 타일이 이동가능한지 여부를 확인합니다.
+* @param TileIndex - 확인할 타일의 인덱스
+* @return 이동 가능 여부
+*/
 bool ATileManager::CheckAvailability(int32 TileIndex)  
 {
 	bool bAvailability;

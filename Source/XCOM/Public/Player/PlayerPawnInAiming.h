@@ -22,10 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(VisibleAnywhere)
@@ -34,8 +32,6 @@ public:
 	void SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc);
 
 	void SetShootingCam(const FVector AimingCharLoc, const FVector AimedCharLoc);
-
-	void SetDeathCam(const FVector AimingCharLoc, const FVector MurderedCharLocation);
 
 	void SetDeathCam(const FVector AimingCharLoc, AActor* MurderedActor);
 
@@ -63,9 +59,7 @@ private:
 
 	FVector StartLocation;
 
-
 	FVector EndLocation;
-	
 
 	bool bCameraMoving = false;
 
@@ -76,5 +70,4 @@ private:
 	FVector GetActorsHeadLocation()const;
 
 	void SetFocusTarget(AActor* TargetActor);
-
 };

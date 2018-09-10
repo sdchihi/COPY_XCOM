@@ -130,8 +130,6 @@ private:
 	UFUNCTION()
 	void SetTilesToUseSelectedChararacter(ATile* OverlappedTile, const int32 MovingAbility, const int32 MovableStepPerAct);
 
-	void ReleaseCharacter();
-
 	void ChangeViewTarget(const FVector StartLocation, const FVector TargetLocation, bool bPlayBlend);
 
 	UFUNCTION()

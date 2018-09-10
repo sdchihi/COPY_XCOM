@@ -57,6 +57,11 @@ void UCombatWidget::ClearContents(const bool bClearAll)
 	}
 }
 
+/**
+* Combat Widget을 새로 갱신합니다.
+* @param AimingInfoArray - AimingInfo 배열
+* @param PossibleActionMapWrapper - 가능한 Action 
+*/
 void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper)
 {
 	ConstructWidgetMinimum();
@@ -65,18 +70,20 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	SelectedCharacterAimingInfo = AimingInfoArray;
 	PossibleActionMap = PossibleActionMapWrapper.PossibleAction;
 
-	//Fill Side Contents 
 	if (SelectedCharacterAimingInfo.Num() != 0) 
 	{
 		FillAimingInfo(SelectedCharacterAimingInfo[0]);
 		FillCriticalShotInfo(SelectedCharacterAimingInfo[0]);
 	}
 
-	// 상단 Enemy Icon
 	FillEnemyList();
 	FillActionButtonList();
 }
 
+/**
+* 선택된 AimingInfo에 따라 사격 관련 Widget 내용을 갱신합니다.
+* @param AimingInfo - 선택된 AimingInfo
+*/
 void UCombatWidget::FillAimingInfo(const FAimingInfo& AimingInfo) 
 {
 	float SumOfAimingPercentage = 0;
@@ -113,6 +120,10 @@ void UCombatWidget::FillAimingInfo(const FAimingInfo& AimingInfo)
 	PercentageText->SetText(FText::AsNumber((int8)SumOfAimingPercentage));	
 }
 
+/**
+* 선택된 AimingInfo에 따라 치명타 관련 Widget 내용을 갱신합니다.
+* @param AimingInfo - 선택된 AimingInfo
+*/
 void UCombatWidget::FillCriticalShotInfo(const FAimingInfo& AimingInfo) 
 {
 	float SumOfCriticalPercentage = 0;
@@ -140,11 +151,16 @@ void UCombatWidget::FillCriticalShotInfo(const FAimingInfo& AimingInfo)
 	PercentageText->SetText(FText::AsNumber(SumOfCriticalPercentage));
 }
 
+
+/**
+* 왼쪽에 위치한 사격 Widget 내용을 갱신합니다.
+* @param Explanation - 사격 요인에 해당하는 설명
+* @param Percentage - 사격 요인 값
+*/
 void UCombatWidget::FillLeftContnents(const FString& Explanation, const float Percentage)
 {
 	if (SideContentBoxBlueprint)
 	{
-		//굉장히 유연하지 못한 상태 이후에 고쳐야함.
 		UUserWidget* LeftContentsBox = CreateWidget<UUserWidget>(GetWorld(), SideContentBoxBlueprint.Get());
 		UTextBlock* CommentText = Cast<UTextBlock>(LeftContentsBox->GetWidgetFromName(FName("Comment")));
 		UTextBlock* PercentageText = Cast<UTextBlock>(LeftContentsBox->GetWidgetFromName(FName("PercentageValue")));
@@ -155,7 +171,11 @@ void UCombatWidget::FillLeftContnents(const FString& Explanation, const float Pe
 	}
 }
 
-//Refactoring 가능
+/**
+* 왼쪽에 위치한 치명타 Widget 내용을 갱신합니다.
+* @param Explanation - 치명타 요인에 해당하는 설명
+* @param Percentage - 치명타 요인 값
+*/
 void UCombatWidget::FillRightContents(const FString& Explanation, const float Percentage) 
 {
 	if (SideContentBoxBlueprint)
@@ -170,6 +190,9 @@ void UCombatWidget::FillRightContents(const FString& Explanation, const float Pe
 	}
 }
 
+/**
+* 사격 가능한 적 목록을 표시하는 버튼을 추가합니다.
+*/
 void UCombatWidget::FillEnemyList() 
 {
 	for (int i = 0; i < SelectedCharacterAimingInfo.Num(); i++) 
@@ -191,6 +214,10 @@ void UCombatWidget::FillEnemyList()
 	}
 }
 
+/**
+* Enemy 를 표시하는 버튼이 클릭되었을때 호출됩니다.
+* @param ButtonIndex - 선택된 버튼의 인덱스
+*/
 void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex) 
 {
 	if (LeftFrame->GetVisibility() != ESlateVisibility::Visible) 
@@ -206,6 +233,9 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	TargetEnemyIndex = ButtonIndex;
 }
 
+/**
+* 수행가능한 Action의 버튼들을 추가합니다.
+*/
 void UCombatWidget::FillActionButtonList() 
 {
 	for (auto SinglePossibleAction : PossibleActionMap) 
@@ -265,11 +295,13 @@ void UCombatWidget::FillActionButtonList()
 	}
 }
 
+/**
+* 공격 버튼 클릭시 호출됩니다.
+*/
 void UCombatWidget::AttackButtonClicked() 
 {
 	ConstructWidgetRequiredForAttack();
 	EnemyButtonClicked(0);
-
 	MainStartActionButton->OnClicked.Clear();
 
 	TScriptDelegate<FWeakObjectPtr> delegateFunction;
@@ -282,7 +314,9 @@ void UCombatWidget::AttackButtonClicked()
 	}
 }
 
-
+/**
+* 수류탄 투척 버튼 클릭시 호출됩니다.
+*/
 void UCombatWidget::GrenadeButtonClicked()
 {
 	ConstructWidgetNormal();
@@ -293,11 +327,7 @@ void UCombatWidget::GrenadeButtonClicked()
 	{
 		StartTrajectoryDelegate.Execute();
 	}
-/*
-	TScriptDelegate<FWeakObjectPtr> delegateFunction;
-	delegateFunction.BindUFunction(this, "StartAttackButtonClicked");
-	MainStartActionButton->OnClicked.Add(delegateFunction);
-*/
+
 	UTextBlock* StartActionButtonText = Cast<UTextBlock>(MainStartActionButton->GetChildAt(0));
 	if (StartActionButtonText)
 	{
@@ -305,6 +335,9 @@ void UCombatWidget::GrenadeButtonClicked()
 	}
 }
 
+/**
+* 엄폐 버튼 클릭시 호출됩니다.
+*/
 void UCombatWidget::VisilianceButtonClicked()
 {
 	ConstructWidgetNormal();
@@ -321,6 +354,9 @@ void UCombatWidget::VisilianceButtonClicked()
 	}	
 }
 
+/**
+* 잠복 버튼 클릭시 호출됩니다.
+*/
 void UCombatWidget::AmbushButtonClicked()
 {
 	ConstructWidgetNormal();
@@ -331,9 +367,9 @@ void UCombatWidget::AmbushButtonClicked()
 	}
 }
 
+
 void UCombatWidget::StartAttackButtonClicked() 
 {
-	UE_LOG(LogTemp, Warning, L"공격 시작");
 	if (StartAttackDelegate.IsBound())
 	{
 		StartAttackDelegate.Execute(TargetEnemyIndex);
@@ -342,18 +378,14 @@ void UCombatWidget::StartAttackButtonClicked()
 
 void UCombatWidget::StartVigilanceButtonClicked()
 {
-	UE_LOG(LogTemp, Warning, L"경계 시작");
-
 	if (StartVisilianceDelegate.IsBound())
 	{
 		StartVisilianceDelegate.Execute();
-		UE_LOG(LogTemp, Warning, L"경계 시작2");
 	}
 }
 
 void UCombatWidget::StartAmbushButtonClicked() 
 {
-	UE_LOG(LogTemp, Warning, L"은신 시작");
 	if (StartAmbushDelegate.IsBound())
 	{
 		StartAmbushDelegate.Execute();
@@ -362,7 +394,7 @@ void UCombatWidget::StartAmbushButtonClicked()
 
 void UCombatWidget::StartGrenadeButtonClicked()
 {
-	UE_LOG(LogTemp, Warning, L"수류탄 조정 시작");
+	UE_LOG(LogTemp, Warning, L"수류탄 조정 시작");//;
 }
 
 void UCombatWidget::ConstructWidgetMinimum()
@@ -400,7 +432,6 @@ void UCombatWidget::ConstructWidgetNormal()
 	PlayAnimationByName(FName("NormalUIAnim"));
 	PlayerController->HideTileIdicator();
 }
-
 
 void UCombatWidget::HideAllWidget()
 {

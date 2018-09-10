@@ -6,9 +6,6 @@
 #include "Classes/Engine/StaticMesh.h"
 #include "DestructibleWall.h"
 
-//Instanced Mesh compompont는 내가 배웠던 게임프로그래밍 패턴에서 그 원리를 알 수 있다. 공통적인 데이터들을 가지고 참조하기때문에 필요한 데이터(Transform)만 입력해
-//인스턴스를 생성하는 그런 방식.. 그러므로 Material을 다 다르게 적용시키는것은 불가능.
-
 
 ACoveringChecker::ACoveringChecker()
 {
@@ -33,9 +30,8 @@ void ACoveringChecker::BeginPlay()
 		FullCoverMaterialDynamic = UMaterialInstanceDynamic::Create(FullCoverMaterial, this);
 		HalfCoverMaterialDynamic = UMaterialInstanceDynamic::Create(HalfCoverMaterial, this);
 
-		FString ImagePath = "/Game/Material/Shield_border_mat_2.Shield_border_mat_2";
+		FString ImagePath = "/Game/Material/Shield_border_mat_2.Shield_border_mat_2";  // 유연하지 않음 (파일에 종속)
 		UMaterial* BorderMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, *(ImagePath)));
-
 
 		FullCoverInstancedMeshComp->SetStaticMesh(CoverMesh);
 		FullCoverInstancedMeshComp->SetMaterial(0, FullCoverMaterialDynamic);
@@ -44,7 +40,6 @@ void ACoveringChecker::BeginPlay()
 		HalfCoverInstancedMeshComp->SetStaticMesh(CoverMesh);
 		HalfCoverInstancedMeshComp->SetMaterial(0, HalfCoverMaterialDynamic);
 		HalfCoverInstancedMeshComp->SetMaterial(1, HalfCoverMaterialDynamic);
-
 	}
 	else 
 	{
@@ -57,6 +52,11 @@ void ACoveringChecker::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+/**
+* 엄폐가능한 벽에 엄폐 Mesh를 생성합니다.
+* @param TileLocationArray - Cover Mesh생성의 후보가 될 타일 위치 배열
+* @param Spacing - 메쉬 생성을 위한 간격
+*/
 void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) 
 {
 	if (!CoverMesh || !FullCoverMaterial || !HalfCoverMaterial) { return; }
@@ -72,6 +72,13 @@ void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, flo
 	AddHalfCoverInstances(HalfCoverNoticeTF);
 }
 
+/**
+* RayCast를 사방향에 보내서 Mesh생성 가능 위치를 얻어냅니다.
+* @param OriginLocation - 타일의 위치
+* @param Spacing - 메쉬 생성을 위한 간격
+* @param HalfCoverNoticeTF - 반 엄폐 메쉬를 생성할 위치 배열
+* @param FullCoverNoticeTF - 완전 엄폐 메쉬를 생성할 위치 배열
+*/
 void ACoveringChecker::RayCastToCardinalDirection(FVector OriginLocation, float Spacing, OUT TArray<FTransform>& HalfCoverNoticeTF, OUT TArray<FTransform>& FullCoverNoticeTF)
 {
 	FVector CardinalLocation[4] = { 

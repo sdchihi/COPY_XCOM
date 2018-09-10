@@ -192,7 +192,6 @@ void AXCOMPlayerController::OnClick()
 				ActionPointToUse = 2;
 			}
 			int32 TargetTileIndex = TileManager->ConvertVectorToIndex(TargetTile->GetActorLocation());
-//
 			TArray<FVector> Tempor;
 			for (int32 PathIndex : TileManager->PathArr[TargetTileIndex].OnTheWay) 
 			{
@@ -209,13 +208,7 @@ void AXCOMPlayerController::OnClick()
 		else 
 		{
 			UE_LOG(LogTemp, Warning, L" %s Is Clicked", *TraceResult.GetActor()->GetName());
-
-		//1	TraceResult.GetActor()->ReceiveActorOnClicked();
 		}
-		//else
-		//{
-		//	//TODO 타일과 캐릭터가 아닌 obj 클릭시 처리
-		//}
 	}
 }
 
@@ -238,33 +231,26 @@ ATile* AXCOMPlayerController::GetOverlappedTile(ACustomThirdPerson* TargetCharac
 	return OverlappedTile;
 }
 
-
-
 /**
 * 같은 편 안에서 현재 선택되어 있는 캐릭터가 아닌 다른 캐릭터로 전환될때 호출됩니다.
 * @param TargetCharacter - 전환할 캐릭터
 */
 void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 {
-
 	if (TargetCharacter->RemainingActionPoint > 0) {
 		DisableInput(this);
 		ATile* OverlappedTile = GetOverlappedTile(TargetCharacter);
-		if (OverlappedTile == nullptr)		//예외처리 
+		if (OverlappedTile == nullptr) 
 		{
 			EnableInput(this);
 			return;
 		}
-
-		//클릭시 Actor 이동 필요   ( 카메라 이동은 아님 )
 		SelectCharacter(TargetCharacter);
 		SelectedCharacter->ScanEnemy();
-
 		SetTilesToUseSelectedChararacter(OverlappedTile, SelectedCharacter->CurrentMovableStep, SelectedCharacter->GetMovableStepPerActionPoint());
 
 		FPossibleActionWrapper PossibleActionWrapper;
 		PossibleActionWrapper.PossibleAction = SelectedCharacter->GetPossibleAction();
-
 		DeleverInfoDelegate.Execute(SelectedCharacter->GetAimingInfo(), PossibleActionWrapper);
 	}
 	else
@@ -272,7 +258,6 @@ void AXCOMPlayerController::SwitchCharacter(ACustomThirdPerson* TargetCharacter)
 		//행동 횟수 0 일때	
 	}
 }
-
 
 /**
 * 캐릭터가 타일을 이동할 수 있도록 알고리즘 수행과 타일의 Visibility를 세팅합니다.
@@ -333,7 +318,6 @@ void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingChara
 			}
 		}
 	}
-
 	CheckWallAround(MovingCharacter);
 }
 
@@ -450,7 +434,9 @@ void AXCOMPlayerController::ChangeToDefaultPawn()
 	SetViewTargetWithBlend(DefaultPlayerPawn, 0.5);
 };
 
-
+/**
+* 턴 종료 후 다음 Unit으로 초점을 맞춥니다.
+*/
 void AXCOMPlayerController::FocusNextAvailablePlayerUnit(bool bTeam) 
 {
 	TArray<ACustomThirdPerson*> AvailableCharacters;
@@ -471,13 +457,6 @@ void AXCOMPlayerController::FocusNextAvailablePlayerUnit(bool bTeam)
 	CharacterSwitchIndex++;
 	SwitchCharacter(AvailableCharacters[NextIndex]);
 	EnableFocusing(AvailableCharacters[NextIndex], true);
-}
-
-
-
-void AXCOMPlayerController::ReleaseCharacter() 
-{
-	TileManager->ClearAllTiles(true);
 }
 
 /**
@@ -543,8 +522,6 @@ void AXCOMPlayerController::ChangeViewTargetByCombatWidgetWithoutAim(AActor* Tar
 	ChangeViewTarget(SelectedCharacter->GetActorLocation(), TargetActor->GetActorLocation(), bPlayBlend);
 }
 
-
-
 /**
 * 캐릭터에 의해 Action Cam 시점으로 부드럽게 이동합니다. ( 사격 후 )
 * @param TargetLocation
@@ -562,7 +539,6 @@ void AXCOMPlayerController::ChangeToDeathCam(AActor* MurderedActor)
 {
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
 	ActionCam->SetDeathCam(SelectedCharacter->GetActorLocation(), MurderedActor); // 수정 필요
-	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드
 	SetViewTarget(ActionCam);
 
 	TileManager->ClearAllTiles(true);
@@ -573,7 +549,6 @@ void AXCOMPlayerController::ChangeToCloseUpCam(AActor* TargetActor, FVector Forw
 {
 	APlayerPawnInAiming* ActionCam = GetNextActionCam();
 	ActionCam->SetCloseUpCam(TargetActor, ForwardDirection);
-	//SetViewTargetWithBlend(ActionCam, 0.5); 블렌드
 	SetViewTarget(ActionCam);
 
 	bCameraOrder = !bCameraOrder;
@@ -608,8 +583,6 @@ APlayerPawnInAiming* AXCOMPlayerController::GetCurrentActionCam()
 	}
 }
 
-
-
 /**
 * 사용될 Action Cam  Actor를 가져옵니다.
 * @return APlayerPawnInAiming
@@ -632,9 +605,7 @@ APlayerPawnInAiming* AXCOMPlayerController::GetNextActionCam()
 void AXCOMPlayerController::CancelWithESC() 
 {
 	OrderFinishTrajectory();
-	//Todo
 	SwitchCharacter(SelectedCharacter);
-
 	ChangeToDefaultPawn();
 }
 
@@ -679,7 +650,6 @@ void AXCOMPlayerController::OrderStartVigilance()
 	SelectedCharacter->bInVisilance = true;
 	SelectedCharacter->AnnounceVisilance();
 	SelectedCharacter->UseActionPoint(2);
-	UE_LOG(LogTemp, Warning, L"경계 시작");
 }
 
 /**
@@ -706,6 +676,12 @@ void AXCOMPlayerController::DisableFocusing()
 
 }
 
+/**
+* Aiming Widget에 퍼센테이지값을 변경합니다.
+* @param AiminigUnit - 현재 조준을 하고있는 Unit
+* @param AimedUnit - 현재 조준당하고있는 Unit
+* @param InfoIndex - Widget에서 지정하고있는 AimingInfo의 Index
+*/
 void AXCOMPlayerController::SetAiminigWidgetFactor(ACustomThirdPerson* AiminigUnit, ACustomThirdPerson* AimedUnit, int8 InfoIndex)
 {
 	FAimingInfo TargetAimingInfo = AiminigUnit->GetAimingInfo()[InfoIndex];
@@ -715,11 +691,13 @@ void AXCOMPlayerController::SetAiminigWidgetFactor(ACustomThirdPerson* AiminigUn
 	FString TempString;
 	TempString.AppendInt((int32)(TargetAimingInfo.Probability*100));
 	TempString.AppendChar('%');
-	UE_LOG(LogTemp, Warning, L"%f 이다", TargetAimingInfo.Probability);
 
 	PercentageBox->SetText(FText::FromString(TempString));
 }
 
+/**
+* 플레이어 턴을 종료할때 호출됨
+*/
 void AXCOMPlayerController::FinishPlayerTurn() 
 {
 	TileManager->ClearAllTiles(true);

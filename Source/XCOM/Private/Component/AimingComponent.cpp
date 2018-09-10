@@ -62,9 +62,7 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 	}
 
 	FindBestCaseInAimingInfo(AimingInfoInAllCase, AimingInfoList, TargetLocationArr);
-	UE_LOG(LogTemp, Warning, L"감지 결과 검출된 Target 수 : %d ", AimingInfoList.Num());
 };
-
 
 /**
 * 공격 성공 확률을 계산합니다.
@@ -76,21 +74,15 @@ void UAimingComponent::GetAttackableEnemyInfo(const FVector ActorLocation ,const
 * @param CriticalFactor - 크리티컬에 관여하는 외부 요소에 대한 데이터를 반환합니다.
 * @return 공격 성공 확률을 반환합니다.
 */
-//수정 필요
 float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, int8>& CriticalFactor)
 {
 	AimingFactor.Add(EAimingFactor::AimingAbility, 0.8);
 	float FailureRatio = 0;
 	FVector AimDirection = (ActorLocation - HitResult.GetActor()->GetActorLocation()).GetSafeNormal();
 	ACustomThirdPerson* TargetThirdPerson = Cast<ACustomThirdPerson>(TargetPawn);
-	// 클래스가 유연하지 않으므로 이후 수정
-	if (!TargetThirdPerson)
-	{
-		UE_LOG(LogTemp, Warning, L"벽에 의해 가로막힘");
-		return 0;
-	}
 
-	//엄폐 상태 확인 수정
+	if (!TargetThirdPerson){ return 0; }
+
 	if (TargetThirdPerson->bIsCovering)
 	{
 		float AngleBetweenAimAndWall = 0;
@@ -111,9 +103,7 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation,
 				FailureDueToCover = 0.4;
 				AimingFactor.Add(EAimingFactor::FullCover, -FailureDueToCover);
 			}
-
 			FailureRatio += FailureDueToCover;
-			UE_LOG(LogTemp, Warning, L"엄폐로 인한 실패 확률 계산 결과 : %f", FailureDueToCover);
 		}
 	}
 
@@ -138,11 +128,11 @@ float UAimingComponent::CalculateAttackSuccessRatio(const FVector ActorLocation,
 	return 0.8f - FailureRatio;
 }
 
-
 /**
 * 공격 범위 안에 있는 적을 얻어옵니다.
 * @param ActorLocation - 조준을 실행하는 Actor의 위치
 * @param AttackRadius - 공격 가능 범위
+* @param CharacterInRange - 범위 내에 있는 유닛들의 배열
 * @return 범위 안에 적이 있는지 여부를 반환합니다.
 */
 bool UAimingComponent::GetEnemyInRange(const FVector ActorLocation, const float AttackRadius, OUT TArray<ACustomThirdPerson*>& CharacterInRange)
@@ -171,12 +161,12 @@ bool UAimingComponent::GetEnemyInRange(const FVector ActorLocation, const float 
 * 공격 대상이 엄폐하고있는 벽과 조준선이 이루는 각도를 계산합니다.
 * @param AimDirection - 조준선의 방향 벡터입니다.
 * @param TargetPawn - 공격 대상이 되는 Pawn입니다.
+* @param CoverInfo - 엄폐 정보
 * @return 벽과 조준선이 이루는 각도를 Degree로 반환합니다.
 */
 float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, ACustomThirdPerson* TargetPawn, OUT ECoverInfo& CoverInfo)
 {
 	float MinAngleBetweenAimAndWall = MAX_FLT;
-
 	FVector North = FVector(0, 1, 0);
 	FVector South = FVector(0, -1, 0);
 	FVector West = FVector(-1, 0, 0);
@@ -184,7 +174,6 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 
 	for (auto CoverDirectionState : TargetPawn->CoverDirectionMap)
 	{
-
 		FVector WallForwardVector;
 		float AngleBetweenAimAndWall = 0;
 		if (CoverDirectionState.Value != ECoverInfo::None)
@@ -210,16 +199,10 @@ float UAimingComponent::CalculateAngleBtwAimAndWall(const FVector AimDirection, 
 			if (MinAngleBetweenAimAndWall > AngleBetweenAimAndWall)
 			{
 				CoverInfo = CoverDirectionState.Value;
-				//RelativeCoverLoc = WallForwardVector;
 				MinAngleBetweenAimAndWall = AngleBetweenAimAndWall;
 			}
-
 		}
 	}
-	UE_LOG(LogTemp, Warning, L"Minimum Angle : %d ", MinAngleBetweenAimAndWall);
-
-	//RelativeCoverLoc *= 100;
-
 	return MinAngleBetweenAimAndWall;
 }
 
@@ -265,7 +248,6 @@ bool UAimingComponent::FilterAttackableEnemy(const FVector ActorLocation, const 
 			}
 		}
 	}
-
 	// 엄폐아닌 위치에서 확인
 	for (ACustomThirdPerson* SingleTargetEnemy : EnemiesInRange)
 	{
@@ -394,7 +376,9 @@ void UAimingComponent::FindBestCaseInAimingInfo(const TArray<FAimingInfo> AllCas
 * 경계 중 조준가능한 적들의 정보를 얻어옵니다.
 * @param AttackRadius - 조준 가능한 범위
 * @param bIsCover - 현재 Actor의 엄폐 여부
+* @param TargetLocation - 공격 대상의 위치
 * @param CoverDirectionMap - 엄폐하고 있는 엄폐물에 대한 Map
+* @param AimingInfo - 갱신할 AimingInfo
 * @return 사격 가능 여부
 */
 bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo)
@@ -410,12 +394,9 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 			if (CoverDirection.Value != ECoverInfo::None)
 			{
 				FRotator Direction = FindCoverDirection(CoverDirection);
-
 				FVector RightVector = FVector::CrossProduct(FVector::UpVector, Direction.Vector());
 				FVector RightSide = GetOwner()->GetActorLocation() + RightVector * 100;
 				FVector LeftSide = GetOwner()->GetActorLocation() - RightVector * 100;
-
-
 
 				TArray<FHitResult> SurroundingAreaInfo;
 				GetAimingInfoFromSurroundingArea(ActorLocation, RightSide, SurroundingAreaInfo);
@@ -423,7 +404,6 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 
 				for (FHitResult SingleSurroundingAreaInfo : SurroundingAreaInfo)
 				{
-
 					FHitResult HitResult = LineTraceWhenAiming(SingleSurroundingAreaInfo.TraceEnd, TargetLocation);
 					ResultRequireInspection.Add(HitResult);
 				}
@@ -465,7 +445,6 @@ bool UAimingComponent::GetVigilanceAimingInfo(const float AttackRadius, const bo
 		}
 	}
 	FindBestCaseInAimingInfo(AimingInfoInAllCase, BestCaseArr, TargetLocationArr);
-	
 	AimingInfo = BestCaseArr[0];
 	
 	return true;
@@ -497,7 +476,6 @@ FAimingInfo UAimingComponent::GetBestAimingInfo(const FVector ActorLocation, con
 	}
 	return BestAimingInfo;
 };
-
 
 /**
 * 현재 Actor가 조준에 사용할 TraceChannel을 가져옵니다.

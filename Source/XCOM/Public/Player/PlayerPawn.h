@@ -27,10 +27,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
@@ -46,6 +44,7 @@ public:
 	float CameraHoverSpeed = 5;
 
 	FRotateUIDelegate RotateUIDelegate;
+
 	FControlDistanceToUIDelegate ControlDistanceToUIDelegate;
 
 	UFUNCTION(BlueprintCallable)
@@ -68,20 +67,16 @@ public:
 
 	float EstimatedHeight = 0;
 
-
 private:
 
 	bool bExecuteZoom = false;
-	//º¯¼ö
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* RootSceneComponent = nullptr;
 
-
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm = nullptr;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* FollowCamera = nullptr;
 
@@ -115,6 +110,4 @@ private:
 
 	UFUNCTION()
 	void LowerCamera();
-
-
 };

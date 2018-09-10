@@ -22,8 +22,10 @@ void UTrajectoryComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	}
 };
 
-
-
+/**
+* 투사체의 궤적을 그려냅니다.
+* @param bCanCognize 안개안에 위치하고있는지 여부
+*/
 void UTrajectoryComponent::DrawProjectileTrajectory() 
 {
 	FVector ActorLocation = GetOwner()->GetActorLocation();;
@@ -75,6 +77,16 @@ void UTrajectoryComponent::DrawProjectileTrajectory()
 	}
 }
 
+/**
+* 투사체의 궤적을 그려냅니다.
+* @param StartLocation 그려낼 궤적의 시작 지점
+* @param InitialVelocity 속도 벡터
+* @param Gravity 중력 벡터
+* @param Time 
+* @param Time2 
+* @param FirstPoint 궤도를 그릴 첫번째 점 위치
+* @param SecondPoint 궤도를 그릴 두번째 점 위치
+*/
 void UTrajectoryComponent::GetSegmentAtTime(const FVector StartLocation, const FVector InitialVelocity, const FVector Gravity, const float Time, const float Time2, OUT FVector& FirstPoint, OUT FVector& SecondPoint)
 {
 	// 시간에 따른 투사체의 위치 
@@ -88,6 +100,9 @@ void UTrajectoryComponent::GetSegmentAtTime(const FVector StartLocation, const F
 	SecondPoint = StartLocation + CorrectedVelocity + GravityAppliedValue;
 };
 
+/**
+* 궤도 추적을 시작합니다.
+*/
 void UTrajectoryComponent::StartDraw() 
 {
 	SpawnImapactRangeActor();
@@ -95,6 +110,9 @@ void UTrajectoryComponent::StartDraw()
 	bIsDrawing = true;
 };
 
+/**
+* 궤도 추적을 종료합니다.
+*/
 void UTrajectoryComponent::FinishDraw() 
 {
 	if (!ImpactRangeActor) 
@@ -105,7 +123,6 @@ void UTrajectoryComponent::FinishDraw()
 	ImpactRangeActor = nullptr;
 
 	bIsDrawing = false;
-	UE_LOG(LogTemp, Warning , L"FinishDraw in Component")
 };
 
 float UTrajectoryComponent::CorrectPower(const float Power)
@@ -116,14 +133,9 @@ float UTrajectoryComponent::CorrectPower(const float Power)
 	return CorrectedPower;
 }
 
-
-void UTrajectoryComponent::DealActorInRange()
-{
-	TArray<AActor*> OverlappedActor;
-	ImpactRangeActor->GetOverlappingActors(OverlappedActor);
-	
-}
-
+/**
+* 궤도 추적의 도착점에 투사체 폭발 반경을 나타낼 Actor를 생성합니다.
+*/
 void UTrajectoryComponent::SpawnImapactRangeActor() 
 {
 	if (ImpactRangeBP) 
@@ -137,7 +149,6 @@ void UTrajectoryComponent::SpawnImapactRangeActor()
 		UStaticMeshComponent* Mesh = ImpactRangeActor->FindComponentByClass<UStaticMeshComponent>();
 		if (SphereCollision) 
 		{
-			UE_LOG(LogTemp, Warning, L"캐스팅 성공")
 			//SphereCollision->bGenerateOverlapEvents = true;
 			SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &UTrajectoryComponent::OnOverlapBegin);
 			SphereCollision->OnComponentEndOverlap.AddDynamic(this, &UTrajectoryComponent::EndOverlap);
@@ -174,16 +185,3 @@ void UTrajectoryComponent::ConfirmedExplosionArea(UPrimitiveComponent* TouchedCo
 		Owner->PrepareThrowGrenade(InitialVelocity);
 	}
 }
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FComponentOnClickedSignature, UPrimitiveComponent*, TouchedComponent , FKey, ButtonPressed);
-
-void UTrajectoryComponent::TestFunc(AActor* TouchedActor, FKey ButtonPressed)
-{
-	FinishDraw();
-	UE_LOG(LogTemp, Warning, L"수류타안 발사");
-	ACustomThirdPerson* Owner = Cast<ACustomThirdPerson>(GetOwner());
-	if (Owner)
-	{
-		Owner->PrepareThrowGrenade(InitialVelocity);
-	}
-}
-

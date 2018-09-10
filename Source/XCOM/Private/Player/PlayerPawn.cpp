@@ -172,6 +172,10 @@ float APlayerPawn::GetNextCameraArmYaw(const bool bTurnCameraClockWise)
 	return PrevArmYaw;
 }
 
+
+/**
+* @param TargetActor 지정한 Actor의 위치로 Lerp 이동합니다.
+*/
 void APlayerPawn::MoveToTarget(AActor& TargetActor)  
 {
 	FVector ActorLocation = GetActorLocation();
