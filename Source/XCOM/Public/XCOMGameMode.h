@@ -30,8 +30,6 @@ public:
 	UFUNCTION()
 	void CheckTurnOver(const bool bIsPlayerTeam);
 
-	void CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Characters);
-
 	UPROPERTY(EditInstanceOnly)
 	TArray<AActor*> PlayerUnitDetectorArray;
 

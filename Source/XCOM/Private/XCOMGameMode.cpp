@@ -10,7 +10,6 @@
 #include "PlayerDetector.h"
 #include "Waypoint.h"
 #include "FogOfWarComponent.h"
-#include "EventExecutor.h"
 #include "FAimingQueue.h"
 #include "FloatingWidget.h"
 #include "Runtime/Engine/Public/TimerManager.h"
@@ -138,11 +137,12 @@ void AXCOMGameMode::CheckTurnOver(const bool bIsPlayerTeam)
 			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AXCOMGameMode::EnemyTurnOver);
 			GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);
 		}
-		//Todo  AI를 활성시키던지 Player쪽을 활성화하던지 둘중 하나를 수행
 	}
 }
 
-
+/**
+* Player측의 턴을 종료합니다.
+*/
 void AXCOMGameMode::PlayerTurnOver() 
 {
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
@@ -157,33 +157,24 @@ void AXCOMGameMode::PlayerTurnOver()
 	StartBotActivity();
 }
 
+/**
+* AI측의 턴을 종료합니다.
+*/
 void AXCOMGameMode::EnemyTurnOver()
 {
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (!PlayerController) { return; }
 
 	PlayerController->DisableFocusing();
-
 	EnableInput(PlayerController);
 	UE_LOG(LogTemp, Warning, L"AI측 턴 오버");
-	// TODO
 	RestoreTeamActionPoint(PlayerCharacters);
-
 	PlayerController->FocusNextAvailablePlayerUnit(true);
-
-}
-
-
-void AXCOMGameMode::CheckTurnStateOfOneTeam(TArray<ACustomThirdPerson*>& Characters)
-{
-	for (auto SingleCharacter : Characters) 
-	{
-	}
 }
 
 /**
 * 캐릭터들의 Action point를 회복시킵니다.
-* @param Characters - 회복시킬 캐릭터들
+* @param Characters - 회복시킬 캐릭터들 배열
 */
 void AXCOMGameMode::RestoreTeamActionPoint(TArray<ACustomThirdPerson*>& Characters) 
 {
@@ -209,6 +200,9 @@ void AXCOMGameMode::SetVisibleAllHealthBar(const bool bVisible)
 	}
 }
 
+/**
+* FOW(전장의 안개)를 생성합니다.
+*/
 void AXCOMGameMode::SpawnFogOfWar() 
 {
 	if (!FogOfWarBP) { return; }
@@ -232,6 +226,11 @@ void AXCOMGameMode::SpawnFogOfWar()
 	}
 }
 
+/**
+* Player Unit 혹은 Ai Unit 배열을 얻어옵니다.
+* @param bTeam - 플레이어 / AI
+* @return 한쪽 팀의 유닛 배열
+*/
 TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 {
 	if (bTeam) 
@@ -244,7 +243,9 @@ TArray<ACustomThirdPerson*> AXCOMGameMode::GetTeamMemeber(const bool bTeam)
 	}
 };
 
-
+/**
+* 한 AI Unit의 활동을 시작합니다.
+*/
 void AXCOMGameMode::StartBotActivity() 
 {
 	if (EnemyTurnOrder >= EnemyCharacters.Num()) { return; };
@@ -265,6 +266,9 @@ void AXCOMGameMode::StartBotActivity()
 	}
 }
 
+/**
+* AI Unit의 정찰 위치를 결정합니다.
+*/
 void AXCOMGameMode::SetEnemysPatrolLocation()
 {
 	FVector PlayerUnitsMiddlePoint;
@@ -290,7 +294,7 @@ void AXCOMGameMode::SetEnemysPatrolLocation()
 				else { break; }
 			}
 		}
-		if (bSkipLoop) { continue; }		// 어그로 상태일땐 Direction Setting 할 필요 없음.
+		if (bSkipLoop) { continue; }
 
 		FVector TargetLocation;
 		bool bRenewAfterUsingWaypoint = false;
@@ -316,7 +320,6 @@ void AXCOMGameMode::SetEnemysPatrolLocation()
 		}
 	}
 }
-
 
 /*
 * Enemy Group 별로 정찰을 하게될 Waypoint를 Map으로 구성합니다
@@ -395,7 +398,10 @@ void AXCOMGameMode::RenewWaypoint(int8 EnemyGroupNumber)
 	}
 }
 
-
+/**
+* 한 AI 그룹의 Aggro를 켭니다.
+* @param EnemyGroupNumber - AI 그룹 번호
+*/
 void AXCOMGameMode::ChangeEnemyAggro(int8 EnemyGroupNumber) 
 {
 	TArray<AEnemyUnit*> EnemyGroup = EnemyTeamMap[EnemyGroupNumber];
@@ -409,6 +415,9 @@ void AXCOMGameMode::ChangeEnemyAggro(int8 EnemyGroupNumber)
 	}
 }
 
+/**
+* 플레이어 유닛들의 중간지점을 얻어옵니다.
+*/
 FVector AXCOMGameMode::GetPlayerUnitMiddlePoint() 
 {
 	FVector PlayerUnitsMiddlePoint;
@@ -421,6 +430,9 @@ FVector AXCOMGameMode::GetPlayerUnitMiddlePoint()
 	return PlayerUnitsMiddlePoint;
 }
 
+/**
+* 특정 이벤트(감정 표현)의 실행을 기다리는 유닛이 있는지 확인합니다.
+*/
 bool AXCOMGameMode::HasEnemyUnitEvent()
 {
 	if (IsValid(EventUnit)) 
@@ -437,6 +449,9 @@ bool AXCOMGameMode::HasEnemyUnitEvent()
 	}
 }
 
+/**
+* 특정 이벤트(감정 표현) 실행 명령을 내립니다.
+*/
 void AXCOMGameMode::ExecuteEnemyEvent()
 {
 	if (IsValid(EventUnit))
@@ -444,32 +459,28 @@ void AXCOMGameMode::ExecuteEnemyEvent()
 		AEnemyUnit* EventExecutor = Cast<AEnemyUnit>(EventUnit);
 		if (EventExecutor) 
 		{
-			UE_LOG(LogTemp, Warning, L"^ Mode 에서 이벤트실행 명령떨어짐")
-
 			EventExecutor->PlayEvent();
 			EventUnit = nullptr;
 		}
-	}
-	else 
-	{
-		UE_LOG(LogTemp, Warning, L"^유효하지않음")
 	}
 }
 
 void AXCOMGameMode::RegisterEventActor(AActor* EventActor) 
 {
-	UE_LOG(LogTemp, Warning, L"^등록됨")
-
 	EventUnit = EventActor;
 }
 
 void AXCOMGameMode::CheckTurnAfterEvent() 
 {
-	UE_LOG(LogTemp, Warning, L"^이것은 완료후 Checkturn Event")
-
 	CheckTurnOver(TurnBuffer);
 }
 
+/**
+* 전투 결과를 알리는 팝업을 띄웁니다.
+* @param DamagedActor - 데미지를 입은 Actor
+* @param Damage - 적용되는 데미지
+* @param State - 전투 결과를 알리는 State
+*/
 void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage, FloatingWidgetState State)
 {
 	AXCOMPlayerController* PlayerController = Cast<AXCOMPlayerController>(GetWorld()->GetFirstPlayerController());
@@ -483,6 +494,10 @@ void AXCOMGameMode::ShowCombatPopUp(AActor* DamagedActor, float Damage, Floating
 	}
 }
 
+/**
+* GameMode에서 해당 유닛을 해지합니다.
+* @param Unit - 해지할 Actor
+*/
 void AXCOMGameMode::UnRegisterUnit(ACustomThirdPerson* Unit)
 {
 	PlayerCharacters.Remove(Unit);

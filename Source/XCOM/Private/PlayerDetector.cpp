@@ -25,8 +25,11 @@ void APlayerDetector::Tick(float DeltaTime)
 
 }
 
-
-
+/**
+* Player Unit과의 거리를 계산합니다.
+* @param PlayerUnitArray - 플레이어 유닛의 배열
+* @return Player Unit들과의 거리의 합
+*/
 float APlayerDetector::SumOfDistancesToPlayerUnit(TArray<AActor*>& PlayerUnitArray) const
 {
 	float SumOfDistances = 0;

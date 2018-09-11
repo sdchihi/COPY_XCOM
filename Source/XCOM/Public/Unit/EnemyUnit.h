@@ -43,11 +43,7 @@ public:
 	UFUNCTION()
 	void OnEmoteMontageEnded();
 
-	//void OnEmoteMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
 	void PlayEvent();
-
-	void FinishEvent();
 
 	UPROPERTY(VisibleAnywhere)
 	int8 Group;

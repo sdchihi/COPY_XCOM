@@ -14,10 +14,12 @@ AEnemyUnit::AEnemyUnit()
 	WalkingState = EWalkingState::Walk;
 }
 
+/**
+* 움직임을 종료합니다.
+*/
 void AEnemyUnit::FinishMoving() 
 {
 	bool bChangeAggro = false;
-	//여기 밑으론 일단 매번하면 안되요요오
 	TArray<AActor*> OutActors;
 	TArray<TEnumAsByte<EObjectTypeQuery>> Fillter;
 	if (!bAggro) 
@@ -38,7 +40,6 @@ void AEnemyUnit::FinishMoving()
 
 		if (bFliteredUnit) //적이 시야 안에있을때
 		{
-			UE_LOG(LogTemp,Warning,L"발견!")
 			GameMode->ChangeEnemyAggro(Group);
 			bChangeAggro = true;
 		}
@@ -51,7 +52,6 @@ void AEnemyUnit::FinishMoving()
 			}
 		}
 	}
-	//여기까지 아직 Point 사용전. 즉 Cut scene event 처리하기 위한 위치 
 
 	if (bChangeAggro) 
 	{
@@ -92,10 +92,12 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 			UE_LOG(LogTemp, Warning, L"^HP 바닥났대")
 		}
 	}
-	// 이부분 수정- > 맞고나서 다 끝난 후 이벤트 처리 필요
 	return ActualDamage;
 }
 
+/**
+* 유닛을 게임에서 숨깁니다.
+*/
 void AEnemyUnit::HideUnit()
 {
 	SetActorHiddenInGame(true);
@@ -103,11 +105,12 @@ void AEnemyUnit::HideUnit()
 	{
 		GunReference->SetActorHiddenInGame(true);
 	}
-	////HUDComponent->SetVisibilityLocker(true);
 	SetHealthBarVisibility(false);
 };
 
-
+/**
+* 유닛을 게임에 나타나게 합니다.
+*/
 void AEnemyUnit::UnHideUnit()
 {
 	SetActorHiddenInGame(false);
@@ -115,34 +118,31 @@ void AEnemyUnit::UnHideUnit()
 	{
 		GunReference->SetActorHiddenInGame(false);
 	}
-	////HUDComponent->SetVisibilityLocker(false);
 	SetHealthBarVisibility(true);
-	////LeftFrame->SetVisibility(ESlateVisibility::Collapsed);
 }
 
+/**
+* 플레이어의 유닛을 발견했을때 감정표현을 합니다.
+*/
 void AEnemyUnit::PlayEmoteMontage() 
 {
 	if (EmoteMontage) 
 	{
-		//Montage_SetEndDelegate가 작동안해서 그냥 FTimerDelegate로 Montage_SetEndDelegate 대체
-
-		//FOnMontageEnded EndDelegate;
-		//EndDelegate.BindUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
-		////EmoteMontage->Montage_SetEndDelegate(EndDelegate);
-		//GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndDelegate);
 		float FuncCallDelay = PlayAnimMontage(EmoteMontage);
 
 		if (PlayAggroEventDelegate.IsBound()) 
 		{
 			PlayAggroEventDelegate.Execute(this);
 		}
-
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &AEnemyUnit::OnEmoteMontageEnded);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, FuncCallDelay, false);
 	}
 }
 
+/**
+* 감정표현 종료 후 호출됩니다.
+*/
 void AEnemyUnit::OnEmoteMontageEnded() 
 {
 	if (FinishAggroEventDelegate.IsBound()) 
@@ -151,7 +151,9 @@ void AEnemyUnit::OnEmoteMontageEnded()
 	}
 }
 
-
+/**
+* 강제로 턴(제어)를 넘깁니다.
+*/
 void AEnemyUnit::ForceOverTurn() 
 {
 	bCanAction = false;
@@ -161,16 +163,9 @@ void AEnemyUnit::ForceOverTurn()
 	}
 }
 
-
-
 void AEnemyUnit::PlayEvent() 
 {
 	PlayEmoteMontage();
-}
-
-void AEnemyUnit::FinishEvent() 
-{
-
 }
 
 void AEnemyUnit::Dead() 

@@ -23,21 +23,18 @@ void AGrenade::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(Handle, this, &AGrenade::Explode, 5, false);
 }
 
+/**
+* 폭발합니다.
+*/
 void AGrenade::Explode() 
 {
 	TSubclassOf<UDamageType> DamageType;
 	UParticleSystemComponent* TempExplosion = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorTransform());
 	//UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
 
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetActorLocation(), ExplosionRadius, DamageType, TArray<AActor*>(), 0, 0, true); // 감쇄 효과 없는 데미지 적용
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetActorLocation(), ExplosionRadius, DamageType, TArray<AActor*>(), 0, 0, true); 
 
 	Destroy();
-	//AShooterExplosionEffect* const EffectActor = GetWorld()->SpawnActorDeferred<AShooterExplosionEffect>(ExplosionTemplate, SpawnTransform);	 // BP 의 Constructor 를 잠시 블록함 Finsih SpawningActor 가 호출되기 전까지.
-	//if (EffectActor)
-	//{
-	//	EffectActor->SurfaceHit = Impact;
-	//	UGameplayStatics::FinishSpawningActor(EffectActor, SpawnTransform);
-	//}
 }
 
 void AGrenade::SetGrenadeVelocity(FVector Velocity)
@@ -48,7 +45,6 @@ void AGrenade::SetGrenadeVelocity(FVector Velocity)
 
 void AGrenade::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Warning, L"Grenade - OnHit");
 	Explode();
 }
 

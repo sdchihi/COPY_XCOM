@@ -20,12 +20,5 @@ public:
 
 	virtual void BeginPlay() override;
 
-	void MoveToTargetLocation(FVector TargetLocation);
-
-	void BindVigilanceEvent(const TArray<ACustomThirdPerson*> OppositeTeamMember);
-
-private:
-	UFUNCTION()
-	void WatchOut(const FVector TargetLocation);
 
 };

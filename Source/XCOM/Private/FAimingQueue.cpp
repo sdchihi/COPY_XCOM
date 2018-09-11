@@ -31,7 +31,10 @@ FAimingQueue::FAimingQueue()
 //	}*/
 //}
 
-
+/**
+* AimingQueue의 객체를 얻어옵니다. (싱글턴 객체)
+* @return AimingQueue pointer
+*/
 FAimingQueue& FAimingQueue::Instance() 
 {
 	if (pInstance == nullptr) 
@@ -42,7 +45,9 @@ FAimingQueue& FAimingQueue::Instance()
 	return *pInstance;
 }
 
-
+/**
+* Queue에서 유효한 AimingInfo의 경우 사격을 지시합니다.
+*/
 void FAimingQueue::Update() 
 {
 	ACustomThirdPerson* AimingCharacter = FAimingQueue::Pending[FAimingQueue::Head]->AimingActor;
@@ -53,17 +58,10 @@ void FAimingQueue::Update()
 
 	if (!IsValid(AimedCharcater))
 	{
-		UE_LOG(LogTemp, Warning, L"관찰3  종료")
-
 		return;
 	}
 	AEnemyController* EnemyController = Cast<AEnemyController>(AimedCharcater->GetController());
-
 	AimedCharcater->CustomTimeDilation = 0;
-	if (EnemyController) 
-	{
-		//EnemyController->StopBehaviorTree();
-	}
 
 	if (AimingCharacter->bInVisilance) 
 	{
@@ -72,13 +70,17 @@ void FAimingQueue::Update()
 		AimingCharacter->AttackEnemyAccrodingToState(*CurrentAimingInfo);
 		AimingCharacter->StopVisilance();
 	}
-	else //큐에 들어왔지만 이미 사격한 경우 -> 다음 인덱스로 넘어가야함 
+	else
 	{
 		FAimingQueue::NextTask();
 	}
 }
 
-
+/**
+* Queue에 Aiminig Info를 추가합니다.
+* @param AimingActor - 사격의 주체가 되는 Actor
+* @param AimingInfo - 사격에 관련된 정보
+*/
 void FAimingQueue::StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* AimingInfo)
 {
 	int32 Temp_Head = FAimingQueue::Head;
@@ -94,13 +96,16 @@ void FAimingQueue::StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* Aim
 	}
 }
 
+/**
+* 다음 작업으로 진행합니다.
+*/
 void FAimingQueue::NextTask() 
 {
 	ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor);
 
 	if (IsPrevTask()) // Finish Task
 	{
-		LastShootingActor->ExecuteChangePawnDelegate();//
+		LastShootingActor->ExecuteChangePawnDelegate();
 		if (IsValid(AimedCharcater)) 
 		{
 			AimedCharcater->CustomTimeDilation = 1;
@@ -126,7 +131,10 @@ void FAimingQueue::NextTask()
 	}
 }
 
-
+/**
+* Head와 Tail의 Index차이가 1 인지 확인합니다.
+* @return Head, Tail의 차이가 1인지 여부
+*/
 bool FAimingQueue::IsPrevTask() 
 {
 	int32 MaximumIndex = MaxPending - 1;

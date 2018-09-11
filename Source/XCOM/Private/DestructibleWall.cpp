@@ -35,11 +35,7 @@ void ADestructibleWall::BeginPlay() {
 		Durability = MaxDurability / 2;
 		break;
 	}
-
-
 }
-
-
 
 void ADestructibleWall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) 
 {
@@ -57,6 +53,3 @@ void ADestructibleWall::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 		UE_LOG(LogTemp, Warning, L"Not Projectile Hit");
 	}
 }
-//void ADestructibleWall::GetCollisionObjType() 
-//{
-//}

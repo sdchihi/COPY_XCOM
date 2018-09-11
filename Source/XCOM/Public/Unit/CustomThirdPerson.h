@@ -350,14 +350,12 @@ private:
 
 	bool CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo);
 
-	void DecideShootingChance(float& CriticalChance, float& DodgeChance);
+	void DecideShootingChance(OUT float& CriticalChance, OUT float& DodgeChance);
 
 	void StartSlowMotion();
 
 	UFUNCTION()
 	void FinishSlowMotion();
-
-	void StartVisiliance();
 
 	void SetMovingDirectionDuringCover(const FVector TargetLocation);
 

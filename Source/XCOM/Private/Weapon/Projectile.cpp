@@ -53,17 +53,13 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 		DamageType,
 		TArray<AActor*>()
 		);
-	//TODO - Particle È¿°ú »ðÀÔ
-
 	Destroy();
 }
-
 
 void AProjectile::SetProjCollisionChannel(FName NewPresetName)
 {
 	if (Mesh) 
 	{
-		//Mesh->SetCollisionObjectType(NewCollisionChannel);
 		Mesh->SetCollisionProfileName(NewPresetName);
 	}
 }

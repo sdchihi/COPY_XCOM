@@ -32,7 +32,6 @@ public:
 	class UParticleSystem* ExplosionParticle;
 
 private: 
-	//UProjectileMovementComponent* ProjectileMovementComponent;
 	UStaticMeshComponent* Mesh = nullptr;
 
 	UFUNCTION()
