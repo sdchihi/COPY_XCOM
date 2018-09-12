@@ -21,9 +21,11 @@ public:
 
 	virtual void BeginPlay() override;
 
+	/** Æø¹ß µ¥¹ÌÁö */
 	UPROPERTY(EditDefaultsOnly)
 	int8 Damage;
 
+	/** Æø¹ß ¹Ý°æ */
 	UPROPERTY(EditDefaultsOnly)
 	float ExplosionRadius;
 
@@ -48,6 +50,6 @@ protected:
 
 private:
 
-
+	/** Æø¹ßÇÕ´Ï´Ù.*/
 	void Explode();
 };

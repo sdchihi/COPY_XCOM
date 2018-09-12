@@ -18,10 +18,6 @@ void UFogOfWarComponent::BeginPlay()
 	
 }
 
-/**
-* 안개안에 위치하고있으면 Unit을 게임에서 감춥니다.
-* @param bCanCognize 안개안에 위치하고있는지 여부
-*/
 void UFogOfWarComponent::SetActorInTerraInCog(bool bCanCognize)
 {
 	AEnemyUnit* EnemyUnit = Cast<AEnemyUnit>(GetOwner());

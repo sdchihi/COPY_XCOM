@@ -12,23 +12,24 @@ class XCOM_API AWaypoint : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AWaypoint();
 
+	// 이전 Waypoint
 	UPROPERTY(EditInstanceOnly, Category = "Linked Waypoint")
 	AWaypoint* PrevWaypoint = nullptr;
 
+	// 다음 Waypoint
 	UPROPERTY(EditInstanceOnly, Category = "Linked Waypoint")
 	AWaypoint* NextWaypoint = nullptr;
 
 	bool IsForward() { return bForward; };
 
+	// 진행방향을 변경합니다.
 	void TurnDirection() { bForward = !bForward; };
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 
 
 public:	
@@ -37,6 +38,7 @@ public:
 
 	
 private: 
+	// 정방향으로 진행하는지 여부
 	bool bForward = false;
 	
 };

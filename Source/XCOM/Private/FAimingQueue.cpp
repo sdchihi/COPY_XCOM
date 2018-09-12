@@ -31,10 +31,7 @@ FAimingQueue::FAimingQueue()
 //	}*/
 //}
 
-/**
-* AimingQueue의 객체를 얻어옵니다. (싱글턴 객체)
-* @return AimingQueue pointer
-*/
+
 FAimingQueue& FAimingQueue::Instance() 
 {
 	if (pInstance == nullptr) 
@@ -45,9 +42,7 @@ FAimingQueue& FAimingQueue::Instance()
 	return *pInstance;
 }
 
-/**
-* Queue에서 유효한 AimingInfo의 경우 사격을 지시합니다.
-*/
+
 void FAimingQueue::Update() 
 {
 	ACustomThirdPerson* AimingCharacter = FAimingQueue::Pending[FAimingQueue::Head]->AimingActor;
@@ -76,11 +71,7 @@ void FAimingQueue::Update()
 	}
 }
 
-/**
-* Queue에 Aiminig Info를 추가합니다.
-* @param AimingActor - 사격의 주체가 되는 Actor
-* @param AimingInfo - 사격에 관련된 정보
-*/
+
 void FAimingQueue::StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* AimingInfo)
 {
 	int32 Temp_Head = FAimingQueue::Head;
@@ -96,9 +87,7 @@ void FAimingQueue::StartAiming(ACustomThirdPerson* AimingActor, FAimingInfo* Aim
 	}
 }
 
-/**
-* 다음 작업으로 진행합니다.
-*/
+
 void FAimingQueue::NextTask() 
 {
 	ACustomThirdPerson* AimedCharcater = Cast<ACustomThirdPerson>(FAimingQueue::Pending[FAimingQueue::Head]->AimingInfo->TargetActor);
@@ -131,10 +120,7 @@ void FAimingQueue::NextTask()
 	}
 }
 
-/**
-* Head와 Tail의 Index차이가 1 인지 확인합니다.
-* @return Head, Tail의 차이가 1인지 여부
-*/
+
 bool FAimingQueue::IsPrevTask() 
 {
 	int32 MaximumIndex = MaxPending - 1;

@@ -12,17 +12,19 @@ class XCOM_API APlayerDetector : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	APlayerDetector();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/**
+	* Player Unit과의 거리를 계산합니다.
+	* @param PlayerUnitArray - 플레이어 유닛의 배열
+	* @return Player Unit들과의 거리의 합
+	*/
 	float SumOfDistancesToPlayerUnit(TArray<AActor*>& PlayerUnitArray) const;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	

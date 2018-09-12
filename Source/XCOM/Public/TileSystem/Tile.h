@@ -18,8 +18,10 @@ public:
 
 	virtual void BeginPlay() override;
 	
+	/** 한 액션 포인트로 이동할 수 있는 타일인지 여부 */
 	bool bCanMoveWithOneAct;
 
+	/** 유닛이 현재 타일로 이동이 가능한지 여부 */
 	bool bCanMove = false;
 
 	class UBoxComponent* GetCollision() { return Collision; };

@@ -25,7 +25,6 @@
 #include "HUDComponent.h"
 #include "UnitHUD.h"
 
-// Sets default values
 ACustomThirdPerson::ACustomThirdPerson()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -92,9 +91,6 @@ void ACustomThirdPerson::ClearCoverDirectionInfo()
 	bIsCovering = false;
 }
 
-/**
-* 엄폐시 올바른 애니메이션을 위해 벽을 향해 회전합니다.
-*/
 void ACustomThirdPerson::RotateTowardWall() {
 
 	for (auto CoverDirection : CoverDirectionMap)
@@ -122,10 +118,6 @@ void ACustomThirdPerson::RotateTowardWall() {
 	}
 }
 
-/**
-* 공격이 끝난 후 델리게이트 실행, Flag 변환
-* @param bExecuteDelegate - Delegate 실행 여부 
-*/
 void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	UnitState = EUnitState::Idle;
 
@@ -148,9 +140,6 @@ void ACustomThirdPerson::SetOffAttackState(const bool bExecuteDelegate) {
 	}
 }
 
-/**
-* 다른 유닛에게 활성화를 넘깁니다.
-*/
 void ACustomThirdPerson::ExecuteChangePawnDelegate()
 {
 	if (ChangePlayerPawnDelegate.IsBound())
@@ -164,11 +153,6 @@ void ACustomThirdPerson::ExecuteChangePawnDelegate()
 
 }
 
-/**
-* 블루프린트에서 호출될 수 있는 메소드로 일정 시간내에 캐릭터를 목표 방향으로 회전시킵니다. (Timeline과 연계해서 사용)
-* @param NewYaw - 목표로 하는 Yaw값입니다.
-* @param LerpAlpha - Lerp에 사용될 Alpha값입니다.
-*/
 void ACustomThirdPerson::RotateCharacter(float NewYaw, float LerpAlpha)
 {
 	float ActorYaw = GetActorRotation().Yaw;
@@ -176,11 +160,6 @@ void ACustomThirdPerson::RotateCharacter(float NewYaw, float LerpAlpha)
 	SetActorRotation(FRotator(0, FMath::Lerp(ActorYaw, NewYaw, LerpAlpha), 0));
 }
 
-/**
-* 조준하는 방향에 따라 캐릭터의 회전 방향을 결정합니다.
-* @param AimDirection - 조준 방향 벡터입니다.
-* @return NewYaw - 목표로 하는 Yaw값입니다.
-*/
 float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
 {
 	float ActorYaw = GetActorRotation().Yaw;
@@ -204,10 +183,6 @@ float ACustomThirdPerson::DecideDirectionOfRotation(FVector AimDirection)
 	return NewYaw;
 }
 
-/**
-* 공격을 시작합니다.
-* @param NewCollisionPresetName - 투사체가 사용할 충돌 프리셋 이름
-*/
 void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 {
 	UnitState = EUnitState::Attack;
@@ -223,10 +198,6 @@ void ACustomThirdPerson::StartFiring(FName NewCollisionPresetName)
 	GunReference->FireToTarget(SelectedAimingInfo.TargetActor);
 }
 
-/**
-* 액션 포인트를 사용합니다.
-* @param PointToUse - 사용할 액션 포인트 값
-*/
 void ACustomThirdPerson::UseActionPoint(int32 PointToUse) 
 {
 	RemainingActionPoint -= PointToUse;
@@ -266,7 +237,6 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 		if (DeadCamDelegate.IsBound()) 
 		{
 			DeadCamDelegate.Execute(this);
-			//PlayAnimMontage(TestDeadMontage);
 			StartSlowMotion();
 		}
 	}
@@ -289,39 +259,24 @@ float ACustomThirdPerson::TakeDamage(float Damage, FDamageEvent const& DamageEve
 	return ActualDamage;
 }
 
-
-/**
-* 액션 포인트를 회복한다.
-*/
 void ACustomThirdPerson::RestoreActionPoint()
 {
 	RemainingActionPoint = 2;
 	bCanAction = true;
 }
 
-/**
-* 주변을 스캔해 공격 가능한 적들에 대한 정보를 갱신합니다.
-*/
 void ACustomThirdPerson::ScanEnemy()
 {
 	AimingInfo.Empty();
 	AimingComponent->GetAttackableEnemyInfo(GetActorLocation(), AttackRadius, bIsCovering, CoverDirectionMap, AimingInfo);
 };
- 
-/**
-* Widget으로부터 받아온 Index로 적을 선택, 공격합니다.
-* @param TargetEnemyIndex - AimingInfo Index
-*/
+
 void ACustomThirdPerson::AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex) 
 {
 	FAimingInfo TargetAimingInfo = AimingInfo[TargetEnemyIndex];
 	AttackEnemyAccrodingToState(TargetAimingInfo);
 }
 
-/**
-* 파라미터로 받아온 AimingInfo로 공격합니다.
-* @param TargetAimingInfo
-*/
 void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAimingInfo)
 {
 	SelectedAimingInfo = TargetAimingInfo;
@@ -339,10 +294,6 @@ void ACustomThirdPerson::AttackEnemyAccrodingToState(const FAimingInfo TargetAim
 	}
 }
 
-/**
-* 엄폐 이동 후 공격합니다.
-* @param TargetAimingInfo - AimingInfo
-*/
 void ACustomThirdPerson::CoverUpAndAttack(const FAimingInfo TargetAimingInfo) 
 {
 	UnitState = EUnitState::ReadyToAttack;
@@ -366,9 +317,6 @@ void ACustomThirdPerson::AttackAfterCoverMoving()
 	MovingDirectionDuringCover = EDirection::None;
 }
 
-/**
-* 적에게 사격합니다.
-*/
 void ACustomThirdPerson::Shoot()
 {
 	FVector AimDirection = SelectedAimingInfo.TargetLocation - GetActorLocation();
@@ -380,7 +328,6 @@ void ACustomThirdPerson::Shoot()
 
 	float AttackSuccessProbability = SelectedAimingInfo.Probability;
 	float result = FMath::FRandRange(0, AttackSuccessProbability);
-	//성공
 
 	UE_LOG(LogTemp, Warning, L"셔플 결과  : %f ,  Prob 값 :  %f , Critical 값 : %f  Dodge 값 : %f", result, AttackSuccessProbability, CriticalChance, DodgeChance);
 
@@ -440,12 +387,6 @@ void ACustomThirdPerson::Shoot()
 	}
 }
 
-
-/**
-* 치명타율, 회피율을 결정합니다.
-* @param CriticalChance - 치명타율
-* @param DodgeChance - 회피율
-*/
 void ACustomThirdPerson::DecideShootingChance(OUT float& CriticalChance, OUT float& DodgeChance)
 {
 	float RemainingChance = SelectedAimingInfo.Probability;
@@ -457,11 +398,7 @@ void ACustomThirdPerson::DecideShootingChance(OUT float& CriticalChance, OUT flo
 	CriticalChance = FMath::Clamp(CriticalChance, 0.f, RemainingChance);
 }
 
-/**
-* 엄폐중인 적이 있는지 확인
-* @param TargetEnemyInfo - EAimingFactor / float 
-* @return 엄폐쭝인 적이 있는지 여부
-*/
+
 bool ACustomThirdPerson::CheckTargetEnemyCoverState(const TMap<EAimingFactor, float>& TargetEnemyInfo)
 {
 	for (auto SingleEnemyInfo : TargetEnemyInfo) 
@@ -496,10 +433,6 @@ void ACustomThirdPerson::FinishTrajectory()
 	}
 }
 
-/**
-* HPbar 의 가시성을 제어합니다.
-* @param bVisible - 게임에 HPBar가 보일지 안보일지 여부
-*/
 void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible) 
 {
 	if (HUDComponent)
@@ -512,9 +445,6 @@ void ACustomThirdPerson::SetHealthBarVisibility(const bool bVisible)
 	}
 }
 
-/**
-* 유닛을 제외한 월드의 TimeDilation을 줄입니다 (유닛 제외 월드에 슬로우 모션 적용)
-*/
 void ACustomThirdPerson::StartSlowMotion()
 {
 	CustomTimeDilation = 1;
@@ -524,17 +454,13 @@ void ACustomThirdPerson::StartSlowMotion()
 	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 0.4, false);	// 0.4 Delay 고정
 }
 
-/**
-* 월드의 TimeDilation을 원상태로 복구합니다 (GlobalTimeDilation = 1)
-*/
+
 void ACustomThirdPerson::FinishSlowMotion()
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 }
 
-/**
-* 사격 완료 후 필요한 작업을 수행합니다.
-*/
+
 void ACustomThirdPerson::AfterShooting() 
 {
 	if (bInVisilance == true)
@@ -550,10 +476,6 @@ void ACustomThirdPerson::AfterShooting()
 	}
 }
 
-/**
-* 경계중일때 적의 움직임에 반응합니다.
-* @param TargetLocation - 목표 지점
-*/
 void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 {
 	FAimingInfo* AimingInfoResult = new FAimingInfo();
@@ -569,10 +491,6 @@ void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 	}
 }
 
-/**
-* 엄폐중 이동할때 방향을 설정합니다.
-* @param TargetLocation - 목표 지점
-*/
 void ACustomThirdPerson::SetMovingDirectionDuringCover(const FVector TargetLocation) 
 {
 	FVector ForwardVector = GetActorForwardVector().GetSafeNormal();
@@ -589,16 +507,6 @@ void ACustomThirdPerson::SetMovingDirectionDuringCover(const FVector TargetLocat
 	}
 }
 
-void ACustomThirdPerson::UnderGuard() 
-{
-	this->CustomTimeDilation = 0;
-}
-
-/**
-* 경계 중 적을 발견했을때 카메라를 변경시키는 Delegate 함수를 호출합니다.
-* @param StartLocation - 카메라 위치
-* @param TargetLocation - 목표 지점
-*/
 void ACustomThirdPerson::InformVisilanceSuccess(const FVector StartLocation, const FVector TargetLocation)
 {
 	if (ChangeViewTargetDelegate.IsBound()) 
@@ -607,10 +515,6 @@ void ACustomThirdPerson::InformVisilanceSuccess(const FVector StartLocation, con
 	}
 }
 
-/**
-* 적의 이동에 반응하도록 Delegate 바인딩을 합니다.
-* @param OppositeTeamMember - 카메라 위치
-*/
 void ACustomThirdPerson::BindVigilanceEvent(const TArray<ACustomThirdPerson*> OppositeTeamMember)
 {
 	for (ACustomThirdPerson* SingleEnemyCharacter : OppositeTeamMember)
@@ -619,15 +523,12 @@ void ACustomThirdPerson::BindVigilanceEvent(const TArray<ACustomThirdPerson*> Op
 	}
 }
 
-//TODO
 void ACustomThirdPerson::WatchOut(const FVector TargetLocation)
 {
 	InVigilance(TargetLocation);
 }
 
-/**
-* 경계 활동을 멈춥니다.
-*/
+
 void ACustomThirdPerson::StopVisilance()
 {
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -639,11 +540,6 @@ void ACustomThirdPerson::StopVisilance()
 	}
 }
 
-/**
-* 목표 타일로 이동합니다.
-* @param OnTheWay - 경로를 담은 배열
-* @param ActionPointToUse - 사용할 액션 포인트
-*/
 void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32 ActionPointToUse)
 {
 	PathToTargetTile = *OnTheWay;
@@ -672,10 +568,6 @@ void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32
 	}
 }
 
-/**
-* 한타일씩 이동합니다.
-* @param Progress - 목표 타일까지의 진행도
-*/
 void ACustomThirdPerson::MovingStepByStep(const int32 Progress = 0) 
 { 
 	NextLocation = PathToTargetTile[Progress];
@@ -687,10 +579,6 @@ void ACustomThirdPerson::MovingStepByStep(const int32 Progress = 0)
 	MovingTimeline->PlayFromStart();
 }
 
-/**
-* 다음 타일 방향으로 캐릭터를 회전시킵니다..
-* @param NextTileLocation - 다음 타일의 위치
-*/
 void ACustomThirdPerson::RotateToNextTile(const FVector NextTileLocation) 
 {
 	FVector Direction = (NextTileLocation - GetActorLocation());
@@ -699,10 +587,6 @@ void ACustomThirdPerson::RotateToNextTile(const FVector NextTileLocation)
 	SetActorRotation(Direction.Rotation());
 }
 
-/**
-* 다음 목표지점으로 이동시킵니다. (Lerp) 
-* @param LerpAlpha
-*/
 void ACustomThirdPerson::MoveToNextTarget(const float LerpAlpha) 
 {
 	float CorrectedLerpAlpha = LerpAlpha;
@@ -714,9 +598,6 @@ void ACustomThirdPerson::MoveToNextTarget(const float LerpAlpha)
 	SetActorLocation(CurrentLocation);
 }
 
-/**
-* 목표로 하던 타일에 도착했을때 호출됩니다.
-*/
 void ACustomThirdPerson::ArriveNextTile()
 {
 	int32 PathLength = PathToTargetTile.Num();
@@ -732,9 +613,6 @@ void ACustomThirdPerson::ArriveNextTile()
 	UnprotectedMovingDelegate.Broadcast(GetActorLocation());
 }
 
-/**
-* 이동에 필요한 Timeline을 초기화합니다.
-*/
 void ACustomThirdPerson::InitializeTimeline()
 {
 	FString ImagePath = "/Game/Curve/MovingCurve.MovingCurve.MovingCurve";
@@ -770,9 +648,6 @@ void ACustomThirdPerson::InitializeTimeline()
 	}
 }
 
-/**
-* 이동을 종료합니다.
-*/
 void ACustomThirdPerson::FinishMoving() 
 {
 	SetSpeed(0);
@@ -783,9 +658,6 @@ void ACustomThirdPerson::FinishMoving()
 	}
 }
 
-/**
-* 현재 State에 따라 이동에 관련된 Timeline을 수정합니다.
-*/
 void ACustomThirdPerson::ChangeTimelineFactor() 
 {
 	if (WalkingState == EWalkingState::Running) 
@@ -804,10 +676,7 @@ void ACustomThirdPerson::SetWalkingState(EWalkingState WalkingStateToSet)
 	ChangeTimelineFactor();
 };
 
-/**
-* 유닛이 안개속에 있는지 여부를 확인합니다.
-* @return 안개속에 있는지 여부
-*/
+
 bool ACustomThirdPerson::IsInUnFoggedArea() const
 {
 	return FOWComponent->isActorInTerraIncog;
@@ -818,9 +687,6 @@ void ACustomThirdPerson::FinishDodge()
 	UnitState = EUnitState::Idle;
 }
 
-/**
-* 유닛이 사망했을때 호출됩니다.
-*/
 void ACustomThirdPerson::Dead() 
 {
 	MovingTimeline->Stop();
@@ -833,9 +699,6 @@ void ACustomThirdPerson::Dead()
 	}
 }
 
-/**
-* Mesh를 제외한 컴포넌트들을 제거합니다.
-*/
 void ACustomThirdPerson::DestroyUnnecessaryComponents() 
 {
 	UCapsuleComponent* RootCollision = Cast<UCapsuleComponent>(GetRootComponent());
@@ -849,10 +712,6 @@ void ACustomThirdPerson::DestroyUnnecessaryComponents()
 	TrajectoryComponent->DestroyComponent();
 }
 
-/**
-* 수류탄 투척을 준비합니다.
-* @param Velocity - 수류탄을 던질 방향 벡터
-*/
 void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
 {
 	if (GrenadeBlueprint)
@@ -865,10 +724,8 @@ void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
 			);
 		SpawnedGrenade->AttachToComponent(Cast<USceneComponent>(Mesh), FAttachmentTransformRules::KeepRelativeTransform, FName(L"Grenade"));
 
-		//float FuncCallDelay = PlayAnimMontage(EmoteMontage);
 		SetActorRotation(FRotator(0, Velocity.Rotation().Yaw, 0));
 
-		//임시로 사용 - Montage 연결 후 변경
 		FTimerHandle UnUsedHandle;
 		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ACustomThirdPerson::ThrowGrenade, Velocity, SpawnedGrenade);
 		GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 2, false);
@@ -877,11 +734,6 @@ void ACustomThirdPerson::PrepareThrowGrenade(FVector Velocity)
 	}
 }
 
-/**
-* 수류탄을 투척합니다.
-* @param Velocity - 수류탄을 던질 방향 벡터
-* @param Grenade - 던질 수류탄 Actor pointer
-*/
 void ACustomThirdPerson::ThrowGrenade(FVector Velocity, AGrenade* Grenade)
 {
 	Grenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
@@ -889,10 +741,6 @@ void ACustomThirdPerson::ThrowGrenade(FVector Velocity, AGrenade* Grenade)
 	UE_LOG(LogTemp, Warning, L"%s 는 수류탄 Velocity", *Velocity.ToString());
 }
 
-/**
-* 목표에서 빗나간 각도를 구할때 호출합니다.
-* @return 사격시 잘못된 각도
-*/
 FVector ACustomThirdPerson::GetWrongDirection()
 {
 	ACustomThirdPerson* TargetUnit = Cast<ACustomThirdPerson>(SelectedAimingInfo.TargetActor);
@@ -902,18 +750,11 @@ FVector ACustomThirdPerson::GetWrongDirection()
 	return WrongDirection;
 }
 
-/**
-* 현재 메쉬의 머리 위치를 얻어옵니다.
-* @return 현재 메쉬의 머리 월드 좌표
-*/
 FVector ACustomThirdPerson::GetHeadLocation() 
 {
 	return SkeletalMesh->GetBoneLocation(FName("head"), EBoneSpaces::WorldSpace);
 }
 
-/**
-* 경계 시작을 알립니다.
-*/
 void ACustomThirdPerson::AnnounceVisilance()  
 {
 	if (AnnounceDamageDelegate.IsBound())
@@ -922,11 +763,6 @@ void ACustomThirdPerson::AnnounceVisilance()
 	}	
 }
 
-/**
-* 일정 시간 경과 후 액션 포인트를 사용합니다.
-* @param Time - 지연 시간
-* @param Point - 사용할 액션 포인트 값
-*/
 void ACustomThirdPerson::UseActionPointAfterDelay(float Time, int32 Point)
 {
 	FTimerHandle UnUsedHandle;
@@ -940,13 +776,10 @@ bool ACustomThirdPerson::IsDead()
 	return (CurrentHP <= 0);
 }
 
-/**
-* Dead Animation 종료 후 호출됩니다.
-*/
 void ACustomThirdPerson::AfterDeadAnimation() 
 {
 	if (Speed > 0) 
 	{
-		UseActionPoint(3);  // Turn넘김
+		UseActionPoint(3);
 	}
 }

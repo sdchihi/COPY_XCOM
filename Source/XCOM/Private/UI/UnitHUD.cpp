@@ -14,10 +14,6 @@ void UUnitHUD::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-/**
-* Actor를 등록합니다.
-* @param ActorToSet - 등록할 Actor
-*/
 void UUnitHUD::RegisterActor(ACustomThirdPerson* ActorToSet)
 {
 	GridPannel = Cast<UUniformGridPanel>(GetWidgetFromName(FName("HPGridPannel")));
@@ -30,9 +26,6 @@ void UUnitHUD::RegisterActor(ACustomThirdPerson* ActorToSet)
 	InitializeHPBar();
 }
 
-/**
-* HP바를 초기화합니다.
-*/
 void UUnitHUD::InitializeHPBar()
 {
 	UClass* HPClass = GetHPClass(CharacterRef->GetTeamFlag());
@@ -56,10 +49,6 @@ void UUnitHUD::InitializeHPBar()
 	}
 }
 
-/**
-* 체력을 감소시킵니다.
-* @param Damage - 데미지 값
-*/
 void UUnitHUD::ReduceHP(int8 Damage) 
 {
 	for (int i = 0; i < Damage; i++) 
@@ -72,9 +61,6 @@ void UUnitHUD::ReduceHP(int8 Damage)
 	}
 }
 
-/**
-* 팀을 표시하는 이미지를 갱신합니다.
-*/
 void UUnitHUD::SetTeamIconImage()
 {
 	FSlateBrush IconBrush;
@@ -93,10 +79,6 @@ void UUnitHUD::SetTeamIconImage()
 	TeamImage->SetBrush(IconBrush);
 }
 
-/**
-* 팀에 맞춰서 사용하게 될 HP Block 클래스를 얻어옵니다.
-* @param bIsPlayerTeam - 팀 플래그
-*/
 UClass* UUnitHUD::GetHPClass(bool bIsPlayerTeam)
 {
 	FStringClassReference HPClassRef;

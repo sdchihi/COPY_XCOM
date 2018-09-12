@@ -12,7 +12,6 @@ class XCOM_API AActiveTileIndicator : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AActiveTileIndicator();
 
 	UPROPERTY(VisibleAnywhere)
@@ -23,15 +22,18 @@ public:
 
 	void ClearAllTile();
 
+	/**
+	* 활성화된 Tile들 위에 Mesh를 생성합니다.
+	* @param CloseTileTransArray - 가까운 타일들의 Transform 목록
+	* @param DistantTileTransArray - 먼 타일들의 Transform 목록
+	*/
 	void IndicateActiveTiles(TArray<FTransform> CloseTileTransArray, TArray<FTransform> DistantTileTransArray);
 
 	void SetTileVisibility(bool Visible);
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:

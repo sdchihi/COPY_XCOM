@@ -15,8 +15,6 @@ DECLARE_DYNAMIC_DELEGATE(FStartTrajectoryDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartAmbushDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartVisilianceDelegate);
 
-
-//DECLARE_DYNAMIC_DELEGATE_OneParam(FStartActionDelegate, FVector*, TargetLoc);
 class UImage;
 class UButton;
 class UVerticalBox;
@@ -31,13 +29,10 @@ class XCOM_API UCombatWidget : public UCustomUserWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void NativeConstruct() override;
-	//virtual	bool Initialize() override;	
-	
+	virtual void NativeConstruct() override;	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> SideContentBoxBlueprint;
-
 
 	UFUNCTION(BlueprintCallable)
 	void InitializeInBP();
@@ -102,33 +97,65 @@ private:
 	UPROPERTY()
 	UUserWidget* SumCriticalProbBox = nullptr;
 
+	/**
+	* Combat Widget을 새로 갱신합니다.
+	* @param AimingInfoArray - AimingInfo 배열
+	* @param PossibleActionMapWrapper - 가능한 Action
+	*/
 	UFUNCTION()
 	void Renew(const TArray<struct FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper);
 	
+	/**
+	* 선택된 AimingInfo에 따라 사격 관련 Widget 내용을 갱신합니다.
+	* @param AimingInfo - 선택된 AimingInfo
+	*/
 	void FillAimingInfo(const FAimingInfo& AimingInfo);
 
+	/**
+	* 선택된 AimingInfo에 따라 치명타 관련 Widget 내용을 갱신합니다.
+	* @param AimingInfo - 선택된 AimingInfo
+	*/
 	void FillCriticalShotInfo(const FAimingInfo& AimingInfo);
 
+	/**
+	* 왼쪽에 위치한 사격 Widget 내용을 갱신합니다.
+	* @param Explanation - 사격 요인에 해당하는 설명
+	* @param Percentage - 사격 요인 값
+	*/
 	void FillLeftContnents(const FString& Explanation, const float Percentage);
 
+	/**
+	* 왼쪽에 위치한 치명타 Widget 내용을 갱신합니다.
+	* @param Explanation - 치명타 요인에 해당하는 설명
+	* @param Percentage - 치명타 요인 값
+	*/
 	void FillRightContents(const FString& Explanation, const float Percentage);
 
+	/** 사격 가능한 적 목록을 표시하는 버튼을 추가합니다. */
 	void FillEnemyList();
 
+	/**
+	* Enemy 를 표시하는 버튼이 클릭되었을때 호출됩니다.
+	* @param ButtonIndex - 선택된 버튼의 인덱스
+	*/
 	UFUNCTION()
 	void EnemyButtonClicked(int32 ButtonIndex);
 
 	UFUNCTION()
 	void GrenadeButtonClicked();
 
+	/** 엄폐 버튼 클릭시 호출됩니다. */
 	UFUNCTION()
 	void VisilianceButtonClicked();
 
+	/** 잠복 버튼 클릭시 호출됩니다. */
 	UFUNCTION()
 	void AmbushButtonClicked();
 
+	/** 수행가능한 Action의 버튼들을 추가합니다. */
 	void FillActionButtonList();
 
+	/** 공격 버튼 클릭시 호출됩니다. */
 	UFUNCTION()
 	void AttackButtonClicked();
 
@@ -141,6 +168,7 @@ private:
 	UFUNCTION()
 	void StartAmbushButtonClicked();
 
+	/** 수류탄 투척 버튼 클릭시 호출됩니다. */
 	UFUNCTION()
 	void StartGrenadeButtonClicked();
 };

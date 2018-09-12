@@ -23,9 +23,7 @@ void AGrenade::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(Handle, this, &AGrenade::Explode, 5, false);
 }
 
-/**
-* Æø¹ßÇÕ´Ï´Ù.
-*/
+
 void AGrenade::Explode() 
 {
 	TSubclassOf<UDamageType> DamageType;

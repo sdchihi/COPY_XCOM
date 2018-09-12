@@ -27,7 +27,6 @@ AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer) 
 	bWantsPlayerState = true;
 }
 
-
 void AEnemyController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -48,8 +47,6 @@ void AEnemyController::BeginPlay()
 
 void AEnemyController::ControlledUnitDead(ACustomThirdPerson* ControlledUnit)
 {
-	UE_LOG(LogTemp, Warning, L"ControlledUnitDead");
-
 	StopBehaviorTree();
 }
 
@@ -136,7 +133,7 @@ TMap<ATile*, FAICommandInfo> AEnemyController::GetScoreBoard(TArray<ATile*> Mova
 }
 
 
-void AEnemyController::ScoreToTile(ATile* TargetTile, TArray<FVector> CoverDirectionArr , TMap<ATile*, FAICommandInfo>& TileScoreBoard)
+void AEnemyController::ScoreToTile(ATile* TargetTile, TArray<FVector> CoverDirectionArr , OUT TMap<ATile*, FAICommandInfo>& TileScoreBoard)
 {
 	FVector TileLocation = TargetTile->GetActorLocation();
 	TArray<ACustomThirdPerson*> PlayerCharacters = GetPlayerCharacters();
@@ -162,7 +159,7 @@ void AEnemyController::ScoreToTile(ATile* TargetTile, TArray<FVector> CoverDirec
 	FAimingInfo BestAimingInfo;
 	ScoringByAimingInfo(TileLocation, CoverDirectionArr, ActionScore, BestAimingInfo);
 
-	EAction ActionOnTargetTile = DecideActionOnTile(ActionScore);
+	EAction ActionOnTargetTile = GetActionAccordingToScore(ActionScore);
 
 	int32 TotalScore = ActionScore + GeographicalScore;
 
@@ -237,7 +234,7 @@ void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FV
 {
 	float PawnLocationZ = GetPawn()->GetTargetLocation().Z;
 	FVector ActorOnTileLocation = FVector(TileLocation.X, TileLocation.Y, PawnLocationZ);
-	TMap<EDirection, ECoverInfo> CoverDirectionMap = MakeCoverDirectionMap(CoverDirectionArr);
+	TMap<EDirection, ECoverInfo> CoverDirectionMap = MakeCoverMap(CoverDirectionArr);
 	ACustomThirdPerson* ControlledPawn = Cast<ACustomThirdPerson>(GetPawn());
 	if (!ControlledPawn) { return; }
 	UAimingComponent* AimingComp = ControlledPawn->GetAimingComponent();
@@ -262,7 +259,7 @@ void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FV
 	}
 }
 
-TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverDirectionMap(TArray<FVector> CoverDirectionArr) 
+TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverMap(TArray<FVector> CoverDirectionArr)
 {
 	TMap<EDirection, ECoverInfo> CoverDirectionMap;
 	FVector East = FVector(-1, 0, 0);
@@ -308,7 +305,7 @@ TMap<EDirection, ECoverInfo> AEnemyController::MakeCoverDirectionMap(TArray<FVec
 	return CoverDirectionMap;
 }
 
-EAction AEnemyController::DecideActionOnTile(int32 ActionScore) 
+EAction AEnemyController::GetActionAccordingToScore(int32 ActionScore) const
 {
 	if (ActionScore == 20)
 	{
@@ -356,15 +353,6 @@ void AEnemyController::FindBestScoredAction(const TMap<ATile*, FAICommandInfo>& 
 		Tempor.Add(PathLocation);
 	}
 	PathToTarget = Tempor;
-
-	//for (auto It = TileScoreBoard.CreateConstIterator(); It; ++It)		//읽기 전용 Interator    //읽기 쓰기는 CreateIterator
-	//{
-	//	if (HighestScore < It.Value().Score)
-	//	{
-	//		delete It.Value().AimingInfo;	//힙 영역 청소
-	//	}
-	//}
-	UE_LOG(LogTemp, Warning, L"AI탐색 결과 -  TileIndex  : %d  Scroed : %d", TileIndex, HighestScore);
 }
 
 void AEnemyController::FollowThePath() 
@@ -373,8 +361,6 @@ void AEnemyController::FollowThePath()
 	if (!ControlledPawn) { return; }
 	ControlledPawn->MoveToTargetTile(&PathToTarget, 1);
 }
-
-
 
 void AEnemyController::ShootToPlayerUnit() 
 {
@@ -430,8 +416,6 @@ void AEnemyController::StartBehaviorTree()
 {
 	if (SelectedBehavior)
 	{
-		UE_LOG(LogTemp, Warning, L"문제없음");
-
 		BehaviorTreeComp->StartTree(*SelectedBehavior);
 	}
 	else 
@@ -523,10 +507,6 @@ void AEnemyController::ChangeBehavior(UBehaviorTree* BehaviorTreeToSet)
 	}
 }
 
-/**
-* 해당 위치가 FOW 안에 위치했는지 확인합니다.
-* @param TargetLocation 확인할 위치 벡터
-*/
 bool AEnemyController::CheckTargetLocation(FVector TargetLocation) 
 {
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -543,10 +523,6 @@ bool AEnemyController::CheckTargetLocation(FVector TargetLocation)
 	return IsInCog;
 }
 
-
-/**
-* 경계 명령을 내립니다.
-*/
 void AEnemyController::OrderStartVigilance()
 {
 	AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -572,12 +548,10 @@ void AEnemyController::DecideWayToProceedBasedLocation(FVector TargetLocation)
 		PlayerController->EnableFocusing(ControlledPawn, false);
 		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(FormalProceedKeyID, true);
 		UE_LOG(LogTemp, Warning, L"Formal ");
-
 	}
 	else 
 	{
 		BlackboardComp->SetValue<UBlackboardKeyType_Bool>(FormalProceedKeyID, false);
 		UE_LOG(LogTemp, Warning, L"Informal");
 	}
-	
 }

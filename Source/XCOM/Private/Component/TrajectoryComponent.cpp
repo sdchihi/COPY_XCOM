@@ -22,10 +22,6 @@ void UTrajectoryComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	}
 };
 
-/**
-* 투사체의 궤적을 그려냅니다.
-* @param bCanCognize 안개안에 위치하고있는지 여부
-*/
 void UTrajectoryComponent::DrawProjectileTrajectory() 
 {
 	FVector ActorLocation = GetOwner()->GetActorLocation();;
@@ -73,20 +69,9 @@ void UTrajectoryComponent::DrawProjectileTrajectory()
 			ImpactRangeActor->SetActorLocation(SecondPoint);
 			break;
 		}
-
 	}
 }
 
-/**
-* 투사체의 궤적을 그려냅니다.
-* @param StartLocation 그려낼 궤적의 시작 지점
-* @param InitialVelocity 속도 벡터
-* @param Gravity 중력 벡터
-* @param Time 
-* @param Time2 
-* @param FirstPoint 궤도를 그릴 첫번째 점 위치
-* @param SecondPoint 궤도를 그릴 두번째 점 위치
-*/
 void UTrajectoryComponent::GetSegmentAtTime(const FVector StartLocation, const FVector InitialVelocity, const FVector Gravity, const float Time, const float Time2, OUT FVector& FirstPoint, OUT FVector& SecondPoint)
 {
 	// 시간에 따른 투사체의 위치 
@@ -100,9 +85,6 @@ void UTrajectoryComponent::GetSegmentAtTime(const FVector StartLocation, const F
 	SecondPoint = StartLocation + CorrectedVelocity + GravityAppliedValue;
 };
 
-/**
-* 궤도 추적을 시작합니다.
-*/
 void UTrajectoryComponent::StartDraw() 
 {
 	SpawnImapactRangeActor();
@@ -110,9 +92,6 @@ void UTrajectoryComponent::StartDraw()
 	bIsDrawing = true;
 };
 
-/**
-* 궤도 추적을 종료합니다.
-*/
 void UTrajectoryComponent::FinishDraw() 
 {
 	if (!ImpactRangeActor) 
@@ -133,9 +112,6 @@ float UTrajectoryComponent::CorrectPower(const float Power)
 	return CorrectedPower;
 }
 
-/**
-* 궤도 추적의 도착점에 투사체 폭발 반경을 나타낼 Actor를 생성합니다.
-*/
 void UTrajectoryComponent::SpawnImapactRangeActor() 
 {
 	if (ImpactRangeBP) 
@@ -178,7 +154,6 @@ void UTrajectoryComponent::EndOverlap(UPrimitiveComponent* OverlappedComponent, 
 void UTrajectoryComponent::ConfirmedExplosionArea(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
 	FinishDraw();
-	UE_LOG(LogTemp, Warning, L"수류타안 발사");
 	ACustomThirdPerson* Owner = Cast<ACustomThirdPerson>(GetOwner());
 	if (Owner) 
 	{

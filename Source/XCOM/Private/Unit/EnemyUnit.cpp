@@ -14,9 +14,7 @@ AEnemyUnit::AEnemyUnit()
 	WalkingState = EWalkingState::Walk;
 }
 
-/**
-* 움직임을 종료합니다.
-*/
+
 void AEnemyUnit::FinishMoving() 
 {
 	bool bChangeAggro = false;
@@ -35,7 +33,7 @@ void AEnemyUnit::FinishMoving()
 			OutActors
 		);
 
-		//거리 안에 적이있어서 확인될경우 어그로 변경 tODO 팀 확인
+		//거리 안에 적이있어서 확인될경우 어그로 변경 팀 확인
 		AXCOMGameMode* GameMode = Cast<AXCOMGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
 		if (bFliteredUnit) //적이 시야 안에있을때
@@ -95,9 +93,6 @@ float AEnemyUnit::TakeDamage(float DamageAmount, struct FDamageEvent const & Dam
 	return ActualDamage;
 }
 
-/**
-* 유닛을 게임에서 숨깁니다.
-*/
 void AEnemyUnit::HideUnit()
 {
 	SetActorHiddenInGame(true);
@@ -108,9 +103,6 @@ void AEnemyUnit::HideUnit()
 	SetHealthBarVisibility(false);
 };
 
-/**
-* 유닛을 게임에 나타나게 합니다.
-*/
 void AEnemyUnit::UnHideUnit()
 {
 	SetActorHiddenInGame(false);
@@ -121,9 +113,6 @@ void AEnemyUnit::UnHideUnit()
 	SetHealthBarVisibility(true);
 }
 
-/**
-* 플레이어의 유닛을 발견했을때 감정표현을 합니다.
-*/
 void AEnemyUnit::PlayEmoteMontage() 
 {
 	if (EmoteMontage) 
@@ -140,9 +129,7 @@ void AEnemyUnit::PlayEmoteMontage()
 	}
 }
 
-/**
-* 감정표현 종료 후 호출됩니다.
-*/
+
 void AEnemyUnit::OnEmoteMontageEnded() 
 {
 	if (FinishAggroEventDelegate.IsBound()) 
@@ -151,9 +138,7 @@ void AEnemyUnit::OnEmoteMontageEnded()
 	}
 }
 
-/**
-* 강제로 턴(제어)를 넘깁니다.
-*/
+ 
 void AEnemyUnit::ForceOverTurn() 
 {
 	bCanAction = false;

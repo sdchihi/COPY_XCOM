@@ -16,11 +16,6 @@ void UFloatingWidget::NativeConstruct()
 	IconImage = Cast<UImage>(GetWidgetFromName(FName("Icon")));	
 }
 
-/**
-* 전투 결과를 팝업시킵니다.
-* @param Damage - 데미지 값
-* @param State - 전투 정보
-*/
 void UFloatingWidget::ShowCombatInfo(float Damage, FloatingWidgetState State)
 {
 	int8 DamageAsInteger = (int8)Damage;
@@ -33,9 +28,6 @@ void UFloatingWidget::ShowCombatInfo(float Damage, FloatingWidgetState State)
 	GetWorld()->GetTimerManager().SetTimer(UnUsedHandle, TimerDelegate, EndTime + 2.5, false);
 }
 
-/**
-* 팝업된 전투 결과를 사라지게 합니다.
-*/
 void UFloatingWidget::PopDown()
 {
 	float EndTime = PlayAnimationByName(FName("Disapear"));
@@ -49,11 +41,6 @@ void UFloatingWidget::HideWidget()
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
-/**
-* Widget의 이미지, 텍스트를 변경합니다.
-* @param State - 전투 정보
-* @param Damage - 데미지 값
-*/
 void UFloatingWidget::ChangePopUpFactor(FloatingWidgetState State, int8 Damage)
 {
 	FSlateBrush BackgroundBrush;

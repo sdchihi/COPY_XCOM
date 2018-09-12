@@ -17,9 +17,6 @@ public:
 
 	~Path();
 
-
-	//Getter Setter 모두 쓸것같아서 public 으로 지정
-
 	bool bWall;
 
 	bool bPawn;

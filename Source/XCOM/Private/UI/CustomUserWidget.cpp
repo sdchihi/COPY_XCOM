@@ -10,9 +10,6 @@ void UCustomUserWidget::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-/**
-* 재생 가능한 Widget Animation 목록을 Map에 얻어옵니다.
-*/
 void UCustomUserWidget::FillAnimationsMap()
 {
 	AnimationsMap.Empty();
@@ -45,11 +42,6 @@ void UCustomUserWidget::FillAnimationsMap()
 	}
 }
 
-/**
-* 애니메이션을 얻어옵니다.
-* @param AnimationName - Animation의 이름
-* @return Animation 포인터
-*/
 UWidgetAnimation* UCustomUserWidget::GetAnimationByName(FName AnimationName) const
 {
 	UWidgetAnimation* const* WidgetAnim = AnimationsMap.Find(AnimationName);
@@ -61,11 +53,6 @@ UWidgetAnimation* UCustomUserWidget::GetAnimationByName(FName AnimationName) con
 	return nullptr;
 };
 
-/**
-* 애니메이션을 재생합니다.
-* @param AnimationName - 재생할 Animation의 이름
-* @return 재생할 Animation의 길이
-*/
 float UCustomUserWidget::PlayAnimationByName(FName AnimationName) 
 {
 	UWidgetAnimation* Anim = GetAnimationByName(AnimationName);

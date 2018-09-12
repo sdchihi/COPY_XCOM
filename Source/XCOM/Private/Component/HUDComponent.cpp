@@ -13,7 +13,6 @@ UHUDComponent::UHUDComponent()
 	HPBarWidget->SetupAttachment(this, USpringArmComponent::SocketName);
 	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	HPBarWidget->SetDrawSize(FVector2D(250, 40));
-
 }
 
 void UHUDComponent::BeginPlay() 
@@ -24,24 +23,19 @@ void UHUDComponent::BeginPlay()
 	if (HUDWidgetBlueprint) {
 		HPBarWidget->SetWidgetClass(HUDWidgetBlueprint);
 		HPBarWidget->InitWidget();
-		
 	}
-	else{
+	else
+	{
 		UE_LOG(LogTemp, Warning, L"Please Regist Widget Class");
 	}
 
 	APlayerPawn* PlayerPawn =Cast<APlayerPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	if (PlayerPawn) {
 		PlayerPawn->RotateUIDelegate.AddUniqueDynamic(this, &UHUDComponent::HoverHUD);
-		//Todo
 		PlayerPawn->ControlDistanceToUIDelegate.AddUniqueDynamic(this, &UHUDComponent::ControlSpringArmLength);
 	}
 }
 
-/**
-* 플레이어 카메라의 회전에따라  HUD의 위치를 변경합니다.
-* @param AxisValue - 마우스 x축 이동 입력 값을 받아옵니다.
-*/
 void UHUDComponent::HoverHUD(const float AxisValue)
 {
 	FRotator newRotator = GetRelativeTransform().GetRotation().Rotator() + FRotator(0, 2 * AxisValue, 0);

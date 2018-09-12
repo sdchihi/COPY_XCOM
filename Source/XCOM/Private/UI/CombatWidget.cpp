@@ -57,11 +57,7 @@ void UCombatWidget::ClearContents(const bool bClearAll)
 	}
 }
 
-/**
-* Combat Widget을 새로 갱신합니다.
-* @param AimingInfoArray - AimingInfo 배열
-* @param PossibleActionMapWrapper - 가능한 Action 
-*/
+
 void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPossibleActionWrapper& PossibleActionMapWrapper)
 {
 	ConstructWidgetMinimum();
@@ -80,10 +76,6 @@ void UCombatWidget::Renew(const TArray<FAimingInfo>& AimingInfoArray, const FPos
 	FillActionButtonList();
 }
 
-/**
-* 선택된 AimingInfo에 따라 사격 관련 Widget 내용을 갱신합니다.
-* @param AimingInfo - 선택된 AimingInfo
-*/
 void UCombatWidget::FillAimingInfo(const FAimingInfo& AimingInfo) 
 {
 	float SumOfAimingPercentage = 0;
@@ -120,10 +112,7 @@ void UCombatWidget::FillAimingInfo(const FAimingInfo& AimingInfo)
 	PercentageText->SetText(FText::AsNumber((int8)SumOfAimingPercentage));	
 }
 
-/**
-* 선택된 AimingInfo에 따라 치명타 관련 Widget 내용을 갱신합니다.
-* @param AimingInfo - 선택된 AimingInfo
-*/
+
 void UCombatWidget::FillCriticalShotInfo(const FAimingInfo& AimingInfo) 
 {
 	float SumOfCriticalPercentage = 0;
@@ -152,11 +141,6 @@ void UCombatWidget::FillCriticalShotInfo(const FAimingInfo& AimingInfo)
 }
 
 
-/**
-* 왼쪽에 위치한 사격 Widget 내용을 갱신합니다.
-* @param Explanation - 사격 요인에 해당하는 설명
-* @param Percentage - 사격 요인 값
-*/
 void UCombatWidget::FillLeftContnents(const FString& Explanation, const float Percentage)
 {
 	if (SideContentBoxBlueprint)
@@ -171,11 +155,6 @@ void UCombatWidget::FillLeftContnents(const FString& Explanation, const float Pe
 	}
 }
 
-/**
-* 왼쪽에 위치한 치명타 Widget 내용을 갱신합니다.
-* @param Explanation - 치명타 요인에 해당하는 설명
-* @param Percentage - 치명타 요인 값
-*/
 void UCombatWidget::FillRightContents(const FString& Explanation, const float Percentage) 
 {
 	if (SideContentBoxBlueprint)
@@ -190,9 +169,6 @@ void UCombatWidget::FillRightContents(const FString& Explanation, const float Pe
 	}
 }
 
-/**
-* 사격 가능한 적 목록을 표시하는 버튼을 추가합니다.
-*/
 void UCombatWidget::FillEnemyList() 
 {
 	for (int i = 0; i < SelectedCharacterAimingInfo.Num(); i++) 
@@ -214,10 +190,7 @@ void UCombatWidget::FillEnemyList()
 	}
 }
 
-/**
-* Enemy 를 표시하는 버튼이 클릭되었을때 호출됩니다.
-* @param ButtonIndex - 선택된 버튼의 인덱스
-*/
+
 void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex) 
 {
 	if (LeftFrame->GetVisibility() != ESlateVisibility::Visible) 
@@ -233,9 +206,6 @@ void UCombatWidget::EnemyButtonClicked(int32 ButtonIndex)
 	TargetEnemyIndex = ButtonIndex;
 }
 
-/**
-* 수행가능한 Action의 버튼들을 추가합니다.
-*/
 void UCombatWidget::FillActionButtonList() 
 {
 	for (auto SinglePossibleAction : PossibleActionMap) 
@@ -250,7 +220,7 @@ void UCombatWidget::FillActionButtonList()
 			switch (SinglePossibleAction.Key)
 			{
 			case EAction::Attack:
-				if (SelectedCharacterAimingInfo.Num() == 0) // 공격 상대 없을경우 버튼생성 생성 건너뜀
+				if (SelectedCharacterAimingInfo.Num() == 0)
 				{
 					continue;
 				}
@@ -295,9 +265,6 @@ void UCombatWidget::FillActionButtonList()
 	}
 }
 
-/**
-* 공격 버튼 클릭시 호출됩니다.
-*/
 void UCombatWidget::AttackButtonClicked() 
 {
 	ConstructWidgetRequiredForAttack();
@@ -314,13 +281,9 @@ void UCombatWidget::AttackButtonClicked()
 	}
 }
 
-/**
-* 수류탄 투척 버튼 클릭시 호출됩니다.
-*/
 void UCombatWidget::GrenadeButtonClicked()
 {
 	ConstructWidgetNormal();
-
 	MainStartActionButton->OnClicked.Clear();
 
 	if (StartTrajectoryDelegate.IsBound())
@@ -335,9 +298,6 @@ void UCombatWidget::GrenadeButtonClicked()
 	}
 }
 
-/**
-* 엄폐 버튼 클릭시 호출됩니다.
-*/
 void UCombatWidget::VisilianceButtonClicked()
 {
 	ConstructWidgetNormal();
@@ -354,9 +314,6 @@ void UCombatWidget::VisilianceButtonClicked()
 	}	
 }
 
-/**
-* 잠복 버튼 클릭시 호출됩니다.
-*/
 void UCombatWidget::AmbushButtonClicked()
 {
 	ConstructWidgetNormal();
@@ -366,7 +323,6 @@ void UCombatWidget::AmbushButtonClicked()
 		StartActionButtonText->SetText(FText::FromString(L"잠복 시작"));
 	}
 }
-
 
 void UCombatWidget::StartAttackButtonClicked() 
 {

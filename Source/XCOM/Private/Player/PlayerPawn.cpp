@@ -12,10 +12,8 @@
 #include "CustomThirdPerson.h"
 
 
-// Sets default values
 APlayerPawn::APlayerPawn()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
@@ -30,14 +28,12 @@ APlayerPawn::APlayerPawn()
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 }
 
-// Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {
-	EstimatedHeight = MinHeight;
+	NextHeight = MinHeight;
 	Super::BeginPlay();
 }
 
-// Called every frame
 void APlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -78,11 +74,11 @@ void APlayerPawn::Tick(float DeltaTime)
 	if (bExecuteZoom) 
 	{
 		FVector ActorLocation = GetActorLocation();
-		float DeltaHeight = UKismetMathLibrary::Lerp(ActorLocation.Z, EstimatedHeight, DeltaTime);
+		float DeltaHeight = UKismetMathLibrary::Lerp(ActorLocation.Z, NextHeight, DeltaTime);
 		ActorLocation.Z = DeltaHeight;
 		SetActorLocation(ActorLocation);
 
-		if (FMath::IsNearlyEqual(DeltaHeight, EstimatedHeight, 50.f)) 
+		if (FMath::IsNearlyEqual(DeltaHeight, NextHeight, 50.f)) 
 		{
 			bExecuteZoom = false;
 		};
@@ -172,10 +168,6 @@ float APlayerPawn::GetNextCameraArmYaw(const bool bTurnCameraClockWise)
 	return PrevArmYaw;
 }
 
-
-/**
-* @param TargetActor 지정한 Actor의 위치로 Lerp 이동합니다.
-*/
 void APlayerPawn::MoveToTarget(AActor& TargetActor)  
 {
 	FVector ActorLocation = GetActorLocation();
@@ -200,10 +192,10 @@ void APlayerPawn::LowerCamera()
 
 void APlayerPawn::SetNewHeightValue(float Amount) 
 {
-	float EstimatedHeightBeforeChecking = EstimatedHeight + Amount;
+	float EstimatedHeightBeforeChecking = NextHeight + Amount;
 	if (EstimatedHeightBeforeChecking < MaxHeight && MinHeight < EstimatedHeightBeforeChecking)
 	{
-		EstimatedHeight += Amount;
+		NextHeight += Amount;
 		bExecuteZoom = true;
 	}	
 }

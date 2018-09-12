@@ -9,7 +9,6 @@
 
 ACoveringChecker::ACoveringChecker()
 {
-	//PrimaryActorTick.bCanEverTick = true;
 	FullCoverInstancedMeshComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("FullCoverInstancedMesh"));
 	FullCoverInstancedMeshComp->RegisterComponent();
 	FullCoverInstancedMeshComp->SetFlags(RF_Transactional);
@@ -52,11 +51,6 @@ void ACoveringChecker::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-/**
-* 엄폐가능한 벽에 엄폐 Mesh를 생성합니다.
-* @param TileLocationArray - Cover Mesh생성의 후보가 될 타일 위치 배열
-* @param Spacing - 메쉬 생성을 위한 간격
-*/
 void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, float Spacing) 
 {
 	if (!CoverMesh || !FullCoverMaterial || !HalfCoverMaterial) { return; }
@@ -72,13 +66,6 @@ void ACoveringChecker::MakingCoverNotice(TArray<FVector>& TileLocationArray, flo
 	AddHalfCoverInstances(HalfCoverNoticeTF);
 }
 
-/**
-* RayCast를 사방향에 보내서 Mesh생성 가능 위치를 얻어냅니다.
-* @param OriginLocation - 타일의 위치
-* @param Spacing - 메쉬 생성을 위한 간격
-* @param HalfCoverNoticeTF - 반 엄폐 메쉬를 생성할 위치 배열
-* @param FullCoverNoticeTF - 완전 엄폐 메쉬를 생성할 위치 배열
-*/
 void ACoveringChecker::RayCastToCardinalDirection(FVector OriginLocation, float Spacing, OUT TArray<FTransform>& HalfCoverNoticeTF, OUT TArray<FTransform>& FullCoverNoticeTF)
 {
 	FVector CardinalLocation[4] = { 
@@ -125,7 +112,6 @@ void ACoveringChecker::RayCastToCardinalDirection(FVector OriginLocation, float 
 		}
 	}
 }
-
 
 void ACoveringChecker::AddFullCoverInstances(TArray<FTransform>& TransformArray) const
 {

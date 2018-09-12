@@ -17,11 +17,20 @@ class XCOM_API UUnitHUD : public UCustomUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	/**
+	* Actor를 등록합니다.
+	* @param ActorToSet - 등록할 Actor
+	*/
 	UFUNCTION(BlueprintCallable)
 	void RegisterActor(class ACustomThirdPerson* ActorToSet);
 
+	/** HP바를 초기화합니다.*/
 	void InitializeHPBar();
 
+	/**
+	* 체력을 감소시킵니다.
+	* @param Damage - 데미지 값
+	*/
 	void ReduceHP(int8 Damage);
 
 	void DestroyHPBar();
@@ -41,8 +50,12 @@ private:
 
 	TArray <UCustomUserWidget* > HPWidgetArray;
 
+	/** 팀을 표시하는 이미지를 갱신합니다. */
 	void SetTeamIconImage();
 
+	/**
+	* 팀에 맞춰서 사용하게 될 HP Block 클래스를 얻어옵니다.
+	* @param bIsPlayerTeam - 팀 플래그
+	*/
 	UClass* GetHPClass(bool bIsPlayerTeam);
-
 };

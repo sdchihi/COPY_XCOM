@@ -12,25 +12,23 @@ class XCOM_API APathIndicator : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	APathIndicator();
-
 
 	UPROPERTY(VisibleAnywhere)
 	class UInstancedStaticMeshComponent* DirectionMesh;
 
 	void ClearAllTile();
 
+	/**
+	* 이동할 방향들을 타일위에 표시합니다.
+	* @param PathTransform - 이동 방향을 표시할 Transform 배열
+	*/
 	void IndicateDirection(TArray<FTransform> PathTransform);
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	
 	
 };

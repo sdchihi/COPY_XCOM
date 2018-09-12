@@ -3,7 +3,6 @@
 #include "ActiveTileIndicator.h"
 #include "Classes/Components/InstancedStaticMeshComponent.h"
 
-// Sets default values
 AActiveTileIndicator::AActiveTileIndicator()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -30,11 +29,6 @@ void AActiveTileIndicator::ClearAllTile()
 	DistantTileMsh->ClearInstances();
 }
 
-/**
-* 활성화된 Tile들 위에 Mesh를 생성합니다.
-* @param CloseTileTransArray - 가까운 타일들의 Transform 목록
-* @param DistantTileTransArray - 먼 타일들의 Transform 목록
-*/
 void AActiveTileIndicator::IndicateActiveTiles(TArray<FTransform> CloseTileTransArray, TArray<FTransform> DistantTileTransArray)
 {
 	ClearAllTile();

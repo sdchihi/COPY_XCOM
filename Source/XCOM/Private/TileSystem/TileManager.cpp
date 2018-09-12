@@ -45,7 +45,6 @@ void ATileManager::BeginPlay()
 	}
 
 	PathArr.Reserve(x*y);
-
 	ChildTiles.Reserve(x*y);
 
 	for (int i = 0; i < (x*y); i++) 
@@ -67,16 +66,13 @@ void ATileManager::BeginPlay()
 		TileActor->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
 		UBoxComponent* TileCollision = TileActor->GetCollision();
 		
-		// Delegate 지정
 		TileCollision->OnComponentBeginOverlap.AddDynamic(this, &ATileManager::OnOverlapBegin);
 		TileCollision->OnComponentEndOverlap.AddDynamic(this, &ATileManager::EndTileOverlap);
 		TileCollision->OnBeginCursorOver.AddDynamic(this, &ATileManager::MouseOnTile);
 		TileCollision->OnEndCursorOver.AddDynamic(this,& ATileManager::EndMouseOnTile);
 
-		//Path 정보를 담는 Array 초기화
 		PathArr.Add(Path());
 
-		//Path 갱신
 		FindingWallOnTile(TileActor);
 		ChildTiles.Add(TileActor);
 	}
@@ -118,10 +114,7 @@ void ATileManager::EndTileOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 }
 
-/**
-* 타일위에 Wall Actor를 확인합니다.
-* @parma TileActor - Tile Actor Pointer
-*/
+
 void ATileManager::FindingWallOnTile(ATile* TileActor) 
 {
 	TArray<AActor*> OverlappedActor;
@@ -147,11 +140,7 @@ void ATileManager::FindingWallOnTile(ATile* TileActor)
 	}
 }
 
-/**
-* Location을 이용해 Tile의 Index를 얻어냅니다.
-* @param WorldLocation - 타일의 월드 좌표
-* @return 타일의 Index를 반환합니다.
-*/
+
 int32 ATileManager::ConvertVectorToIndex(const FVector WorldLocation) 
 {
 	FVector RelativeLocation = GetActorLocation() - WorldLocation;
@@ -162,11 +151,6 @@ int32 ATileManager::ConvertVectorToIndex(const FVector WorldLocation)
 	return (row * x) + collum;
 }
 
-/**
-* 타일의 Index를 이용해 월드 좌표를 얻어냅니다.
-* @param Index - 타일의 인덱스
-* @return 타일의 월드좌표를 반환합니다.
-*/
 FVector ATileManager::ConvertIndexToVector(const int32 Index)
 {
 	int collum = Index % x;
@@ -182,20 +166,15 @@ void ATileManager::ConvertVectorToCoord(FVector WorldLocation, OUT int& CoordX, 
 }
 
 
-/**
-* 한 타일을 기준으로 이동 가능한 타일들을 얻어냅니다.
-* @param StartingTile - 시작점이될 Pawn이 올라가있는 타일
-* @param MovingAbility - 행동력 ( 최대 이동 거리 )
-* @param AvailableTiles - 이동 가능한 타일들이 담길 Array
-*/
-void ATileManager::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, int32 MovableStepsPerAct, TArray<ATile*>& AvailableTiles)
+
+void ATileManager::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbility, int32 MovableStepsPerAct, OUT TArray<ATile*>& AvailableTiles)
 {
 	TileIndexInRange.Empty();
 	int OverlappedTileIndex = ConvertVectorToIndex(StartingTile->GetActorLocation());
 
 	for (int32 i = MovingAbility; i >= -MovingAbility; i--) 
 	{
-		int32 CurrentStep = MovingAbility - FMath::Abs(i);	//오류 추정
+		int32 CurrentStep = MovingAbility - FMath::Abs(i);
 		int32 TargetIndex;
 
 		for (int32 j = CurrentStep; j >= -CurrentStep; j--) 
@@ -226,22 +205,11 @@ void ATileManager::GetAvailableTiles(ATile* StartingTile, const int32 MovingAbil
 	AvailableTiles = FindPath(OverlappedTileIndex, MovingAbility, MovableStepsPerAct, TileIndexInRange);
 }
 
-/**
-* 
-* @param OverlappedTileIndex - 타일의 OverlappedTileIndex 좌표
-* @param RowNumber - 타일의 월드 좌표
-* @param TargetIndex - 타일의 월드 좌표
-* @return 타일의 Index를 반환합니다.
-*/
 bool ATileManager::IsSameLine(const int32 OverlappedTileIndex, const int RowNumber, const int32 TargetIndex)
 {
 	return ((OverlappedTileIndex / x) + RowNumber) == (TargetIndex / x);
 }
 
-/**
-* A* 알고리즘에 이용되는 데이터들을 초기화한다.
-* @param bClearAll - Path정보까지 모두 지울지 결정하는 변수
-*/
 void ATileManager::ClearAllTiles(const bool bClearAll) {
 	if (bClearAll) 
 	{
@@ -269,12 +237,6 @@ void ATileManager::ClearAllTiles(const bool bClearAll) {
 	ClosedList.Empty();
 }
 
-/**
-* 타일간 맨하탄 거리를 얻어냅니다.
-* @param StartIndex - 시작 타일 인덱스
-* @param TargetIndex - 목표 타일 인덱스
-* @return 맨하탄 거리를 반환합니다.
-*/
 int32 ATileManager::ComputeManhattanDistance(const int32 StartIndex, const int32 TargetIndex)
 {
 	int32 CollumDifference = FMath::Abs((StartIndex / x) - (TargetIndex / x));
@@ -283,13 +245,6 @@ int32 ATileManager::ComputeManhattanDistance(const int32 StartIndex, const int32
 	return (CollumDifference + RowDifference) * TileSize;
 }
 
-/**
-* 이동 범위내에 있는 각 타일들에 대해서 A* 알고리즘을 적용해 실제 이동가능한 타일들의 목록을 얻어냅니다.
-* @param StartingIndex - 시작점이될 Pawn이 올라가있는 타일
-* @param MovingAbility - 행동력 ( 최대 이동 거리 )
-* @param TileIndexInRange - 이동 범위내에 존재하는 타일들
-* @return 실제 이동가능한 타일들의 Array
-*/
 TArray<ATile*> ATileManager::FindPath(const int32 StartingIndex, const int32 MovingAbility, int32 MovableStepsPerAct, TArray<int32> TileIndexInRange)
 {
 	TArray<ATile*> AvailableTiles;
@@ -304,9 +259,6 @@ TArray<ATile*> ATileManager::FindPath(const int32 StartingIndex, const int32 Mov
 		if (bFindPath) 
 		{
 			int32 PathLength = PathArr[TargetIndex].OnTheWay.Num();
-			/*for (int i = 0; i < PathLenght; i++) {
-				UE_LOG(LogTemp, Warning, L"%d", PathArr[TargetIndex].OnTheWay[i]);
-			}*/
 			ATile* TargetTile = ChildTiles[TargetIndex];
 			if (MovableStepsPerAct < PathLength && PathLength <= MovingAbility)
 			{
@@ -326,13 +278,7 @@ TArray<ATile*> ATileManager::FindPath(const int32 StartingIndex, const int32 Mov
 	return AvailableTiles;
 }
 
-/**
-* A* 알고리즘에 따라 길을 찾습니다.
-* @param CurrentIndex - 길찾기 진행중인 타일 인덱스 
-* @param StartIndex - 시작 지점의 타일 인덱스
-* @param TargetIndex - 목표 지점의 타일 인덱스
-* @return 목표 지점의 타일로 이동가능 여부를 반환합니다.
-*/
+
 bool ATileManager::UpdatePathInfo(const int32 CurrentIndex, const int32 StartIndex , const int32 TargetIndex)
 {
 	UpdateCardinalPath(CurrentIndex, TargetIndex);
@@ -370,11 +316,6 @@ bool ATileManager::UpdatePathInfo(const int32 CurrentIndex, const int32 StartInd
 	}
 }
 
-/**
-* 모든 Cardinal 방향에 대해서 A*알고리즘을 적용합니다.
-* @param CurrentIndex - 길찾기 진행중인 타일 인덱스 
-* @param TargetIndex - 목표 지점의 타일 인덱스
-*/
 void ATileManager::UpdateCardinalPath(const int32 CurrentIndex, const int32 TargetIndex)
 {
 	int32 EastIndex = CurrentIndex + 1;
@@ -388,12 +329,6 @@ void ATileManager::UpdateCardinalPath(const int32 CurrentIndex, const int32 Targ
 	UpdateOneCardinalPath(CurrentIndex, NorthIndex, TargetIndex);
 }
 
-/**
-* 하나의 Cadinal 방향의 Tile에 대해서 비용 계산을 합니다.
-* @param CurrentIndex - 길찾기 진행중인 타일 인덱스
-* @param CardinalPathIndex - 비용계산에 이용될 Cardinal 방향의 타일 인덱스
-* @param TargetIndex - 목표 지점의 타일 인덱스
-*/
 void ATileManager::UpdateOneCardinalPath(const int32 CurrentIndex, const int32 CardinalPathIndex, const int32 TargetIndex) {
 	int32 RowNumber = 0;
 	int32 NewCostG = PathArr[CurrentIndex].CostG + TileSize;
@@ -449,11 +384,6 @@ void ATileManager::UpdateOneCardinalPath(const int32 CurrentIndex, const int32 C
 	}
 }
 
-/**
-* 모든 Diagonal 방향에 대해서 A*알고리즘을 적용합니다.
-* @param CurrentIndex - 길찾기 진행중인 타일 인덱스
-* @param TargetIndex - 목표 지점의 타일 인덱스
-*/
 void ATileManager::UpdateDiagonalPath(const int32 CurrentIndex, const int32 TargetIndex)
 {
 	int32 NorthEastIndex = CurrentIndex + x + 1;
@@ -467,12 +397,6 @@ void ATileManager::UpdateDiagonalPath(const int32 CurrentIndex, const int32 Targ
 	UpdateOneDiagonalPath(CurrentIndex, SouthWestIndex, TargetIndex);
 }
 
-/**
-* 하나의 Diagonal 방향의 Tile에 대해서 비용 계산을 합니다.
-* @param CurrentIndex - 길찾기 진행중인 타일 인덱스
-* @param DiagonalPathIndex - 비용계산에 이용될 Diagonal 방향의 타일 인덱스
-* @param TargetIndex - 목표 지점의 타일 인덱스
-*/
 void ATileManager::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 DiagonalPathIndex, const int32 TargetIndex) {
 	
 	int32 NorthEastIndex = CurrentIndex + x + 1;
@@ -521,7 +445,6 @@ void ATileManager::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 D
 		return;
 	}
 
-
 	// 1번 조건 : 인덱스가 타일 범위내에 존재하는지 확인
 	// 2번 조건 : 다른 줄에 위치하고 있는 타일을 가르키진 않는지 ( 잘못된 타일을 가르키는지 확인)
 	// 3번 조건 : Diagonal Tile 주변 노드가 Wall 로 막혀있지 않는지 확인  ex) 북동 - > 북, 동 방향 타일이 Wall 인지 확인
@@ -556,20 +479,11 @@ void ATileManager::UpdateOneDiagonalPath(const int32 CurrentIndex, const int32 D
 	}
 }
 
-/**
-* 타일의 인덱스가 최대 범위를 넘어가는지 확인합니다.
-* @param TileIndex - 검사하게 될 타일의 index
-* @return 해당 타일이 유효 범위를 벗어나는지 여부를 반환합니다.
-*/
 bool ATileManager::CheckWithinBounds(const int32 TileIndex)
 {
 	return  (0 <= TileIndex) && (TileIndex < (x * y));
 }
 
-/**
-* F 비용이 가장 낮은 길의 Index를 얻어냅니다
-* @return F 비용이 가장 낮은 길의 Index
-*/
 int32 ATileManager::FindMinCostFIndex() {
 	int32 MinCostF = INT_MAX;
 	int32 MinCostPathIndex = 0;
@@ -586,11 +500,6 @@ int32 ATileManager::FindMinCostFIndex() {
 	return MinCostPathIndex;
 }
 
-/**
-* 타일위에 나타나는 화살표 Decal 방향을 변경하고, 가시성을 제어합니다.
-* @param PathInfo - Key : 타일(key)에서 다음 타일로  이동방향(value)을 갖고있는 Map
-* @param bVisibility - Decal을 보일지 말지 결정합니다.
-*/
 void ATileManager::SetDecalVisibilityOnTile(TMap<int32, float> PathInfo , const bool bVisibility)
 {
 	if (bVisibility == false) 
@@ -648,12 +557,7 @@ ATile* ATileManager::GetOverlappedTile(APawn* Pawn)
 	return Tile;
 }
 
-/**
-* 타일 주변으로 사방향에 벽이 있는지 여부를 확인합니다.
-* @param TileLocation - 타일의 위치
-* @param CoverDirectionArr - 엄폐 방향을 담고있는 배열입니다. 
-* @return 주변에 벽이 있는지 여부
-*/
+
 bool ATileManager::CheckWallAround(const FVector TileLocation, TArray<FVector>& CoverDirectionArr) 
 {
 	int32 TileIndex = ConvertVectorToIndex(TileLocation);
@@ -676,12 +580,6 @@ bool ATileManager::CheckWallAround(const FVector TileLocation, TArray<FVector>& 
 	return bWallAround;
 }
 
-/**
-* 타일 주변에 벽이 있는지 여부를 확인합니다.
-* @param TileIndex - 타일의 Index
-* @param CardinalIndex - 확인할 Cardinal 방향에 있는 타일의 Index
-* @param CoverDirectionArr - 엄폐 방향을 담고있는 배열입니다. 
-*/
 void ATileManager::CheckWallAroundOneDirection(const int32 TileIndex, const int CardinalIndex, TArray<FVector>& CoverDirectionArr)
 {
 	int32 RowNumber = 0;
@@ -705,15 +603,10 @@ void ATileManager::CheckWallAroundOneDirection(const int32 TileIndex, const int 
 		FVector TargetTileLocation = ConvertIndexToVector(CardinalIndex);
 		FVector DirectionToTarget = (TargetTileLocation - TileLocation).GetSafeNormal2D();
 
-
 		CoverDirectionArr.Add(DirectionToTarget);
 	}
 }
 
-/**
-* 엄폐할수 있는 벽에 엄폐 Mesh를 생성합니다.
-* @param OriginTileIndex - 벽이 있는 타일의 인덱스
-*/
 void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
 {
 	TArray<FVector> AvailableTilesLocation;
@@ -733,11 +626,6 @@ void ATileManager::MakingCoverNotice(int32 OriginTileIndex)
 	CoveringChecker->MakingCoverNotice(AvailableTilesLocation, TileSize);
 }
 
-/**
-* 타일이 이동가능한지 여부를 확인합니다.
-* @param TileIndex - 확인할 타일의 인덱스
-* @return 이동 가능 여부
-*/
 bool ATileManager::CheckAvailability(int32 TileIndex)  
 {
 	bool bAvailability;

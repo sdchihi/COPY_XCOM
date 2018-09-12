@@ -46,11 +46,6 @@ void APlayerPawnInAiming::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-/**
-* 조준하는 상황에서 사용될 Pawn의 카메라의 위치, 방향을 결정합니다. ( 캐릭터의 뒷면에서 )
-* @param AimingCharLoc - 조준하는 캐릭터의 위치
-* @param AimedCharLoc - 조준 대상이되는 캐릭터의 위치
-*/
 void APlayerPawnInAiming::SetCameraPositionInAimingSituation(const FVector AimingCharLoc, const FVector AimedCharLoc)
 {
 	FVector PawnPosition;
@@ -88,11 +83,6 @@ void APlayerPawnInAiming::SetCameraPositionInAimingSituation(const FVector Aimin
 	SetActorRotation(NewPawnRotation);
 };
 
-/**
-* 조준하는 상황에서 사용될 Pawn의 카메라의 위치, 방향을 결정합니다. ( 캐릭터의 정면에서 )
-* @param AimingCharLoc - 조준하는 캐릭터의 위치
-* @param AimedCharLoc - 조준 대상이되는 캐릭터의 위치
-*/
 void APlayerPawnInAiming::SetShootingCam(const FVector AimingCharLoc, const FVector AimedCharLoc)
 {
 	if (!bNeedToChangeLocation) {return;}
@@ -129,19 +119,12 @@ void APlayerPawnInAiming::SetShootingCam(const FVector AimingCharLoc, const FVec
 	SetActorRotation(NewPawnRotation);
 };
 
-/**
-* 카메라의 시야에 방해되는 Actor가 존재하는지 확인합니다.
-* @param StartLocation - Trace 시작 위치
-* @param TargetLocation - Trace 종료 위치
-* @return 카메라 시야 방해 여부
-*/
 bool APlayerPawnInAiming::CheckInView(const FVector StartLocation, const FVector TargetLocation) 
 {
 	const FName TraceTag("MyTraceTag");
 	GetWorld()->DebugDrawTraceTag = TraceTag;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.TraceTag = TraceTag;
-	//CollisionParams.bFindInitialOverlaps = false;
 
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(
@@ -162,15 +145,10 @@ bool APlayerPawnInAiming::CheckInView(const FVector StartLocation, const FVector
 	}
 }
 
-/**
-* 정면에서 캐릭터를 찍을때 Pawn의 카메라의 위치, 방향을 결정합니다.
-* @param Actor 촬영될 Actor
-*/
 void APlayerPawnInAiming::SetFrontCam(AActor* Actor) 
 {
 	FVector ActorLocation = Actor->GetActorLocation();
 	FVector ActorsForwardVector = Actor->GetActorForwardVector();
-
 	FVector RightDirection = FVector::CrossProduct(ActorsForwardVector, FVector(0, 0, 1));
 	FVector NewPawnPosition = ActorLocation + (ActorsForwardVector * 200) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
 
@@ -179,19 +157,12 @@ void APlayerPawnInAiming::SetFrontCam(AActor* Actor)
 	SetActorRotation(NewPawnRotation);
 };
 
-/**
-* 정면에서 캐릭터를 서서히 클로즈업시킬때 Pawn의 카메라의 위치, 방향을 결정합니다. 
-* @param TargetActor - 촬영될 Actor
-* @param ForwardDirction - 정면 방향의 Dircetion
-*/
+
 void APlayerPawnInAiming::SetCloseUpCam(AActor* TargetActor, FVector ForwardDirction)
 {
 	SetFocusTarget(TargetActor);
 	FVector TargetActorLocation = TargetActor->GetActorLocation();
-
 	FVector TargetLocation = TargetActorLocation + FVector(0, 0, UpwardDistance /2);
-	
-
 	FVector ForwardUnitVec = ForwardDirction.GetSafeNormal2D();
 	FVector RightDirection = FVector::CrossProduct(ForwardUnitVec, FVector(0, 0, 1));
 	FVector NewPawnPosition = TargetActorLocation + (ForwardUnitVec * 200) + (RightDirection * 200);
@@ -206,18 +177,11 @@ void APlayerPawnInAiming::SetCloseUpCam(AActor* TargetActor, FVector ForwardDirc
 	bCameraMoving = true;
 }
 
-/**
-* 캐릭터가 죽을때 사용될 Pawn의 카메라의 위치, 방향을 결정합니다.
-* @param AimingCharLoc - 조준하는 캐릭터의 위치
-* @param MurderedActor - 죽게되는 Actor
-*/
 void APlayerPawnInAiming::SetDeathCam(const FVector AimingCharLoc, AActor* MurderedActor)
 {
 	SetFocusTarget(MurderedActor);
 	FVector MurderedCharLocation = MurderedActor->GetActorLocation();
-
 	FVector StraightLineDirection = (AimingCharLoc - MurderedCharLocation).GetSafeNormal();
-
 	FVector RightDirection = FVector::CrossProduct(StraightLineDirection, FVector(0, 0, 1));
 	FVector NewPawnPosition = MurderedCharLocation + (StraightLineDirection * 200) + (RightDirection * RightDistance) + FVector(0, 0, UpwardDistance);
 
@@ -233,19 +197,12 @@ void APlayerPawnInAiming::StopCameraMoving()
 	bCameraMoving = false;
 }
 
-/**
-* Actor 의 Head 위치를 얻어옵니다.
-* @return Actor 의 Head 위치
-*/
 FVector APlayerPawnInAiming::GetActorsHeadLocation() const
 {
 	return BoneToFocus->GetBoneLocation(FName("head"));
 }
 
-/**
-* 초점을 맞출 대상을 설정합니다
-* @param TargetActor - 초점을 맞출 Actor
-*/
+
 void APlayerPawnInAiming::SetFocusTarget(AActor* TargetActor)
 {
 	USkeletalMeshComponent* ActorsSkeletal = TargetActor->FindComponentByClass<USkeletalMeshComponent>();
