@@ -26,7 +26,7 @@ void AEnemyUnit::FinishMoving()
 		(
 			GetWorld(),
 			GetActorLocation(),
-			AttackRadius,
+			Status.AttackRadius,
 			Fillter,
 			ACustomThirdPerson::StaticClass(),
 			TArray<AActor*>(),

@@ -30,6 +30,40 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FStartShootingDelegate, AActor*, ShootingChar
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FAnnounceDamageDelegate, AActor*, DamagedActor, float, Damage, FloatingWidgetState, State);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnitDeadDelegate, ACustomThirdPerson*, DeadUnit);
 
+USTRUCT()
+struct FUnitStatus
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	int8 MaxHP = 5;
+
+	UPROPERTY(EditAnywhere)
+	int8 Step = 10;
+
+	UPROPERTY(EditAnywhere)
+	float AttackRadius = 1000;
+
+	UPROPERTY(EditAnywhere, meta = (ClampMax = 1, ClampMin = 0))
+	float Aiming = 0.8f;
+
+	UPROPERTY(EditAnywhere, meta = (ClampMax = 1, ClampMin = 0))
+	float Critical = 0.1f;
+
+	UPROPERTY(EditAnywhere, meta = (ClampMax = 1, ClampMin = 0))
+	float Dodge = 0.1f;
+
+	FUnitStatus()
+	{
+		Aiming = 0.8f;
+		Critical = 0.1f;
+		Dodge = 0.1f;
+		MaxHP = 5;
+		Step = 10;
+		AttackRadius = 1000;
+	}
+};
+
 UENUM(BlueprintType)
 enum class EUnitState : uint8
 {
@@ -128,25 +162,17 @@ public:
 	/** 현재 유닛이 활동가능한지 여부 */
 	bool bCanAction = true;
 
-	/** 최대 HP */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int MaxHP = 5;
-
 	/** 현재 HP */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int CurrentHP;
 
 	bool IsDead();
 
-	/** 공격 가능한 사거리 */
-	UPROPERTY(EditDefaultsOnly)
-	float AttackRadius = 1000;
-
 	/** 현재 이동 가능한 걸음 수 */
 	int32 CurrentMovableStep;
 	
 	/** 액션 포인트 하나로 이동 가능한 걸음 수 */
-	int32 GetMovableStepPerActionPoint() { return Step / 2; };
+	int32 GetMovableStepPerActionPoint() { return Status.Step / 2; };
 	
 	/** 엄폐시 올바른 애니메이션을 위해 벽을 향해 회전합니다. */
 	void RotateTowardWall();
@@ -172,6 +198,9 @@ public:
 	FAnnounceDamageDelegate AnnounceDamageDelegate;
 
 	FUnitDeadDelegate UnitDeadDelegate;
+
+	UPROPERTY(EditInstanceOnly, Category = "Status")
+	FUnitStatus Status;
 
 	/** 남은 액션 포인트 */
 	UPROPERTY(EditDefaultsOnly)
@@ -216,7 +245,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartFiring(FName NewCollisionPresetName);
 
-	int32 GetStep() { return Step; };
+	int32 GetStep() { return Status.Step; };
 
 	/**
 	* 액션 포인트를 사용합니다.
@@ -413,10 +442,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	bool bTeam = true;
 
-	/** 이동 가능한 걸음 수  */
-	UPROPERTY(EditDefaultsOnly)
-	int32 Step = 10;
-
 
 	UPROPERTY()
 	class UTimelineComponent* MovingTimeline;
@@ -428,9 +453,6 @@ private:
 
 	/** 후보로 갖고있는 모든 조준 정보의 배열입니다 */
 	TArray<FAimingInfo> AimingInfo;
-
-	//이후에 클래스로 묶일 능력치들
-	int32 Aiming = 0.8;
 
 	/** 유닛이 할 수 있는 액션의 Map입니다. */
 	TMap<EAction, bool> PossibleActionMap;

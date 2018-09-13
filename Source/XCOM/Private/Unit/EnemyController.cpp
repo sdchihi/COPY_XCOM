@@ -229,7 +229,6 @@ bool AEnemyController::IsProtectedByCover(const FVector TileLocation, const FVec
 	return false;
 }
 
-
 void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FVector> CoverDirectionArr, OUT int32& ActionScore, OUT FAimingInfo& BestAimingInfo)
 {
 	float PawnLocationZ = GetPawn()->GetTargetLocation().Z;
@@ -239,7 +238,8 @@ void AEnemyController::ScoringByAimingInfo(const FVector TileLocation, TArray<FV
 	if (!ControlledPawn) { return; }
 	UAimingComponent* AimingComp = ControlledPawn->GetAimingComponent();
 
-	BestAimingInfo = AimingComp->GetBestAimingInfo(ActorOnTileLocation, ControlledPawn->AttackRadius, true, CoverDirectionMap);
+	BestAimingInfo = AimingComp->GetBestAimingInfo(ActorOnTileLocation, &ControlledPawn->Status, true, CoverDirectionMap);
+
 	float BestProb = BestAimingInfo.Probability;
 
 	float MinimumAimingProb = 0.35;

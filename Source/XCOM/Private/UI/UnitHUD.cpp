@@ -31,7 +31,7 @@ void UUnitHUD::InitializeHPBar()
 	UClass* HPClass = GetHPClass(CharacterRef->GetTeamFlag());
 	if (HPClass) 
 	{
-		for (int i = 0; i < CharacterRef->MaxHP; i++)
+		for (int i = 0; i < CharacterRef->Status.MaxHP; i++)
 		{
 			UCustomUserWidget* HealthPoint = CreateWidget<UCustomUserWidget>(GetWorld(), HPClass);
 

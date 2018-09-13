@@ -24,7 +24,6 @@ enum class ECriticalFactor : uint8
 };
 
 
-
 USTRUCT()
 struct FAimingInfo
 {
@@ -97,7 +96,7 @@ struct FAimingInfo
 	}
 };
 
-
+struct FUnitStatus;
 enum class EDirection : uint8;
 enum class ECoverInfo : uint8;
 
@@ -114,33 +113,33 @@ public:
 	/**
 	* 조준 가능한 적들의 정보를 얻어옵니다.
 	* @param ActorLocation - 조준 기능을 실행하는 Actor의 위치
-	* @param AttackRadius - 조준 가능한 범위
+	* @param Status - 조준 기능을 실행하는 Actor의 Status
 	* @param bIsCover - 실행하는 Actor가 엄폐 상태 여부
 	* @param CoverDirectionMap - 엄폐에 대한 정보를 갖고있는 맵
 	* @param AimingInfoList - 조준 가능한 적에 대한 정보를 반환해줄 Array
 	*/
-	void GetAttackableEnemyInfo(const FVector ActorLocation, const float AttackRadius, const bool bIsCover,const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
+	void GetAttackableEnemyInfo(const FVector ActorLocation, FUnitStatus const * const Status, const bool bIsCover,const TMap<EDirection, ECoverInfo>& CoverDirectionMap, OUT TArray<FAimingInfo>& AimingInfoList);
 
 	/**
 	* 경계 중 조준가능한 적들의 정보를 얻어옵니다.
-	* @param AttackRadius - 조준 가능한 범위
+	* @param Status - 조준 기능을 실행하는 Actor의 Status
 	* @param bIsCover - 현재 Actor의 엄폐 여부
 	* @param TargetLocation - 공격 대상의 위치
 	* @param CoverDirectionMap - 엄폐하고 있는 엄폐물에 대한 Map
 	* @param AimingInfo - 갱신할 AimingInfo
 	* @return 사격 가능 여부
 	*/
-	bool GetVigilanceAimingInfo(const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo);
+	bool GetVigilanceAimingInfo(FUnitStatus const * const Status, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap, const FVector TargetLocation, OUT FAimingInfo& AimingInfo);
 
 	/**
 	* 최적의 조준정보를 반환합니다..
 	* @param ActorLocation - 현재 Actor의 위치
-	* @param AttackRadius - 공격 가능한 범위
+	* @param Status - 조준 기능을 실행하는 Actor의 Status
 	* @param bIsCover - 현재 Actor의 엄폐 여부
 	* @param CoverDirectionMap - 엄폐하고 있는 엄폐물에 대한 Map
 	* @return AimingInfo
 	*/
-	FAimingInfo GetBestAimingInfo(const FVector ActorLocation, const float AttackRadius, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap);
+	FAimingInfo GetBestAimingInfo(const FVector ActorLocation, FUnitStatus const * const Status, const bool bIsCover, const TMap<EDirection, ECoverInfo>& CoverDirectionMap);
 
 protected:
 	virtual void BeginPlay() override;
@@ -152,13 +151,13 @@ public:
 	* 공격 성공 확률을 계산합니다.
 	* @param ActorLocation - 조준 기능을 실행하는 Actor의 위치
 	* @param HitResult - Linetrace 결과
-	* @param AttackRadius - 조준 가능한 범위
+	* @param Status - 조준 기능을 실행하는 Actor의 Status
 	* @param bIsCover - 실행하는 Actor가 엄폐 상태 여부
 	* @param AimingFactor - 조준에 관여하는 외부 요소에 대한 데이터를 반환합니다
 	* @param CriticalFactor - 크리티컬에 관여하는 외부 요소에 대한 데이터를 반환합니다.
 	* @return 공격 성공 확률을 반환합니다.
 	*/
-	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, float AttackRadius, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, int8>& CriticalFactor);
+	float CalculateAttackSuccessRatio(const FVector ActorLocation, const FHitResult HitResult, FUnitStatus const * const Status, const bool bIsCover, APawn* TargetPawn, TMap<EAimingFactor, float>& AimingFactor, TMap<ECriticalFactor, int8>& CriticalFactor);
 
 	/**
 	* 공격 대상이 엄폐하고있는 벽과 조준선이 이루는 각도를 계산합니다.

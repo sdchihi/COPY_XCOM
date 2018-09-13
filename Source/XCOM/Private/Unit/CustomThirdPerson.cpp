@@ -37,9 +37,9 @@ ACustomThirdPerson::ACustomThirdPerson()
 void ACustomThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentHP = MaxHP;
+	CurrentHP = Status.MaxHP;
 
-	CurrentMovableStep = Step;
+	CurrentMovableStep = Status.Step;
 
 	CoverDirectionMap.Add(EDirection::East, ECoverInfo::None);
 	CoverDirectionMap.Add(EDirection::West, ECoverInfo::None);
@@ -268,7 +268,7 @@ void ACustomThirdPerson::RestoreActionPoint()
 void ACustomThirdPerson::ScanEnemy()
 {
 	AimingInfo.Empty();
-	AimingComponent->GetAttackableEnemyInfo(GetActorLocation(), AttackRadius, bIsCovering, CoverDirectionMap, AimingInfo);
+	AimingComponent->GetAttackableEnemyInfo(GetActorLocation(), &Status, bIsCovering, CoverDirectionMap, AimingInfo);
 };
 
 void ACustomThirdPerson::AttackEnemyAccoringToIndex(const int32 TargetEnemyIndex) 
@@ -391,8 +391,7 @@ void ACustomThirdPerson::DecideShootingChance(OUT float& CriticalChance, OUT flo
 {
 	float RemainingChance = SelectedAimingInfo.Probability;
 
-	//DodgeChance = SelectedAimingInfo->TargetActor->GetDodge();
-	DodgeChance = 0.08; // Temp value
+	DodgeChance = Status.Dodge;
 	RemainingChance -= DodgeChance;
 
 	CriticalChance = FMath::Clamp(CriticalChance, 0.f, RemainingChance);
@@ -479,7 +478,7 @@ void ACustomThirdPerson::AfterShooting()
 void ACustomThirdPerson::InVigilance(const FVector TargetLocation)
 {
 	FAimingInfo* AimingInfoResult = new FAimingInfo();
-	bool bDiscover = AimingComponent->GetVigilanceAimingInfo(AttackRadius, bIsCovering, CoverDirectionMap, TargetLocation, *AimingInfoResult);
+	bool bDiscover = AimingComponent->GetVigilanceAimingInfo(&Status, bIsCovering, CoverDirectionMap, TargetLocation, *AimingInfoResult);
 
 	if (bDiscover) 
 	{
