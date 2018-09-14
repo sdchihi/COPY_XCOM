@@ -22,8 +22,9 @@ DECLARE_DYNAMIC_DELEGATE(FChangePlayerPawnDelegate);
 DECLARE_DYNAMIC_DELEGATE(FStartActionDelegate);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FDeadCamDelegate, AActor*, TargetActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAfterActionDelegate, bool, bIsPlayerTeam);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FAfterMovingDelegate, ACustomThirdPerson*, MovingCharacter);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartMovingDelegate, ACustomThirdPerson*, Unit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnprotectedMovingDelegate, FVector, Location);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FAfterMovingDelegate, ACustomThirdPerson*, MovingCharacter);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FChangeViewTargetDelegateFromChar,const FVector, StartLoc, const FVector, TargetLoc);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FReadyToAttackDelegate, AActor*, TargetActor, FVector, AimDirection);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FStartShootingDelegate, AActor*, ShootingCharacter, bool, bPlayBlend);
@@ -198,6 +199,8 @@ public:
 	FAnnounceDamageDelegate AnnounceDamageDelegate;
 
 	FUnitDeadDelegate UnitDeadDelegate;
+
+	FStartMovingDelegate StartMovingDelegate;
 
 	UPROPERTY(EditInstanceOnly, Category = "Status")
 	FUnitStatus Status;

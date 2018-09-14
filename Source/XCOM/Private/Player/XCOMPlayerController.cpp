@@ -18,6 +18,7 @@
 #include "Public/Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "ActiveTileIndicator.h"
+#include "DestructibleWall.h"
 
 
 AXCOMPlayerController::AXCOMPlayerController() 
@@ -299,24 +300,14 @@ void AXCOMPlayerController::AfterCharacterMoving(ACustomThirdPerson* MovingChara
 	CheckWallAround(MovingCharacter);
 }
 
-
-void AXCOMPlayerController::CheckWallAround(ACustomThirdPerson* TargetCharacter)
+void AXCOMPlayerController::CheckWallAround(ACustomThirdPerson* TargetCharacter) 
 {
 	if (!TargetCharacter) { return; }
 
-	FVector CharacterPos = TargetCharacter->GetActorLocation();
-	int32 CharacterTileIndex = TileManager->ConvertVectorToIndex(CharacterPos);
-	UE_LOG(LogTemp, Warning, L"Move To : %d", CharacterTileIndex)
-
-	int32 EastIndex = CharacterTileIndex + 1;
-	int32 WestIndex = CharacterTileIndex - 1;
-	int32 SouthIndex = CharacterTileIndex - TileManager->GetGridXLength();
-	int32 NorthIndex = CharacterTileIndex + TileManager->GetGridXLength();
-
-	CheckWallAroundOneDirection(CharacterTileIndex, EastIndex, TargetCharacter);
-	CheckWallAroundOneDirection(CharacterTileIndex, SouthIndex, TargetCharacter);
-	CheckWallAroundOneDirection(CharacterTileIndex, NorthIndex, TargetCharacter);
-	CheckWallAroundOneDirection(CharacterTileIndex, WestIndex, TargetCharacter);
+	CheckWallAroundOneDirection(TargetCharacter, EDirection::North);
+	CheckWallAroundOneDirection(TargetCharacter, EDirection::South);
+	CheckWallAroundOneDirection(TargetCharacter, EDirection::West);
+	CheckWallAroundOneDirection(TargetCharacter, EDirection::East);
 
 	if (TargetCharacter->bIsCovering)
 	{
@@ -332,41 +323,67 @@ void AXCOMPlayerController::CheckWallAround(ACustomThirdPerson* TargetCharacter)
 	}
 }
 
-void AXCOMPlayerController::CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex, ACustomThirdPerson* TargetCharacter)
+void AXCOMPlayerController::CheckWallAroundOneDirection(ACustomThirdPerson* TargetCharacter, EDirection Direction)
 {
-	int32 RowNumber = 0;
-	EDirection CoverDirection = EDirection::None;
-	if (CardinalIndex == (CharacterIndex + TileManager->GetGridXLength())) 
+	FVector CharacterPos = TargetCharacter->GetActorLocation();
+	FVector TargetLocation;
+	int32 TileSize = TileManager->GetTileSize();
+
+	int32 CharacterTileIndex = TileManager->ConvertVectorToIndex(CharacterPos);
+	int32 CardinalIndex = 0;
+
+	switch (Direction) 
 	{
-		CoverDirection = EDirection::North; // 북
-		RowNumber = 1;
-	}
-	else if (CardinalIndex == (CharacterIndex - TileManager->GetGridXLength())) 
-	{
-		CoverDirection = EDirection::South; // 남
-		RowNumber = -1;
-	}
-	else
-	{
-		if (CardinalIndex == CharacterIndex + 1)
-		{
-			CoverDirection = EDirection::East; // 동
-		}
-		else 
-		{
-			CoverDirection = EDirection::West;	// 서
-		}
-		RowNumber = 0;
+	case EDirection::North:
+		CardinalIndex = CharacterTileIndex + TileManager->GetGridXLength();
+		TargetLocation = CharacterPos + FVector(0, TileSize, 0);
+		break;
+	case EDirection::South:
+		CardinalIndex = CharacterTileIndex - TileManager->GetGridXLength();
+		TargetLocation = CharacterPos + FVector(0, -TileSize, 0);
+		break;
+	case EDirection::West:
+		CardinalIndex = CharacterTileIndex - 1;
+		TargetLocation = CharacterPos + FVector(-TileSize, 0, 0);
+		break;
+	case EDirection::East:
+		CardinalIndex = CharacterTileIndex + 1;
+		TargetLocation = CharacterPos + FVector(TileSize, 0, 0);
+		break;
+	default:
+		TargetLocation = CharacterPos;
+		break;
 	}
 
-	if (TileManager->CheckWithinBounds(CardinalIndex) && TileManager->IsSameLine(CharacterIndex, RowNumber, CardinalIndex) &&
-		TileManager->PathArr[CardinalIndex].bWall) 
+	const FName TraceTag("MyTraceTag");
+	GetWorld()->DebugDrawTraceTag = TraceTag;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.TraceTag = TraceTag;
+	CollisionParams.bFindInitialOverlaps = false;
+
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		CharacterPos,
+		TargetLocation,
+		ECollisionChannel::ECC_GameTraceChannel12,
+		CollisionParams
+	);
+
+	if (HitResult.GetActor()) 
 	{
-		TargetCharacter->CoverDirection = CoverDirection;
-		TargetCharacter->CoverDirectionMap.Add(CoverDirection, TileManager->PathArr[CardinalIndex].CoverInfo);
+		ADestructibleWall* Wall = Cast<ADestructibleWall>(HitResult.GetActor());
+		if (Wall) 
+		{
+			Wall->RegisterUnit(TargetCharacter);
+		}
+		TargetCharacter->CoverDirection = Direction;
+		TargetCharacter->CoverDirectionMap.Add(Direction, TileManager->PathArr[CardinalIndex].CoverInfo);
 		TargetCharacter->bIsCovering = true;
 	}
+	
 }
+
 
 // 테스트를 위한 메소드
 // 이후에 삭제 또는 수정 필요

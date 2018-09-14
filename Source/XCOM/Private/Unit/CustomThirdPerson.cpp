@@ -544,7 +544,6 @@ void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32
 	PathToTargetTile = *OnTheWay;
 	MovementIndex = PathToTargetTile.Num() - 1;
 	ActionPointForMoving = ActionPointToUse;
-
 	if (WalkingState == EWalkingState::Running) 
 	{
 		SetSpeed(400);
@@ -553,6 +552,8 @@ void ACustomThirdPerson::MoveToTargetTile(TArray<FVector>* OnTheWay, const int32
 	{
 		SetSpeed(200);
 	}
+
+	StartMovingDelegate.Broadcast(this);
 
 	if (bIsCovering)
 	{

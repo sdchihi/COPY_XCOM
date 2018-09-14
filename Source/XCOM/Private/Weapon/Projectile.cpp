@@ -34,7 +34,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		if (Cast<ADestructibleActor>(OtherActor))
 		{
-			//ApplyToDestructibleActor(Hit.Location);
+			UE_LOG(LogTemp, Warning, L"테스트 중입니다.")
+			ApplyToDestructibleActor(Hit.Location);
 		}
 	}
 	UParticleSystemComponent* TempExplosion = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorTransform());

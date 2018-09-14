@@ -146,18 +146,17 @@ private:
 	void CheckWallAround(ACustomThirdPerson* TargetCharacter);
 
 	/**
+	* Cadinal 방향에 대해서 벽이 있는지 확인합니다.
+	* @param Direction - 확인할 방향
+	*/
+	void CheckWallAroundOneDirection(ACustomThirdPerson* TargetCharacter, EDirection Direction);
+
+	/**
 	* 캐릭터가 위치한 타일을 얻어올때 호출합니다.
 	* @param TargetCharacter
 	* @return 해당 타일의 포인터
 	*/
 	ATile* GetOverlappedTile(ACustomThirdPerson* TargetCharacter);
-
-	/**
-	* Cadinal 방향에 대해서 벽이 있는지 확인합니다.
-	* @param CharacterIndex - 캐릭터가 위치한 타일의 인덱스
-	* @param CardinalIndex - Cardinal 방향의 타일 인덱스
-	*/
-	void CheckWallAroundOneDirection(const int32 CharacterIndex, const int CardinalIndex, ACustomThirdPerson* TargetCharacter);
 
 	bool CheckClickedCharacterTeam(ACustomThirdPerson* ClickedCharacter);
 

@@ -41,13 +41,23 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UBoxComponent* BoxCollision = nullptr;;
 
+	void RegisterUnit(class ACustomThirdPerson* ActorToRegister);
+
+	UFUNCTION()
+	void CancelCovering(ACustomThirdPerson* ActorToCancel);
 
 private:
+	void Destroyed();
+
+	TArray<ACustomThirdPerson*> CoveredUnitArray;
 
 	UDestructibleComponent* DestructibleCompReference;
-
 	
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void Fractured(const FVector& HitPoint, const FVector& HitDirection);
+
 
 };
