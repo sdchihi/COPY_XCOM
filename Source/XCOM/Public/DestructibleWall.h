@@ -59,5 +59,11 @@ private:
 	UFUNCTION()
 	void Fractured(const FVector& HitPoint, const FVector& HitDirection);
 
+	UFUNCTION()
+	void BeginDestroying();
+
+	UFUNCTION()
+	void FinisihDestroying();
+
 
 };

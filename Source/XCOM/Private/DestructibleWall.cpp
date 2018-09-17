@@ -6,22 +6,25 @@
 #include "Projectile.h"
 #include "Classes/Components/BoxComponent.h"
 #include "CustomThirdPerson.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 ADestructibleWall::ADestructibleWall() 
 {
 	DestructibleCompReference = FindComponentByClass<UDestructibleComponent>();
-	if (DestructibleCompReference) {
-		//DestructibleCompReference->SetSimulatePhysics(true);
-		DestructibleCompReference->OnComponentHit.AddDynamic(this, &ADestructibleWall::OnHit);
-		DestructibleCompReference->OnComponentFracture.AddDynamic(this, &ADestructibleWall::Fractured);
-		//DestructibleCompReference->SetNotifyRigidBodyCollision(true); // 확인 필요   Hit Event 발생 여부
-	}
+	
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(FName("Box Collision"));
 	BoxCollision->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void ADestructibleWall::BeginPlay() {
 	Super::BeginPlay();
+
+	if (DestructibleCompReference) {
+		//DestructibleCompReference->SetSimulatePhysics(true);
+		DestructibleCompReference->OnComponentHit.AddDynamic(this, &ADestructibleWall::OnHit);
+		DestructibleCompReference->OnComponentFracture.AddDynamic(this, &ADestructibleWall::Fractured);
+		//DestructibleCompReference->SetNotifyRigidBodyCollision(true); // 확인 필요   Hit Event 발생 여부
+	}
 
 	FVector Origin;
 	FVector BoxExtent;
@@ -84,5 +87,24 @@ void ADestructibleWall::Destroyed()
 void ADestructibleWall::Fractured(const FVector& HitPoint, const FVector& HitDirection) 
 {
 	BoxCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DestructibleCompReference->SetCollisionProfileName(FName(L"MinCollision"));
 	Destroyed();
+
+	FTimerHandle UnUsedHandle;
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ADestructibleWall::BeginDestroying);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 3, false);
+}
+
+void ADestructibleWall::BeginDestroying()
+{
+	DestructibleCompReference->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	FTimerHandle UnUsedHandle;
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ADestructibleWall::FinisihDestroying);
+	GetWorldTimerManager().SetTimer(UnUsedHandle, TimerDelegate, 1, false);	
+}
+
+void ADestructibleWall::FinisihDestroying() 
+{
+	Destroy();
 }

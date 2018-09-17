@@ -36,6 +36,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		{
 			UE_LOG(LogTemp, Warning, L"테스트 중입니다.")
 			ApplyToDestructibleActor(Hit.Location);
+
 		}
 	}
 	UParticleSystemComponent* TempExplosion = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorTransform());
@@ -48,12 +49,13 @@ void AProjectile::ApplyToDestructibleActor(const FVector HitLocation)
 	TSubclassOf<UDamageType> DamageType;
 	UGameplayStatics::ApplyRadialDamage(
 		GetWorld(),
-		1,
-		HitLocation,
-		40,
+		500,
+		HitLocation + FVector(0,0,-10),
+		5 0,
 		DamageType,
 		TArray<AActor*>()
 		);
+
 	Destroy();
 }
 
